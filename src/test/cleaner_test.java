@@ -7,6 +7,7 @@ import inverted_index.*;
 public class cleaner_test {
 	index idx = index.get_instance();
 	cleaner clr = new cleaner();
+	keeper kpr= keeper.get_instance();
 	
 	// prepare the inverted-index
 	public void fill_index() {
@@ -28,7 +29,7 @@ public class cleaner_test {
 		
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+		System.out.println("lexiconKeeper: " + kpr.lexiconLockMap.entrySet());
 		
 		// print out all the status
 		HashMap<Long, Integer> postUnitStatusMap = new HashMap<Long, Integer>();
@@ -48,7 +49,7 @@ public class cleaner_test {
 		System.out.println("delPostUnitList: " + delPostUnitList);
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+		System.out.println("lexiconKeeper: " + kpr.lexiconLockMap.entrySet());
 		
 		System.out.println("postUnitMap.get(0L): " + idx.postUnitMap.get(0L).previousId + " " + idx.postUnitMap.get(0L).nextId);
 		System.out.println("postUnitMap.get(2L): " + idx.postUnitMap.get(2L).previousId + " " + idx.postUnitMap.get(2L).nextId);
@@ -65,7 +66,7 @@ public class cleaner_test {
 		
 		System.out.println("\npostUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+		System.out.println("lexiconKeeper: " + kpr.lexiconLockMap.entrySet());
 
 	}
 	

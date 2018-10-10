@@ -7,6 +7,7 @@ public class index_test {
 	// test basic functionalities
 	
 	index idx = index.get_instance();
+	keeper kpr = keeper.get_instance();
 	
 	// add_term
 	// ini_posting_list
@@ -17,7 +18,7 @@ public class index_test {
 		}
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 		System.out.println("");
 	}
 	
@@ -26,7 +27,7 @@ public class index_test {
 		idx.del_term("b");
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 		System.out.println("");
 	}
 	
@@ -36,7 +37,7 @@ public class index_test {
 		idx.add_posting_unit("a", postUnit);
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 		System.out.println("");
 		
 	}
@@ -46,7 +47,7 @@ public class index_test {
 		idx.del_posting_unit(3);
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 		
 		// print out all the status
 		HashMap<Long, Integer> postUnitStatusMap = new HashMap<Long, Integer>();

@@ -16,13 +16,15 @@ public class index {
 	
 	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
 	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
-	public HashMap<String, HashMap<String, Integer>> lexiconKeeper = new HashMap<String, HashMap<String, Integer>>(); // {term : {termLock:0, ..}}, ref: Zookeeper, store the meta informations of the lexicon, especially the global lock
+	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
 	
 	// for generating the unique posting unit id s
 	private class counters {
 		long postingId = 0L;
 	}
 	counters pc = new counters();  
+	
+	
 	
 	
 	
@@ -41,9 +43,7 @@ public class index {
 		lexicon.put(term, postingUnitIds);  
 		
 		// initialize the lock for each term in lexicon
-		HashMap<String, Integer> metaMap = new HashMap<String, Integer>();
-		metaMap.put("termLock", 0); // 0 not locked; 1 locked
-		lexiconKeeper.put(term, metaMap);
+		kpr.add_term(term);
 		
 		return postUnit.currentId;
 	}
@@ -58,7 +58,8 @@ public class index {
 	public void del_term(String term) {
 		ArrayList<Long> postUnitList = lexicon.get(term);
 		lexicon.remove(term); // delete from lexicon
-		lexiconKeeper.remove(term);
+		
+		kpr.del_term(term);
 		
 		for(long postUnitId : postUnitList) {
 			postUnitMap.remove(postUnitId); // delete specific posting unites

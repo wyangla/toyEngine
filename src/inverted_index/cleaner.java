@@ -2,14 +2,16 @@ package inverted_index;
 
 import java.util.*;
 import configs.*;
-
+import utils.*;
 
 // cleaner should only be used on the off-line inverted-index
 // clean it and replace the on-line one
 // the index is currently being hosted by a single machine
 // so that only need to use task splitting instead of the global lock?
 public class cleaner {
-	index idx = index.get_instance();
+	// TODO: change to the web reference in future
+	private index idx = index.get_instance();
+	private keeper kpr = keeper.get_instance();
 	
 	// independent threads scanning and cleaning the postUnitMap & lexicon
 	public ArrayList<Long> clean_unit(String[] targetTerms) {
@@ -62,24 +64,25 @@ public class cleaner {
 		private String[] targetTerms;
 		private ArrayList<String> availableTargetTerms_temp = new ArrayList<String>();
 		private String[] availableTargetTerms; // which are not being accessing
+		private String tNum;
 		
-		
-		public thread_clean(String[] targetTerms4Clean) { // parameters for assign tasks
-			System.out.println("--> thread started");
+		public thread_clean(String[] targetTerms4Clean, String threadNum) { // parameters for assign tasks
 			targetTerms = targetTerms4Clean;
+			tNum = threadNum;
+			System.out.println(String.format("--> thread %s started", tNum));
 		}
 		
-		public void run() {					
+		public void run() {		
+			// lock operations
 			try {
 				for (String term : targetTerms) {
-					if (idx.lexiconKeeper.get(term).get("termLock") == 0) { // if one term is not being modifying, like adding / deleting units
-						idx.lexiconKeeper.get(term).put("termLock", 1); // add lock
-						availableTargetTerms_temp.add(term);
-					}
+						if(kpr.require_lock(term, tNum) == 1) { // if required the lock on term successfully
+							availableTargetTerms_temp.add(term);	
+						}
 				}
 				
 				// TODO: testing
-				System.out.println("--> lexiconKeeper: " + idx.lexiconKeeper.entrySet());
+				System.out.println("--> lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 				availableTargetTerms = availableTargetTerms_temp.toArray(new String[0]); // ArrayList<String> -> String[]
 				ArrayList<Long> delPostUnitList = clean_unit( availableTargetTerms );
 				System.out.println("deleted units: " + delPostUnitList);
@@ -87,15 +90,15 @@ public class cleaner {
 			} catch(Exception e) {
 				System.out.println(e);
 				
-			} finally { // no matter what, release the lock at the end
-				for (String term : availableTargetTerms) {
-					idx.lexiconKeeper.get(term).put("termLock", 0);	
+			} finally {
+				for (String term : availableTargetTerms) { // no matter what, release the lock at the end
+					kpr.release_lock(term, tNum);	
 				}
 			}
 		}
 		
 		public void start() {
-			t = new Thread(this);
+			t = new Thread(this, tNum);
 			t.start();
 		}
 	}
@@ -131,7 +134,7 @@ public class cleaner {
 				// System.out.println("" + load_temp);
 				
 				try {
-					thread_clean ct = new thread_clean( load_temp.toArray(new String[0]) );
+					thread_clean ct = new thread_clean( load_temp.toArray(new String[0]), "" + name_generator.thread_name_gen() );
 					ct.start();
 					j = 0;
 					load_temp.clear();
