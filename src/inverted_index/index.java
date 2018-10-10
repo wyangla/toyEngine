@@ -6,6 +6,14 @@ import java.util.*;
 // this should be a singleton instance, contains a posting unit counter
 public class index {
 	
+	// singleton
+	// ref: http://www.runoob.com/design-pattern/singleton-pattern.html
+	private static index index_ins = new index();
+	private index() {}
+	public static index get_instance() {
+		return index_ins;
+	}
+	
 	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
 	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	public HashMap<String, HashMap<String, Integer>> lexiconKeeper = new HashMap<String, HashMap<String, Integer>>(); // {term : {termLock:0, ..}}, ref: Zookeeper, store the meta informations of the lexicon, especially the global lock
@@ -34,7 +42,7 @@ public class index {
 		
 		// initialize the lock for each term in lexicon
 		HashMap<String, Integer> metaMap = new HashMap<String, Integer>();
-		metaMap.put("termLock", 0);
+		metaMap.put("termLock", 0); // 0 not locked; 1 locked
 		lexiconKeeper.put(term, metaMap);
 		
 		return postUnit.currentId;
@@ -84,53 +92,6 @@ public class index {
 		posting_unit delUnit = postUnitMap.get(postingUnitId);
 		delUnit.status = 0;
 		return delUnit.currentId;
-	}
-	
-	
-	
-	// independent threads scanning and cleaning the postUnitMap & lexicon
-	public ArrayList<Long> unit_cleaner(String[] targetTerms) {
-
-		ArrayList<Long> delPostUnitList = new ArrayList<Long>();
-		
-		// scanning through the assigned terms
-		for (String term : targetTerms) {
-			ArrayList<Long> postingUnitIds = lexicon.get(term);
-			
-			if(postingUnitIds != null) {
-				
-				// scanning through the posting units list of corresponding term
-				for (long pUnitId : postingUnitIds) {
-					int pUnitIndex = postingUnitIds.indexOf(pUnitId);
-					
-					posting_unit curUnit = postUnitMap.get(pUnitId);
-					int pStatus = curUnit.status;
-					if(pStatus == 0) {
-						posting_unit prevUnit = (pUnitIndex != 0) ? postUnitMap.get(postingUnitIds.get(pUnitIndex - 1)) : null; // skip the first unit of posting list
-						posting_unit nextUnit = (pUnitIndex != postingUnitIds.size() - 1) ? postUnitMap.get(postingUnitIds.get(pUnitIndex + 1)) : null; // skip the last unit of posting list
-						
-						// relink
-						if (prevUnit != null) { // when current unit is not the starter
-							prevUnit.link_to_next(nextUnit);	
-						}
-						if (nextUnit != null) { // when current unit is not the ender
-							nextUnit.link_to_previous(prevUnit);	
-						}
-						
-						delPostUnitList.add(pUnitId);
-					}
-				}
-				
-				// avoid the ArrayList is changing when iterating it
-				for (Long pUnitId : delPostUnitList) {
-					// delete from lexicon and postUnitMap
-					postingUnitIds.remove(pUnitId);
-					postUnitMap.remove(pUnitId);
-				}
-			}
-
-		}
-		return delPostUnitList;
 	}
 	
 

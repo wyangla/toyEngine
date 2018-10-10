@@ -37,9 +37,7 @@ public class posting_unit {
 		}else {  // when links to nothing following, means the current is the ender
 			nextId = -1;
 		}
-
 		return nextId;
-	
 	}
 	
 	

@@ -6,7 +6,7 @@ import java.util.*;
 public class index_test {
 	// test basic functionalities
 	
-	index idx = new index();
+	index idx = index.get_instance();
 	
 	// add_term
 	// ini_posting_list
@@ -56,19 +56,12 @@ public class index_test {
 		}
 		System.out.println("" + postUnitStatusMap.entrySet());
 		System.out.println("");
-	}
-	
-	// unit_cleaner
-	public void test_5() {
-		ArrayList<Long> delPostUnitList = idx.unit_cleaner(new String[]{"a", "b", "c"});
+//		List<String> lexiconKeySet_temp = new ArrayList<String>();
+//		lexiconKeySet_temp.addAll(idx.lexicon.keySet());
+//		for (String k : lexiconKeySet_temp) {
+//			System.out.println(k);
+//		}
 		
-		System.out.println("delPostUnitList: " + delPostUnitList);
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + idx.lexiconKeeper.entrySet());
-		
-		System.out.println("postUnitMap.get(0L): " + idx.postUnitMap.get(0L).previousId + " " + idx.postUnitMap.get(0L).nextId);
-		System.out.println("postUnitMap.get(2L): " + idx.postUnitMap.get(2L).previousId + " " + idx.postUnitMap.get(2L).nextId);
 	}
 	
 	public static void main(String[] args) {
@@ -77,7 +70,6 @@ public class index_test {
 		idx_test.test_2();
 		idx_test.test_3();
 		idx_test.test_4();
-		idx_test.test_5();
 		
 	}
 }
