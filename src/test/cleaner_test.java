@@ -1,6 +1,8 @@
 package test;
 import java.util.*;
 import inverted_index.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -8,6 +10,8 @@ public class cleaner_test {
 	index idx = index.get_instance();
 	cleaner clr = new cleaner();
 	keeper kpr= keeper.get_instance();
+	Logger lgr = LoggerFactory.getLogger(cleaner_test.class);
+	
 	
 	// prepare the inverted-index
 	public void fill_index() {
@@ -71,12 +75,13 @@ public class cleaner_test {
 	}
 	
 	public static void main(String[] args) {
-		
 		// prepare the inverted index
 		cleaner_test clr_test = new cleaner_test();
 		clr_test.fill_index();
 		
 //		clr_test.test_5();
 		clr_test.test_6();
+		
+		clr_test.lgr.warn("cleaner");
 	}
 }

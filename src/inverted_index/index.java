@@ -1,5 +1,9 @@
 package inverted_index;
+
 import java.util.*;
+import configs.index_config;
+import utils.name_generator;
+import exceptions.*;
 
 
 
@@ -69,20 +73,44 @@ public class index {
 	
 	// the analysing of doc and find the term:postUnit pair is handled by a higher level
 	public long add_posting_unit(String term, posting_unit postUnit) {
-		postUnit.currentId = pc.postingId;
-		postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
-		pc.postingId ++;
+		String threadNum = "" + name_generator.thread_name_gen();
+		long addedUnitId = -1L;
 		
-		ArrayList<Long> postingUnitIds = lexicon.get(term); // get the posting list
-		long previousUnitId = postingUnitIds.get(postingUnitIds.size() - 1);
-		posting_unit prevUnit = postUnitMap.get(previousUnitId); // get the instance of previous unit
-		postingUnitIds.add(postUnit.currentId); // add to the lexicon, in fact is adding to the posting list
+		try {
+			// TODO: put the retry logic here instead of keeper, is for making the keeper as simple as possible
+			for (int i = 0; i < index_config.retryTimes; i ++) {
+				// TODO: testing
+				System.out.println("retried: " + (i+1));
+				
+				if (kpr.require_lock(term, threadNum) == 1) { // successfully required the lock
+					postUnit.currentId = pc.postingId;
+					postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
+					pc.postingId ++;
+					
+					ArrayList<Long> postingUnitIds = lexicon.get(term); // get the posting list
+					long previousUnitId = postingUnitIds.get(postingUnitIds.size() - 1);
+					posting_unit prevUnit = postUnitMap.get(previousUnitId); // get the instance of previous unit
+					postingUnitIds.add(postUnit.currentId); // add to the lexicon, in fact is adding to the posting list
+					
+					// link units, for scanning
+					postUnit.link_to_previous(prevUnit);
+					prevUnit.link_to_next(postUnit);
+					addedUnitId = postUnit.currentId;
+					break;
+				}
+			}
+		} catch(Exception e) {
+			System.out.println(e);
+		} 
+		finally {
+			kpr.release_lock(term, threadNum);
+		}
+				
+		if (addedUnitId == -1) { // if all retries are all failed, print the customised exception
+			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
+		}
 		
-		// link units, for the convenience of scanning
-		postUnit.link_to_previous(prevUnit);
-		prevUnit.link_to_next(postUnit);
-		
-		return postUnit.currentId;
+		return addedUnitId;
 	}
 	
 	// delete the some posting units
@@ -90,6 +118,7 @@ public class index {
 	// need an independent process scanning and cleaning the postUnitMap & lexicon
 	// the starter unit should never be deleted
 	public long del_posting_unit(long postingUnitId) {
+		// TODO: + require lock
 		posting_unit delUnit = postUnitMap.get(postingUnitId);
 		delUnit.status = 0;
 		return delUnit.currentId;

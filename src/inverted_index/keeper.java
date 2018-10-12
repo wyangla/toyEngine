@@ -2,12 +2,15 @@ package inverted_index;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import configs.keeper_config;
 
 // ref: ZooKeeper, maintaining the lock map, 
 // store the meta informations of the lexicon, especially the global lock
+// locks are released by the owner thread or overwritten by other thread when expired
 public class keeper {
+	
 	// {term : metaMap}
-	// metaMap - {termLock : 0 or timeStamp, thread : threadNum}
+	// metaMap - {termLock : 0 or timeStamp, threadNum : -1 or threadNum}
 	// TODO: threadNum = Integer(timeStamp + randomNum * 1000)
 	public HashMap<String, HashMap<String, Long>> lexiconLockMap = new HashMap<String, HashMap<String, Long>>(); 
 	
@@ -40,7 +43,13 @@ public class keeper {
 			this.lexiconLockMap.get(term).put("threadNum", Long.parseLong(threadNum)); // record the thread that required the lock, for update and automatically release
 			required = 1;
 		}else {
-			required = 0;
+			if (lexiconLockMap.get(term).get("termLock") + keeper_config.lockExpireTime <= System.currentTimeMillis()) { // if the previous lock is expired
+				this.lexiconLockMap.get(term).put("termLock", System.currentTimeMillis());
+				this.lexiconLockMap.get(term).put("threadNum", Long.parseLong(threadNum));
+				required = 1;
+			} else {
+				required = 0;
+			}
 		}
 		return required;		
 	}
@@ -57,7 +66,5 @@ public class keeper {
 		}
 		return released;
 	}
-	
-	
-	
+		
 }

@@ -64,19 +64,19 @@ public class cleaner {
 		private String[] targetTerms;
 		private ArrayList<String> availableTargetTerms_temp = new ArrayList<String>();
 		private String[] availableTargetTerms; // which are not being accessing
-		private String tNum;
+		private String thNum;
 		
 		public thread_clean(String[] targetTerms4Clean, String threadNum) { // parameters for assign tasks
 			targetTerms = targetTerms4Clean;
-			tNum = threadNum;
-			System.out.println(String.format("--> thread %s started", tNum));
+			thNum = threadNum;
+			System.out.println(String.format("--> thread %s started", thNum));
 		}
 		
 		public void run() {		
 			// lock operations
 			try {
 				for (String term : targetTerms) {
-						if(kpr.require_lock(term, tNum) == 1) { // if required the lock on term successfully
+						if(kpr.require_lock(term, thNum) == 1) { // if required the lock on term successfully
 							availableTargetTerms_temp.add(term);	
 						}
 				}
@@ -92,13 +92,13 @@ public class cleaner {
 				
 			} finally {
 				for (String term : availableTargetTerms) { // no matter what, release the lock at the end
-					kpr.release_lock(term, tNum);	
+					kpr.release_lock(term, thNum);	
 				}
 			}
 		}
 		
 		public void start() {
-			t = new Thread(this, tNum);
+			t = new Thread(this, thNum);
 			t.start();
 		}
 	}
@@ -106,7 +106,7 @@ public class cleaner {
 	// multiprocessing
 	public void clean() {
 		cleaner clr = new cleaner();
-		int workerNum = cleaner_config.cleaner_workerNum;
+		int workerNum = cleaner_config.cleanerWorkerNum;
 		
 		// split the lexicon into workload for each clean worker
 		ArrayList<String> terms = new ArrayList<String>();
