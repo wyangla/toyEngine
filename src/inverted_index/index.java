@@ -18,6 +18,8 @@ public class index {
 		return index_ins;
 	}
 	
+	
+	
 	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
 	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
@@ -29,9 +31,7 @@ public class index {
 	counters pc = new counters();  
 	
 	
-	
-	
-	
+
 	// initialise the posting list for one term
 	private long ini_posting_list(String term) {
 		posting_unit postUnit = new posting_unit();
@@ -52,11 +52,13 @@ public class index {
 		return postUnit.currentId;
 	}
 	
+	
 	// add a new term to the inverted index, include add a new term to the lexicon and add add new 
 	public long add_term(String term) {
 		long firstUnitId = ini_posting_list(term);
 		return firstUnitId;
 	}
+	
 	
 	// delete a posting list
 	public void del_term(String term) {
@@ -70,6 +72,7 @@ public class index {
 		}
 		
 	}
+	
 	
 	// the analysing of doc and find the term:postUnit pair is handled by a higher level
 	public long add_posting_unit(String term, posting_unit postUnit) {
@@ -113,6 +116,7 @@ public class index {
 		return addedUnitId;
 	}
 	
+	
 	// delete the some posting units
 	// just set flags instead of directly remove, ref: SSTable
 	// need an independent process scanning and cleaning the postUnitMap & lexicon
@@ -126,7 +130,30 @@ public class index {
 	
 
 	
+	// persist the inverted index on to local hard disk, 
+	// with the posting units written in line in the order of posting list
+	public void persist_index() {
+		for (String term : lexicon.keySet()) {
+			ArrayList<Long> postingUnitIds = new ArrayList<Long>();
+			
+		}
+	}
+	
+	
+	// lazily load the posting list of target terms
+	public long[] load_posting(String[] targetTerms) {
+		long[] loaded_units = new long[] {};
+		return loaded_units;
+	}
+	
+	
+	
 	public static void main(String[] args) {
 		index idx = new index();		
 	}
 }
+
+
+
+
+

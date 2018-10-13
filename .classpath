@@ -5,5 +5,6 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="external_tools/slf4j-api-1.7.25.jar"/>
 	<classpathentry kind="lib" path="external_tools/slf4j-simple-1.7.25.jar"/>
+	<classpathentry kind="lib" path="external_tools/json-20170516.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
