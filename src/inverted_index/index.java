@@ -1,6 +1,10 @@
 package inverted_index;
 
+import java.io.*;
 import java.util.*;
+
+import org.json.*;
+
 import configs.index_config;
 import utils.name_generator;
 import exceptions.*;
@@ -75,20 +79,23 @@ public class index {
 	
 	
 	// the analysing of doc and find the term:postUnit pair is handled by a higher level
+	// used as the sequentially add, the posting list and lexicon growing at the same time
 	public long add_posting_unit(String term, posting_unit postUnit) {
 		String threadNum = "" + name_generator.thread_name_gen();
 		long addedUnitId = -1L;
 		
 		try {
-			// TODO: put the retry logic here instead of keeper, is for making the keeper as simple as possible
+			// put the retry logic here instead of keeper, is for making the keeper as simple as possible
 			for (int i = 0; i < index_config.retryTimes; i ++) {
-				// TODO: testing
-				System.out.println("retried: " + (i+1));
+				
+				if (i != 0) {
+					System.out.println("retried: " + (i));
+				}
 				
 				if (kpr.require_lock(term, threadNum) == 1) { // successfully required the lock
-					postUnit.currentId = pc.postingId;
+					postUnit.currentId = pc.postingId; // even if the old unit has the id it will be reset
 					postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
-					pc.postingId ++;
+					pc.postingId ++; // TODO: here the id is being updated, should I use a different method to only load the persisted ids?
 					
 					ArrayList<Long> postingUnitIds = lexicon.get(term); // get the posting list
 					long previousUnitId = postingUnitIds.get(postingUnitIds.size() - 1);
@@ -97,13 +104,15 @@ public class index {
 					
 					// link units, for scanning
 					postUnit.link_to_previous(prevUnit);
-					prevUnit.link_to_next(postUnit);
+					if (prevUnit != null) {
+						prevUnit.link_to_next(postUnit);
+					}
 					addedUnitId = postUnit.currentId;
 					break;
 				}
 			}
 		} catch(Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 		} 
 		finally {
 			kpr.release_lock(term, threadNum);
@@ -133,17 +142,210 @@ public class index {
 	// persist the inverted index on to local hard disk, 
 	// with the posting units written in line in the order of posting list
 	public void persist_index() {
-		for (String term : lexicon.keySet()) {
-			ArrayList<Long> postingUnitIds = new ArrayList<Long>();
+		try {
+			// does not need to lock up the index, as the inverted-index is not dynamically adding on real time
+			// 1. generate, 2. persist, 3. lazily load and serve
+			// such that the generation process will consume the biggest amount of memory
 			
+			// TODO: persist the offset of terms instead of lexicon??
+			
+			// persist lexicon
+			FileWriter lf = new FileWriter(configs.index_config.lexicon_persistance_path);
+			ArrayList<String> termStrings = new ArrayList<String>();
+			for(String term : lexicon.keySet()) {
+				Long[] termPosting = lexicon.get(term).toArray(new Long[0]); // ArrayList -> String
+				String termString = ""; 
+				// concatenate all the posting unit ids of one term together
+				for(long pUId : termPosting) {
+					termString += " " + pUId;
+				}
+				termStrings.add(term + termString + "\r\n");
+				}
+			for(String tS : termStrings) {
+				lf.write(tS); // write posting units into file, each line per unit
+			}	
+			lf.flush();
+			lf.close();
+			
+			// persist posting list
+			FileWriter pf = new FileWriter(configs.index_config.posting_persistance_path);
+			
+			for(String term : lexicon.keySet()) {
+				ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
+				ArrayList<Long> postingUnitIds = lexicon.get(term);
+				for(Long pUnitId : postingUnitIds) {
+					String pUnitString = postUnitMap.get(pUnitId).flatten();
+					pUnitStrings.add(term + " " + pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+				}
+				
+				for(String uS : pUnitStrings) {
+					pf.write(uS); // write posting units into file, each line per unit
+				}	
+			}
+			pf.flush();
+			pf.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
 	
+	// different from add_posting_unit
+	// does not generate new postingId
+	// does not operate lexicon
+	// only operate the postUnitMap and link the units
+	// thus the persisted posting needs to be correct, 
+	// if one unit miss its previous one, it will lead to error
+	public long load_posting_unit(String term, posting_unit postUnit) {
+		long addedUnitId = -1L;
+		
+		try {
+			// only one thread sequentially scanning the posting list, does not need the locks
+			postUnitMap.put(postUnit.currentId, postUnit);
+			
+			// link units
+			long previousUnitId = postUnit.previousId;
+			posting_unit prevUnit = postUnitMap.get(previousUnitId); // get the instance of previous unit
+			
+			postUnit.link_to_previous(prevUnit);
+			if (prevUnit != null) {
+				prevUnit.link_to_next(postUnit);
+			}
+			addedUnitId = postUnit.currentId;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace();
+		}
+		return addedUnitId;
+	}
+	
+	
 	// lazily load the posting list of target terms
-	public long[] load_posting(String[] targetTerms) {
+	public long[] load_index(String[] targetTerms) {
 		long[] loaded_units = new long[] {};
+		HashSet targetTermsSet = new HashSet(Arrays.asList(targetTerms));
+		
+		try {
+			// load the whole lexicon firstly, for the early stop of loading posting units
+			FileReader lf = new FileReader(configs.index_config.lexicon_persistance_path);
+			BufferedReader lb = new BufferedReader(lf);
+			
+			String termString;
+			do {
+				termString = lb.readLine();
+				
+				if (termString != null) {
+					termString = termString.trim();
+					String[] tempList = termString.split(" "); // term p1 p2 p3 ...
+					String term = tempList[0];
+					String[] pUnitIds = Arrays.asList(tempList).subList(1, tempList.length).toArray(new String[0]); // loading from the file, due to not using json, its strings
+					
+					// prepare the arrayList of posting Ids for each term
+					// not initialising the starter units for term
+					ArrayList<Long> postingUnitIds = new ArrayList<Long>();
+					lexicon.put(term, postingUnitIds);  
+					
+					for (String pUnitId : pUnitIds) {
+						lexicon.get(term).add(Long.parseLong(pUnitId)); // String -> Long
+					}
+					
+					// create lock in keeper
+					kpr.add_term(term);
+				}
+			} while (termString != null);
+			lb.close();
+			lf.close();
+			
+			// calculate how many units need to be loaded in total
+			long totalUnits = 0L;
+			for (String term : targetTerms) {
+				totalUnits += lexicon.get(term).size();
+			}
+			
+			// load the posting lists of targetTerms
+			long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
+			
+			FileReader pf = new FileReader(configs.index_config.posting_persistance_path);
+			BufferedReader pb = new BufferedReader(pf);
+			
+			String pUnitString;
+			do {
+				pUnitString = pb.readLine();
+				
+				if (pUnitString != null) {
+					pUnitString = pUnitString.trim();
+					String term = pUnitString.split(" ")[0];
+					String persistedUnit = pUnitString.substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
+					
+					if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
+						load_posting_unit(term,  posting_unit.deflatten(persistedUnit)); 
+						addedUnits ++;
+					}
+					
+					// early stop
+					// so that do not scan the whole posting list each time load the posting list into memory
+					// TODO: this in fact is not a very efficient early stopping strategy, use offset?
+					if (addedUnits >= totalUnits) {
+						break;
+					}
+					
+				}
+			} while(pUnitString != null);
+			
+
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 		return loaded_units;
+	}
+	
+	
+	
+	// reset index
+	public void clear_index() {
+		postUnitMap = new HashMap<Long, posting_unit>();
+		lexicon = new HashMap<String, ArrayList<Long>>();
+		kpr.lexiconLockMap = new HashMap<String, HashMap<String, Long>>();
+		pc = new counters();
+	}
+	
+	
+	// re-generate the posint unit ids
+	// fully scan the persisted posting
+	// single threading one, as only processing the persisted posting instead of the docs
+	public void reload_index() {
+		
+		clear_index();
+		
+		try {
+			// load the posting lists of targetTerms
+			FileReader pf = new FileReader(configs.index_config.posting_persistance_path);
+			BufferedReader pb = new BufferedReader(pf);
+			
+			String pUnitString;
+			do {
+				pUnitString = pb.readLine();
+				
+				if (pUnitString != null) {
+					pUnitString = pUnitString.trim();
+					String term = pUnitString.split(" ")[0];
+					String persistedUnit = pUnitString.substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
+					
+					if (lexicon.containsKey(term) == false) { // add the term into lexicon for the first time it was seen
+						add_term(term);
+					}
+					posting_unit pUnit = posting_unit.deflatten(persistedUnit);
+					if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
+						add_posting_unit(term, pUnit); // re assign the ids, and link the units
+					}
+				}
+			} while(pUnitString != null);
+		
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	

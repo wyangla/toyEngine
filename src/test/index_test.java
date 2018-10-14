@@ -73,18 +73,80 @@ public class index_test {
 		kpr.lexiconLockMap.put("a", metaMap_1);
 		
 		HashMap<String, Long> metaMap_2 = new HashMap<String, Long> ();
-		metaMap_2.put("termLock", System.currentTimeMillis()); // the lock cannot be required, -5000 successful
+		metaMap_2.put("termLock", System.currentTimeMillis() - 5000); // without -5000 the lock cannot be required, otherwise successful
 		metaMap_2.put("threadNum", 2L);
 		kpr.lexiconLockMap.put("c", metaMap_2);
 		
 		posting_unit postUnit = new posting_unit();
+		postUnit.uProp.put("tfidf", 3.33);
 		idx.add_posting_unit("a", postUnit); // successful
-		idx.add_posting_unit("c", postUnit); // failed
+		
+		posting_unit postUnit_2 = new posting_unit();
+		postUnit_2.uProp.put("tfidf", 3.35);
+		idx.add_posting_unit("c", postUnit_2); // without - 5000 failed
 		
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
 		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+		System.out.println("");
 	}
+	
+	
+	// test persist_index
+	public void test_6() {
+		idx.persist_index();
+	}
+	
+	// clear index
+	public void test_7() {
+		idx.clear_index();
+		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
+		System.out.println("lexicon: " + idx.lexicon.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+		System.out.println("");
+	}
+	
+	
+	// test load index
+	public void test_8() {
+		long t1 = System.currentTimeMillis();
+		idx.load_index(new String[] {"a", "c"});
+		
+		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
+		System.out.println("lexicon: " + idx.lexicon.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+		long t2 = System.currentTimeMillis();
+		System.out.println("" + (t2 - t1));
+		
+		for (Long pUnitId : idx.postUnitMap.keySet()) {
+			posting_unit pUnit = idx.postUnitMap.get(pUnitId);
+			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString());
+			
+		}
+		System.out.println("");
+	}
+	
+	
+	// test reload the index
+	public void test_9() {
+		long t1 = System.currentTimeMillis();
+		idx.reload_index();
+		
+		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
+		System.out.println("lexicon: " + idx.lexicon.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+		long t2 = System.currentTimeMillis();
+		System.out.println("" + (t2 - t1));
+		
+		for (Long pUnitId : idx.postUnitMap.keySet()) {
+			posting_unit pUnit = idx.postUnitMap.get(pUnitId);
+			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString());
+			
+		}
+		System.out.println("");
+	}
+	
+	
 	
 	public static void main(String[] args) {
 		index_test idx_test = new index_test();
@@ -93,6 +155,10 @@ public class index_test {
 		idx_test.test_3();
 		idx_test.test_4();
 		idx_test.test_5();
+		idx_test.test_6();
+		idx_test.test_7();
+		idx_test.test_8();
+		idx_test.test_9();
 		
 	}
 }

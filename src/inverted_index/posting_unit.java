@@ -48,7 +48,8 @@ public class posting_unit {
 	
 	// serialisation of the unit
 	// does not care about the linking, which is handled within the index
-	// format: currentId, nextId, previousId, uProp
+	// format: [term] currentId nextId previousId {uProp}
+	// [term] is added in index
 	public String flatten() {
 		JSONObject uPropJson = new JSONObject(uProp);
 		return String.format("%s %s %s %s", currentId, nextId, previousId, uPropJson);
@@ -57,7 +58,7 @@ public class posting_unit {
 	
 	// load the serialisation into unit object
 	// the linking is handled by index
-	public posting_unit deflatten(String persistedUnit) {
+	public static posting_unit deflatten(String persistedUnit) {
 		posting_unit pUnit = new posting_unit();
 		String[] pUnitFields = persistedUnit.split(" ");
 		
