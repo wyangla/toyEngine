@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="external_tools/json-20170516.jar"/>
 	<classpathentry kind="lib" path="external_tools/slf4j-api-1.7.25.jar"/>
 	<classpathentry kind="lib" path="external_tools/slf4j-simple-1.7.25.jar"/>
+	<classpathentry kind="lib" path="external_tools/py4j0.10.7.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

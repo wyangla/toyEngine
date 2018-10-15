@@ -120,7 +120,7 @@ public class index_test {
 		
 		for (Long pUnitId : idx.postUnitMap.keySet()) {
 			posting_unit pUnit = idx.postUnitMap.get(pUnitId);
-			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString());
+			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString() + "status: " + pUnit.status);
 			
 		}
 		System.out.println("");
@@ -130,11 +130,10 @@ public class index_test {
 	// test reload the index
 	public void test_9() {
 		long t1 = System.currentTimeMillis();
-		idx.reload_index();
 		
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+		idx.reload_index();
+		idx.display_content();
+		
 		long t2 = System.currentTimeMillis();
 		System.out.println("" + (t2 - t1));
 		

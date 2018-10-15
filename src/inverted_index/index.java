@@ -317,6 +317,12 @@ public class index {
 	// single threading one, as only processing the persisted posting instead of the docs
 	public void reload_index() {
 		
+		// if not cleaned by cleaner, this reload will not work as expected,
+		// as the deleted unit are still in the postUnitMap
+		// TODO: alternatively, the cleaner could be running in an independent process
+		cleaner clr = new cleaner();
+		clr.clean();
+		persist_index();
 		clear_index();
 		
 		try {
@@ -350,8 +356,19 @@ public class index {
 	
 	
 	
+	// display the lexicon, postUnitMap, lexiconLockMap
+	public void display_content() {
+		System.out.println("postUnitMap: " + this.postUnitMap.entrySet());
+		System.out.println("lexicon: " + this.lexicon.entrySet());
+		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+		System.out.println("");
+	}
+	
+	
+	
 	public static void main(String[] args) {
-		index idx = new index();		
+		index idx = new index();	
+		idx.display_content();
 	}
 }
 

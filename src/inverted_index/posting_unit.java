@@ -52,7 +52,7 @@ public class posting_unit {
 	// [term] is added in index
 	public String flatten() {
 		JSONObject uPropJson = new JSONObject(uProp);
-		return String.format("%s %s %s %s", currentId, nextId, previousId, uPropJson);
+		return String.format("%s %s %s %s %s", currentId, nextId, previousId, uPropJson, status);
 	}
 	
 	
@@ -65,8 +65,9 @@ public class posting_unit {
 		pUnit.currentId = Long.parseLong(pUnitFields[0]);
 		pUnit.nextId = Long.parseLong(pUnitFields[1]);
 		pUnit.previousId = Long.parseLong(pUnitFields[2]);
+		pUnit.status = Integer.parseInt(pUnitFields[4]);
 		
-		JSONObject uPropJson = new JSONObject(pUnitFields[pUnitFields.length - 1]);
+		JSONObject uPropJson = new JSONObject(pUnitFields[3]);
 		Map<String, Object> uProp = uPropJson.toMap(); 
 		for(String p : uProp.keySet()) {
 			pUnit.uProp.put(p, (Double)uProp.get(p));

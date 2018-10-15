@@ -9,9 +9,11 @@ import utils.*;
 // the index is currently being hosted by a single machine
 // so that only need to use task splitting instead of the global lock?
 public class cleaner {
-	// TODO: change to the web reference in future
-	private index idx = index.get_instance();
-	private keeper kpr = keeper.get_instance();
+	
+	// TODO: change to the web reference in future?
+	index idx = index.get_instance();
+	keeper kpr = keeper.get_instance();
+	
 	
 	// independent threads scanning and cleaning the postUnitMap & lexicon
 	public ArrayList<Long> clean_unit(String[] targetTerms) {
@@ -88,7 +90,7 @@ public class cleaner {
 				System.out.println("deleted units: " + delPostUnitList);
 				
 			} catch(Exception e) {
-				System.out.println(e);
+				e.printStackTrace();
 				
 			} finally {
 				for (String term : availableTargetTerms) { // no matter what, release the lock at the end
@@ -105,12 +107,11 @@ public class cleaner {
 	
 	// multiprocessing
 	public void clean() {
-		cleaner clr = new cleaner();
 		int workerNum = cleaner_config.cleanerWorkerNum;
 		
 		// split the lexicon into workload for each clean worker
 		ArrayList<String> terms = new ArrayList<String>();
-		terms.addAll(clr.idx.lexicon.keySet()); // get the terms
+		terms.addAll(idx.lexicon.keySet()); // get the terms
 		
 		int lexiconLength = terms.size();
 		int loadPerWorker = (int) Math.ceil((double)lexiconLength / (double)workerNum); // workload for each worker
@@ -118,32 +119,26 @@ public class cleaner {
 		
 		Iterator<String> termsIter = terms.iterator();
 		List<String> load_temp = new ArrayList<String>(); // for containing the workload of per worker
-		int j = 0;
-		for (int i = 0; i < lexiconLength + 1; i++) { // +1 is for allowing the iterator.next to over the end
+		for (int i = 0; i < lexiconLength; i++) { // +1 is for allowing the iterator.next to over the end
 			
 			try {
 				load_temp.add( termsIter.next() );
-				j++;
 			} catch(Exception e) {
 				// System.out.println(e);
 				noMoreTerms = 1; // when get to the end of the lexicon, no more terms
 			}
 			
-			if(j >= loadPerWorker || noMoreTerms == 1) { // one workload is ready or no more terms
+			if(load_temp.size() >= loadPerWorker || noMoreTerms == 1) { // one workload is ready or no more terms
 				// TODO: testing
-				// System.out.println("" + load_temp);
-				
+				// System.out.println(">" + load_temp);
 				try {
 					thread_clean ct = new thread_clean( load_temp.toArray(new String[0]), "" + name_generator.thread_name_gen() );
 					ct.start();
-					j = 0;
 					load_temp.clear();
 					
 				} catch(Exception e) {
-					System.out.println(e);
+					e.printStackTrace();
 				}
-
-
 			}
 		}
 	}
@@ -151,5 +146,4 @@ public class cleaner {
 	
 	
 	public void main(String[] args) {}
-
 }
