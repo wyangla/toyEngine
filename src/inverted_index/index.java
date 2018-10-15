@@ -22,7 +22,7 @@ public class index {
 		return index_ins;
 	}
 	
-	
+
 	
 	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
 	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
@@ -320,7 +320,7 @@ public class index {
 		// if not cleaned by cleaner, this reload will not work as expected,
 		// as the deleted unit are still in the postUnitMap
 		// TODO: alternatively, the cleaner could be running in an independent process
-		cleaner clr = new cleaner();
+		cleaner clr = cleaner.getInstance();
 		clr.clean();
 		persist_index();
 		clear_index();
@@ -357,11 +357,19 @@ public class index {
 	
 	
 	// display the lexicon, postUnitMap, lexiconLockMap
-	public void display_content() {
+	public HashMap<String, String> display_content() {
 		System.out.println("postUnitMap: " + this.postUnitMap.entrySet());
 		System.out.println("lexicon: " + this.lexicon.entrySet());
 		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 		System.out.println("");
+		
+		HashMap<String, String> infoMap = new HashMap<String, String>();
+		infoMap.put("postUnitMap: ", this.postUnitMap.entrySet().toString());
+		infoMap.put("lexicon: ", this.lexicon.entrySet().toString());
+		infoMap.put("lexiconLockMap: ", kpr.lexiconLockMap.entrySet().toString());
+		
+		return infoMap;
+		
 	}
 	
 	

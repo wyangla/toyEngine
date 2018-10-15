@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class cleaner_test {
 	index idx = index.get_instance();
-	cleaner clr = new cleaner();
+	cleaner clr = cleaner.getInstance();
 	keeper kpr= keeper.get_instance();
 	Logger lgr = LoggerFactory.getLogger(cleaner_test.class);
 	

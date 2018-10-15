@@ -10,9 +10,18 @@ import utils.*;
 // so that only need to use task splitting instead of the global lock?
 public class cleaner {
 	
+	// singleton
+	// ref: http://www.runoob.com/design-pattern/singleton-pattern.html
+	private static cleaner clr = new cleaner();
+	private cleaner() {};
+	public static cleaner getInstance() {
+		return clr;
+	}
+	
+	
 	// TODO: change to the web reference in future?
-	index idx = index.get_instance();
-	keeper kpr = keeper.get_instance();
+	private index idx = index.get_instance();
+	private keeper kpr = keeper.get_instance();
 	
 	
 	// independent threads scanning and cleaning the postUnitMap & lexicon
@@ -117,9 +126,16 @@ public class cleaner {
 		int loadPerWorker = (int) Math.ceil((double)lexiconLength / (double)workerNum); // workload for each worker
 		int noMoreTerms = 0; // flag for indicating no more terms for clean, 0 still have rest, 1 no more rest
 		
+		// TODO: testing
+		System.out.println("<loadPerWorker> "+ loadPerWorker);
+		
 		Iterator<String> termsIter = terms.iterator();
 		List<String> load_temp = new ArrayList<String>(); // for containing the workload of per worker
-		for (int i = 0; i < lexiconLength; i++) { // +1 is for allowing the iterator.next to over the end
+		
+		for (int i = 0; i < lexiconLength + 1; i++) { 
+			// +1 is for allowing the iterator.next to over the end, 
+			// when there are workload == n * loadPerWorker, there will be one more extra thread created and do nothing
+			// this extra thread will be cheaper than the load_temp.isempty() check every loop?
 			
 			try {
 				load_temp.add( termsIter.next() );
