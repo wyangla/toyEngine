@@ -149,6 +149,7 @@ public class index {
 	public long add_posting_unit(String persistedUnit) {
 		String[] tempList = persistedUnit.split(" ");
 		String term = tempList[0];
+		add_term(term); // no matter what try to add the term firstly
 		posting_unit postUnit = posting_unit.deflatten(persistedUnit.replaceAll(term + " ", ""));
 		long addedUnitId = _add_posting_unit(term, postUnit);
 		return addedUnitId;

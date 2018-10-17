@@ -1,4 +1,2 @@
-a 0 4 -1 {} -- 1
-a 4 -1 0 {"tfidf":3.33} -- 1
-c 2 5 -1 {} -- 1
-c 5 -1 2 {"tfidf":3.35} -- 1
+place 0 1 -1 {} -- 1
+place 1 -1 0 {"tf":1,"oh":1} /test/-Km-gkgaAJAx37yEHIERDg 1

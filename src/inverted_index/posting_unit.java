@@ -59,9 +59,10 @@ public class posting_unit {
 	
 	// load the serialisation into unit object
 	// the linking is handled by index
-	public static posting_unit deflatten(String persistedUnit) {
+	// no term in persistedUnitNoTerm, this is because the posting unit it self does not care about the term
+	public static posting_unit deflatten(String persistedUnitNoTerm) {
 		posting_unit pUnit = new posting_unit();
-		String[] pUnitFields = persistedUnit.split(" ");
+		String[] pUnitFields = persistedUnitNoTerm.split(" ");
 		
 		pUnit.currentId = Long.parseLong(pUnitFields[0]);
 		pUnit.nextId = Long.parseLong(pUnitFields[1]);
@@ -72,7 +73,7 @@ public class posting_unit {
 		JSONObject uPropJson = new JSONObject(pUnitFields[3]);
 		Map<String, Object> uProp = uPropJson.toMap(); 
 		for(String p : uProp.keySet()) {
-			pUnit.uProp.put(p, (Double)uProp.get(p));
+			pUnit.uProp.put(p, Double.parseDouble("" + uProp.get(p)));
 		}
 		
 		return pUnit;
