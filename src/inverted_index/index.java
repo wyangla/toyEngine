@@ -80,7 +80,7 @@ public class index {
 	
 	// the analysing of doc and find the term:postUnit pair is handled by a higher level
 	// used as the sequentially add, the posting list and lexicon growing at the same time
-	public long add_posting_unit(String term, posting_unit postUnit) {
+	private long _add_posting_unit(String term, posting_unit postUnit) {
 		String threadNum = "" + name_generator.thread_name_gen();
 		long addedUnitId = -1L;
 		
@@ -122,6 +122,14 @@ public class index {
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
 		}
 		
+		return addedUnitId;
+	}
+	
+	
+	// provided in APIs
+	public long add_posting_unit(String term, String persistedUnit) {
+		posting_unit postUnit = posting_unit.deflatten(persistedUnit);
+		long addedUnitId = _add_posting_unit(term, postUnit);
 		return addedUnitId;
 	}
 	
@@ -344,7 +352,7 @@ public class index {
 					}
 					posting_unit pUnit = posting_unit.deflatten(persistedUnit);
 					if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
-						add_posting_unit(term, pUnit); // re assign the ids, and link the units
+						_add_posting_unit(term, pUnit); // re assign the ids, and link the units
 					}
 				}
 			} while(pUnitString != null);
@@ -368,8 +376,7 @@ public class index {
 		infoMap.put("lexicon: ", this.lexicon.entrySet().toString());
 		infoMap.put("lexiconLockMap: ", kpr.lexiconLockMap.entrySet().toString());
 		
-		return infoMap;
-		
+		return infoMap;	
 	}
 	
 	

@@ -18,6 +18,7 @@ public class posting_unit {
 	public HashMap<String, Double> uProp = new HashMap<String, Double>(); // for storing properties like tfidf, etc.
 	
 	public int status = 1; // 1 linked, 0 disconnected
+	public String docId = "--"; // the unique id (path) of doc in the file system
 	
 	
 	
@@ -48,11 +49,11 @@ public class posting_unit {
 	
 	// serialisation of the unit
 	// does not care about the linking, which is handled within the index
-	// format: [term] currentId nextId previousId {uProp}
+	// format: [term] currentId nextId previousId {uProp} docId status
 	// [term] is added in index
 	public String flatten() {
 		JSONObject uPropJson = new JSONObject(uProp);
-		return String.format("%s %s %s %s %s", currentId, nextId, previousId, uPropJson, status);
+		return String.format("%s %s %s %s %s %s", currentId, nextId, previousId, uPropJson, docId, status);
 	}
 	
 	
@@ -65,7 +66,8 @@ public class posting_unit {
 		pUnit.currentId = Long.parseLong(pUnitFields[0]);
 		pUnit.nextId = Long.parseLong(pUnitFields[1]);
 		pUnit.previousId = Long.parseLong(pUnitFields[2]);
-		pUnit.status = Integer.parseInt(pUnitFields[4]);
+		pUnit.docId = pUnitFields[4];
+		pUnit.status = Integer.parseInt(pUnitFields[5]);
 		
 		JSONObject uPropJson = new JSONObject(pUnitFields[3]);
 		Map<String, Object> uProp = uPropJson.toMap(); 

@@ -23,7 +23,7 @@ public class cleaner_test {
 		for (String term : termList) {
 			for(int i = 0; i < 2; i ++) {
 				posting_unit postUnit = new posting_unit();
-				idx.add_posting_unit(term, postUnit);
+				idx.add_posting_unit(term, postUnit.flatten());
 			}
 		}
 		

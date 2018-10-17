@@ -34,7 +34,7 @@ public class index_test {
 	// add_posting_unit
 	public void test_3() {
 		posting_unit postUnit = new posting_unit();
-		idx.add_posting_unit("a", postUnit);
+		idx.add_posting_unit("a", postUnit.flatten());
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
 		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
@@ -79,11 +79,11 @@ public class index_test {
 		
 		posting_unit postUnit = new posting_unit();
 		postUnit.uProp.put("tfidf", 3.33);
-		idx.add_posting_unit("a", postUnit); // successful
+		idx.add_posting_unit("a", postUnit.flatten()); // successful
 		
 		posting_unit postUnit_2 = new posting_unit();
 		postUnit_2.uProp.put("tfidf", 3.35);
-		idx.add_posting_unit("c", postUnit_2); // without - 5000 failed
+		idx.add_posting_unit("c", postUnit_2.flatten()); // without - 5000 failed
 		
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
@@ -120,7 +120,7 @@ public class index_test {
 		
 		for (Long pUnitId : idx.postUnitMap.keySet()) {
 			posting_unit pUnit = idx.postUnitMap.get(pUnitId);
-			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString() + "status: " + pUnit.status);
+			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString() + " docId: " + pUnit.docId + " status: " + pUnit.status);
 			
 		}
 		System.out.println("");
@@ -139,7 +139,7 @@ public class index_test {
 		
 		for (Long pUnitId : idx.postUnitMap.keySet()) {
 			posting_unit pUnit = idx.postUnitMap.get(pUnitId);
-			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString());
+			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString() + " docId: " + pUnit.docId + " status: " + pUnit.status);
 			
 		}
 		System.out.println("");
