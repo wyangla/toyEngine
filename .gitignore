@@ -6,5 +6,5 @@
 *.pyc
 logs
 /corpus/*
-/persistance/
+/persistance/*
 /bin/
