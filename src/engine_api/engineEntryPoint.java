@@ -53,8 +53,8 @@ public class engineEntryPoint {
 	}
 	
 	// persistedUnit: [term<String>] currentId<Long> nextId<Long> previousId<Long> {uProp}<String, Long> docId<String> status<Integer>
-	public long add_posting_unit(String term, String persistedUnit) {
-		long addedUnitId = idx.add_posting_unit(term, persistedUnit);
+	public long add_posting_unit(String persistedUnit) {
+		long addedUnitId = idx.add_posting_unit(persistedUnit);
 		return addedUnitId;
 	}
 	

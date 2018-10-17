@@ -57,9 +57,26 @@ public class index {
 	}
 	
 	
+	// for checking if one term is already existing in the inverted index 
+	private int check_term_existance(String term) {
+		int notExistanceFlag = 1; // 1 term not existing, -1 term existing 
+		if(lexicon.containsKey(term) == true) {
+			notExistanceFlag = -1;
+		}
+		return notExistanceFlag;
+	}
+	
+	
 	// add a new term to the inverted index, include add a new term to the lexicon and add add new 
+	// return -1 means the term is already existing in the inverted-index
 	public long add_term(String term) {
-		long firstUnitId = ini_posting_list(term);
+		long firstUnitId;
+		int notExistanceFlag = check_term_existance(term);
+		if(notExistanceFlag == 1) {
+			firstUnitId = ini_posting_list(term); // when the term is not existing, initialise the posting list for it
+		} else {
+			firstUnitId = -1; // when the term is existing
+		}
 		return firstUnitId;
 	}
 	
@@ -127,8 +144,12 @@ public class index {
 	
 	
 	// provided in APIs
-	public long add_posting_unit(String term, String persistedUnit) {
-		posting_unit postUnit = posting_unit.deflatten(persistedUnit);
+	// [term] currentId nextId previousId {uProp} docId status
+	// e.g. place 2 -1 -1 {} -- 1
+	public long add_posting_unit(String persistedUnit) {
+		String[] tempList = persistedUnit.split(" ");
+		String term = tempList[0];
+		posting_unit postUnit = posting_unit.deflatten(persistedUnit.replaceAll(term + " ", ""));
 		long addedUnitId = _add_posting_unit(term, postUnit);
 		return addedUnitId;
 	}
