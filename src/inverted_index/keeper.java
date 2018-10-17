@@ -39,7 +39,7 @@ public class keeper {
 	public int require_lock(String term, String threadNum) {
 		int required;  // 0 not required, 1 required
 		// TODO: test
-		System.out.println(term + "!");
+		// System.out.println(term + "!");
 		if (this.lexiconLockMap.get(term).get("termLock") == 0) { // if one term is not being modifying, like adding / deleting units
 			this.lexiconLockMap.get(term).put("termLock", System.currentTimeMillis()); // add lock, record locking time
 			this.lexiconLockMap.get(term).put("threadNum", Long.parseLong(threadNum)); // record the thread that required the lock, for update and automatically release

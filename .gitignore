@@ -5,6 +5,6 @@
 *.zip
 *.pyc
 logs
-corpus/*
-persistance/*
-/bin/
+corpus/
+persistance/
+bin/
