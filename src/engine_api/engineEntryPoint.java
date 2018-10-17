@@ -72,7 +72,8 @@ public class engineEntryPoint {
 		return addedUnitId;
 	}
 	
-	public long[] load_index(String[] targetTerms) {
+	public long[] load_index(ArrayList<String> targetTermsAL) {
+		String[] targetTerms = targetTermsAL.toArray(new String[0]); // (String[]) 
 		long[] loaded_units = idx.load_index(targetTerms);
 		return loaded_units;
 	}
