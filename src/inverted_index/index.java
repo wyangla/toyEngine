@@ -3,11 +3,11 @@ package inverted_index;
 import java.io.*;
 import java.util.*;
 
-import org.json.*;
-
 import configs.index_config;
 import utils.name_generator;
 import exceptions.*;
+
+import utils.*;
 
 
 
@@ -384,29 +384,6 @@ public class index {
 		}
 	}
 	
-	
-	
-	// display the lexicon, postUnitMap, lexiconLockMap
-	public HashMap<String, String> display_content() {
-		System.out.println("postUnitMap: " + this.postUnitMap.entrySet());
-		System.out.println("lexicon: " + this.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-		System.out.println("");
-		
-		HashMap<String, String> infoMap = new HashMap<String, String>();
-		infoMap.put("postUnitMap: ", this.postUnitMap.entrySet().toString());
-		infoMap.put("lexicon: ", this.lexicon.entrySet().toString());
-		infoMap.put("lexiconLockMap: ", kpr.lexiconLockMap.entrySet().toString());
-		
-		return infoMap;	
-	}
-	
-	
-	
-	public static void main(String[] args) {
-		index idx = new index();	
-		idx.display_content();
-	}
 }
 
 

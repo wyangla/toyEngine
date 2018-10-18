@@ -1,6 +1,7 @@
 package test;
 import inverted_index.*;
 import java.util.*;
+import probes.*;
 
 
 public class index_test {
@@ -8,6 +9,7 @@ public class index_test {
 	
 	index idx = index.get_instance();
 	keeper kpr = keeper.get_instance();
+	index_probe idxProb = new index_probe();
 	
 	// add_term
 	// ini_posting_list
@@ -132,7 +134,7 @@ public class index_test {
 		long t1 = System.currentTimeMillis();
 		
 		idx.reload_index();
-		idx.display_content();
+		idxProb.display_content("Absolutely");
 		
 		long t2 = System.currentTimeMillis();
 		System.out.println("" + (t2 - t1));

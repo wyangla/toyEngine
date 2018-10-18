@@ -2,6 +2,8 @@ package engine_api;
 
 import py4j.GatewayServer;
 import inverted_index.*;
+import probes.index_probe;
+
 import java.util.*;
 
 
@@ -12,7 +14,7 @@ public class engineEntryPoint {
 	private index idx = index.get_instance();
 	private keeper kpr = keeper.get_instance();
 	private cleaner clr = cleaner.getInstance();
-	
+	index_probe idxProb = new index_probe();
 	
 	
 	// main objects 
@@ -86,11 +88,17 @@ public class engineEntryPoint {
 		idx.reload_index();
 	}
 	
-	public HashMap<String, String> display_content() {
-		HashMap<String, String> infoMap = idx.display_content();
+	// print the whole inverted-index
+	public HashMap<String, String> display_content(String areYouSureAboutPrintTheWholeIndex) {
+		HashMap<String, String> infoMap = idxProb.display_content(areYouSureAboutPrintTheWholeIndex);
 		return infoMap;
 	}
 	
+	// only print the statistic information of the inverted-index
+	public HashMap<String, String> show() {
+		HashMap<String, String> infoMap = idxProb.show();
+		return infoMap;
+	}
 	
 	
 	// cleaner index
