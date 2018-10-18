@@ -4,6 +4,10 @@ import java.lang.reflect.*; // reflection
 import java.util.HashMap;
 import org.json.*;
 
+import configs.scanner_config;
+import inverted_index.*;
+
+
 public class class_loader {
 	public int a = 1;
 	public int b = 2;
@@ -56,5 +60,26 @@ public class class_loader {
 		JSONObject sRec = new JSONObject(sJson.toString()); // String -> Map
 		System.out.println(sRec.toMap().get("a").getClass()); // json can automatically retrieve data type
 		
+		
+		// test getMethod
+		// TODO: the method here is already changed
+		try {
+			Class operationClass = Class.forName(scanner_config.pluginPath + "delete_doc");
+			try {
+				
+				Method conduct = operationClass.getMethod("conduct", posting_unit.class, String.class);
+				posting_unit pUnit = new posting_unit();
+				pUnit.docId = "test";
+				conduct.invoke(operationClass, pUnit, "test");
+				System.out.println(pUnit.status); // using DELUNIT operation here, so status should be 0
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
