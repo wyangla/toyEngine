@@ -355,86 +355,11 @@ public class index {
 	}
 	
 	
-//	// TODO: to be deprecated
-//	// lazily load the posting list of target terms
-//	// TODO: add check of whether the posting list already exist
-//	public long[] load_index(String[] targetTerms) {
-//		long[] loaded_units = new long[] {};
-//		HashSet targetTermsSet = new HashSet(Arrays.asList(targetTerms));
-//		
-//		try {
-//			// load the whole lexicon firstly, for the early stop of loading posting units
-//			FileReader lf = new FileReader(configs.index_config.lexicon_persistance_path);
-//			BufferedReader lb = new BufferedReader(lf);
-//			
-//			String termString;
-//			do {
-//				termString = lb.readLine();
-//				
-//				if (termString != null) {
-//					termString = termString.trim();
-//					String[] tempList = termString.split(" "); // term p1 p2 p3 ...
-//					String term = tempList[0];
-//					String[] pUnitIds = Arrays.asList(tempList).subList(1, tempList.length).toArray(new String[0]); // loading from the file, due to not using json, its strings
-//					
-//					// prepare the arrayList of posting Ids for each term
-//					// not initialising the starter units for term
-//					ArrayList<Long> postingUnitIds = new ArrayList<Long>();
-//					lexicon.put(term, postingUnitIds);  
-//					
-//					for (String pUnitId : pUnitIds) {
-//						lexicon.get(term).add(Long.parseLong(pUnitId)); // String -> Long
-//					}
-//					
-//					// create lock in keeper
-//					kpr.add_term(term);
-//				}
-//			} while (termString != null);
-//			lb.close();
-//			lf.close();
-//			
-//			// calculate how many units need to be loaded in total
-//			long totalUnits = 0L;
-//			for (String term : targetTerms) {
-//				totalUnits += lexicon.get(term).size();
-//			}
-//			
-//			// load the posting lists of targetTerms
-//			long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
-//			
-//			FileReader pf = new FileReader(configs.index_config.posting_persistance_path);
-//			BufferedReader pb = new BufferedReader(pf);
-//			
-//			String pUnitString;
-//			do {
-//				pUnitString = pb.readLine();
-//				
-//				if (pUnitString != null) {
-//					pUnitString = pUnitString.trim();
-//					String term = pUnitString.split(" ")[0];
-//					String persistedUnit = pUnitString.substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
-//					
-//					if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
-//						load_posting_unit(term,  posting_unit.deflatten(persistedUnit)); 
-//						addedUnits ++;
-//					}
-//					
-//					// early stop
-//					// so that do not scan the whole posting list each time load the posting list into memory
-//					// TODO: this in fact is not a very efficient early stopping strategy, use offset?
-//					if (addedUnits >= totalUnits) {
-//						break;
-//					}
-//					
-//				}
-//			} while(pUnitString != null);
-//			
-//
-//		} catch(Exception e) {
-//			e.printStackTrace();
-//		}
-//		return loaded_units;
-//	}
+	// load all the postings into memory, used in reload so as to make sure the reload does not errorly delete terms in file
+	public void load_all_posting() {
+		String[] allTerms = lexicon.keySet().toArray(new String[0]);
+		load_posting(allTerms);
+	}
 	
 	
 	// reset index
@@ -455,6 +380,12 @@ public class index {
 		// as the deleted unit are still in the postUnitMap
 		// TODO: alternatively, the cleaner could be running in an independent process
 		cleaner clr = cleaner.getInstance();
+		
+		// load all the postings into memory; 
+		// without this step, due to the lazy loading of posting list, 
+		// delete_doc will only load small part of units into memory, 
+		// the reload_index will erase the unloaded units from local file
+		load_all_posting();
 		clr.clean();
 		persist_index();
 		clear_index();

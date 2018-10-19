@@ -87,6 +87,11 @@ public class engineEntryPoint {
 		return loaded_units;
 	}
 	
+	// load all the postings into memory
+	public void load_all_posting() {
+		idx.load_all_posting();
+	}
+	
 	public void clear_index() {
 		idx.clear_index();
 	}
