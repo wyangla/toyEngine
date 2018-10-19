@@ -367,7 +367,7 @@ public class index {
 				if (pUnitString != null) {
 					pUnitString = pUnitString.trim();
 					String term = pUnitString.split(" ")[0];
-					String persistedUnit = pUnitString.substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
+					String persistedUnit = pUnitString.replaceFirst(term + " ", ""); // substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
 					
 					if (lexicon.containsKey(term) == false) { // add the term into lexicon for the first time it was seen
 						add_term(term);

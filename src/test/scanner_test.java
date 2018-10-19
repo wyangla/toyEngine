@@ -28,11 +28,14 @@ public class scanner_test {
 	// tasty 2447 2919 2121 {"tf":1,"oh":1} /test_1/EKAN4jw3LsE3631feSaA_g 1
 	// wanted 2393 4144 681 {"tf":1,"oh":1} /test_1/EKAN4jw3LsE3631feSaA_g 1
 	public void test_2() throws Exception{
-		Class operationClass;
-		operationClass = Class.forName(scanner_config.pluginPath + "delete_doc"); // get the plugin class
-		Method setParameters = operationClass.getMethod("set_parameters", String.class); // get the set parameter method
-		setParameters.invoke(operationClass, "/test_1/EKAN4jw3LsE3631feSaA_g"); // set the parameter
-		System.out.println(snr.scan(new String[] {"wanted", "tasty"}, operationClass)); // input the class which contains the parameters
+		
+//		Class operationClass;
+//		operationClass = Class.forName(scanner_config.pluginPath + "delete_doc"); // get the plugin class
+//		Method setParameters = operationClass.getMethod("set_parameters", String.class); // get the set parameter method
+//		setParameters.invoke(operationClass, "/test_1/EKAN4jw3LsE3631feSaA_g"); // set the parameter
+		
+		delete_doc.set_parameters("/test_1/EKAN4jw3LsE3631feSaA_g");
+		System.out.println(snr.scan(new String[] {"wanted", "tasty"}, delete_doc.class)); // input the class which contains the parameters
 	}
 
 	

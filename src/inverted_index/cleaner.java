@@ -80,7 +80,7 @@ public class cleaner {
 		public thread_clean(String[] targetTerms4Clean, String threadNum) { // parameters for assign tasks
 			targetTerms = targetTerms4Clean;
 			thNum = threadNum;
-			System.out.println(String.format("--> thread %s started", thNum));
+			// System.out.println(String.format("--> thread %s started", thNum));
 		}
 		
 		public void run() {		
@@ -93,7 +93,7 @@ public class cleaner {
 				}
 				
 				// TODO: testing
-				System.out.println("--> lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+				// System.out.println("--> lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 				availableTargetTerms = availableTargetTerms_temp.toArray(new String[0]); // ArrayList<String> -> String[]
 				ArrayList<Long> delPostUnitList = clean_unit( availableTargetTerms );
 				System.out.println("deleted units: " + delPostUnitList);
@@ -132,6 +132,8 @@ public class cleaner {
 		Iterator<String> termsIter = terms.iterator();
 		List<String> load_temp = new ArrayList<String>(); // for containing the workload of per worker
 		
+		
+		ArrayList<thread_clean> allThreads = new ArrayList<thread_clean>(); // for control the threads all together
 		for (int i = 0; i < lexiconLength + 1; i++) { 
 			// +1 is for allowing the iterator.next to over the end, 
 			// when there are workload == n * loadPerWorker, there will be one more extra thread created and do nothing
@@ -149,12 +151,22 @@ public class cleaner {
 				// System.out.println(">" + load_temp);
 				try {
 					thread_clean ct = new thread_clean( load_temp.toArray(new String[0]), "" + name_generator.thread_name_gen() );
+					allThreads.add(ct);
 					ct.start();
 					load_temp.clear();
 					
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
+			}
+		}
+	
+		// block until all threads are finished
+		for(thread_clean ct : allThreads) {
+			try {
+				ct.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}

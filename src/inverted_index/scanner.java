@@ -15,7 +15,7 @@ public class scanner {
 		
 		if(pUnitCurrent != null) {
 
-			Method conduct = operationOnPostingList.getMethod("conduct", posting_unit.class); // TODO, the class object should already provide the necessary parameters
+			Method conduct = operationOnPostingList.getMethod("conduct", posting_unit.class); // the class object already provide the necessary parameters
 			long affectedUnitId = (long)conduct.invoke(operationOnPostingList, pUnitCurrent);// object -> long
 			if(affectedUnitId != -1) { // -1 denotes the processed unit was not affected
 				affectedUnits.add(affectedUnitId); 

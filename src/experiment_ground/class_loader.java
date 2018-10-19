@@ -64,7 +64,7 @@ public class class_loader {
 		// test getMethod
 		// TODO: the method here is already changed
 		try {
-			Class operationClass = Class.forName(scanner_config.pluginPath + "delete_doc");
+			Class operationClass = Class.forName("inverted_index.scanner_plugins.delete_doc");
 			try {
 				
 				Method conduct = operationClass.getMethod("conduct", posting_unit.class, String.class);

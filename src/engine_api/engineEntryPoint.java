@@ -15,7 +15,7 @@ public class engineEntryPoint {
 	private keeper kpr = keeper.get_instance();
 	private cleaner clr = cleaner.getInstance();
 	index_probe idxProb = new index_probe();
-	
+	index_advanced_operations advOps = new index_advanced_operations();
 	
 	// main objects 
 	public index getIndex() {
@@ -44,7 +44,7 @@ public class engineEntryPoint {
 	
 	
 	
-	// index APIs
+	// basic operations defined in the index
 	public long add_term(String term) {
 		long firstUnitId = idx.add_term(term);
 		return firstUnitId;
@@ -100,10 +100,22 @@ public class engineEntryPoint {
 		return infoMap;
 	}
 	
-	
 	// cleaner index
 	public void clean_index() {
 		clr.clean();
+	}
+	
+	
+	
+	// advanced operations
+	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
+		ArrayList<Long> affectedUnits = new ArrayList<Long>();
+		try {
+			affectedUnits = advOps.delete_doc(containedTerms.toArray(new String[0]), targetDocName);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return affectedUnits;
 	}
 	
 	
