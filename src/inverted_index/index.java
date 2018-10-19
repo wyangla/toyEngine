@@ -181,39 +181,50 @@ public class index {
 			
 			// persist lexicon
 			FileWriter lf = new FileWriter(configs.index_config.lexicon_persistance_path);
-			ArrayList<String> termStrings = new ArrayList<String>();
-			for(String term : lexicon.keySet()) {
-				Long[] termPosting = lexicon.get(term).toArray(new Long[0]); // ArrayList -> String
-				String termString = ""; 
-				// concatenate all the posting unit ids of one term together
-				for(long pUId : termPosting) {
-					termString += " " + pUId;
+			try {
+				ArrayList<String> termStrings = new ArrayList<String>();
+				for(String term : lexicon.keySet()) {
+					Long[] termPosting = lexicon.get(term).toArray(new Long[0]); // ArrayList -> String
+					String termString = ""; 
+					// concatenate all the posting unit ids of one term together
+					for(long pUId : termPosting) {
+						termString += " " + pUId;
+					}
+					termStrings.add(term + termString + "\r\n");
+					}
+				for(String tS : termStrings) {
+					lf.write(tS); // write posting units into file, each line per unit
 				}
-				termStrings.add(term + termString + "\r\n");
-				}
-			for(String tS : termStrings) {
-				lf.write(tS); // write posting units into file, each line per unit
-			}	
-			lf.flush();
-			lf.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				lf.flush();
+				lf.close();
+			}
 			
 			// persist posting list
 			FileWriter pf = new FileWriter(configs.index_config.posting_persistance_path);
-			
-			for(String term : lexicon.keySet()) {
-				ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
-				ArrayList<Long> postingUnitIds = lexicon.get(term);
-				for(Long pUnitId : postingUnitIds) {
-					String pUnitString = postUnitMap.get(pUnitId).flatten();
-					pUnitStrings.add(term + " " + pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+			try {
+				for(String term : lexicon.keySet()) {
+					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
+					ArrayList<Long> postingUnitIds = lexicon.get(term);
+					for(Long pUnitId : postingUnitIds) {
+						String pUnitString = postUnitMap.get(pUnitId).flatten();
+						pUnitStrings.add(term + " " + pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+					}
+					
+					for(String uS : pUnitStrings) {
+						pf.write(uS); // write posting units into file, each line per unit
+					}	
 				}
-				
-				for(String uS : pUnitStrings) {
-					pf.write(uS); // write posting units into file, each line per unit
-				}	
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				pf.flush();
+				pf.close();
 			}
-			pf.flush();
-			pf.close();
+			
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -387,6 +398,13 @@ public class index {
 		// the reload_index will erase the unloaded units from local file
 		load_all_posting();
 		clr.clean();
+		
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		
 		persist_index();
 		clear_index();
 		
