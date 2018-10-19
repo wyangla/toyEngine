@@ -17,6 +17,13 @@ public class engineEntryPoint {
 	index_probe idxProb = new index_probe();
 	index_advanced_operations advOps = new index_advanced_operations();
 	
+	
+	// start serving
+	private void load_lexicon() {
+		idx.load_lexicon();
+		System.out.println("Lexicon loaded");
+	}
+	
 	// main objects 
 	public index getIndex() {
 		return idx;
@@ -74,9 +81,9 @@ public class engineEntryPoint {
 		return addedUnitId;
 	}
 	
-	public long[] load_index(ArrayList<String> targetTermsAL) {
+	public long[] load_posting(ArrayList<String> targetTermsAL) {
 		String[] targetTerms = targetTermsAL.toArray(new String[0]); // (String[]) 
-		long[] loaded_units = idx.load_index(targetTerms);
+		long[] loaded_units = idx.load_posting(targetTerms);
 		return loaded_units;
 	}
 	
@@ -122,6 +129,8 @@ public class engineEntryPoint {
 	
 	public static void main(String[] args) {
 		engineEntryPoint ep = new engineEntryPoint();
+		ep.load_lexicon(); // load the lexicon into memory firstly
+		
 		GatewayServer gServer = new GatewayServer(ep); 
 		gServer.start();
 	}

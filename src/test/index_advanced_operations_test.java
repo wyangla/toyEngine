@@ -12,7 +12,7 @@ public class index_advanced_operations_test {
 	// test delete_doc
 	public void test_1() {
 		try {
-			idxAdOp.delete_doc(new String[] {"wanted", "tasty"}, "/test_1/EKAN4jw3LsE3631feSaA_g");
+			System.out.print(idxAdOp.delete_doc(new String[] {"wanted", "tasty"}, "/test_1/EKAN4jw3LsE3631feSaA_g"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -26,7 +26,8 @@ public class index_advanced_operations_test {
 		index_advanced_operations_test idxAdOpTest = new index_advanced_operations_test();
 		
 		// prepare the inverted-index
-		idx.load_index(new String[] {"wanted", "tasty"});
+		idx.load_lexicon();
+		idx.load_posting(new String[] {"wanted", "tasty"});
 		idxProbe.show();
 		
 		idxAdOpTest.test_1();

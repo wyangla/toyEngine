@@ -45,7 +45,7 @@ public class scanner {
 	
 	public ArrayList<Long> scan(String[] targetTerms, Class operationOnPostingList){ // input parameter better be not dynamic
 		ArrayList<Long> affectedUnits = new ArrayList<Long> (); // collect Ids of units which are affected
-		idx.load_index(targetTerms); // load the corresponding posting list into memory
+		idx.load_posting(targetTerms); // load the corresponding posting list into memory
 		
 		for(String term : targetTerms) {
 			scan_posting_list(term, operationOnPostingList, affectedUnits);

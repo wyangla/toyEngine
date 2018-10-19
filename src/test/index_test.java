@@ -4,6 +4,7 @@ import java.util.*;
 import probes.*;
 
 
+
 public class index_test {
 	// test basic functionalities
 	
@@ -99,6 +100,7 @@ public class index_test {
 		idx.persist_index();
 	}
 	
+	
 	// clear index
 	public void test_7() {
 		idx.clear_index();
@@ -109,16 +111,22 @@ public class index_test {
 	}
 	
 	
-	// test load index
+	// test load lexicon
 	public void test_8() {
-		long t1 = System.currentTimeMillis();
-		idx.load_index(new String[] {"a", "c"});
+		idx.load_lexicon();
+		idxProb.display_content("Sure");
+	}
+	
+	
+	// test load posting
+	public void test_9() {
+		idx.postUnitMap.put(3L, null); // 3 not the end of a, so "a" should be loaded 
+		idx.load_posting(new String[] {"a", "c"});
+		idxProb.display_content("Sure");
 		
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-		long t2 = System.currentTimeMillis();
-		System.out.println("" + (t2 - t1));
+//		idx.postUnitMap.put(4L, new posting_unit()); // 4 is the end of a, so "a" should not be loaded 
+//		idx.load_posting(new String[] {"a", "c"});
+//		idxProb.display_content("Sure");
 		
 		for (Long pUnitId : idx.postUnitMap.keySet()) {
 			posting_unit pUnit = idx.postUnitMap.get(pUnitId);
@@ -130,15 +138,11 @@ public class index_test {
 	
 	
 	// test reload the index
-	public void test_9() {
-		long t1 = System.currentTimeMillis();
-		
+	public void test_10() {
+		// idxProb.display_content("Sure");
 		idx.reload_index();
-		idxProb.display_content("Absolutely");
-		
-		long t2 = System.currentTimeMillis();
-		System.out.println("" + (t2 - t1));
-		
+		idxProb.display_content("Sure");
+
 		for (Long pUnitId : idx.postUnitMap.keySet()) {
 			posting_unit pUnit = idx.postUnitMap.get(pUnitId);
 			System.out.println("cId: " + pUnit.currentId + " nId: " + pUnit.nextId + " pId: " + pUnit.previousId + " uProp: " + pUnit.uProp.toString() + " docId: " + pUnit.docId + " status: " + pUnit.status);
@@ -160,6 +164,7 @@ public class index_test {
 		idx_test.test_7();
 		idx_test.test_8();
 		idx_test.test_9();
+		idx_test.test_10();
 		
 	}
 }
