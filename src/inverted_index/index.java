@@ -399,12 +399,6 @@ public class index {
 		load_all_posting();
 		clr.clean();
 		
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-		
 		persist_index();
 		clear_index();
 		
