@@ -2,6 +2,9 @@ package test;
 import inverted_index.*;
 import java.util.*;
 import configs.*;
+import inverted_index.keepe_plugins.*;
+import java.util.concurrent.locks.ReentrantLock;
+
 
 public class keeper_test {
 	
@@ -10,34 +13,51 @@ public class keeper_test {
 	
 	
 	// print the entries of lexicon lock map
-	public void print_lexiconLockMap() {
+	public void print_lexiconLockRelatedMaps() {
+		System.out.println(("--print_lexiconLockRelatedMaps"));
+		HashMap<String, HashMap<String, Long>> LockInfoMap = kpr.get_lockInfoMap(lexicon_locker.class);
+		HashMap<String, ReentrantLock> lockMap = kpr.get_lockMap(lexicon_locker.class);
+		
 		// print out the lexiconLockMap
-		for (String term : kpr.lexiconLockMap.keySet()) {
-			System.out.print(term + "--");
-			System.out.println("" + kpr.lexiconLockMap.get(term).entrySet());
+		for (String term : LockInfoMap.keySet()) {
+			System.out.println("\n" + term + "--");
+			System.out.println("INFO: " + LockInfoMap.get(term).entrySet());
+			System.out.println("LOCK: " + lockMap.get(term));
 		}
 		System.out.println("");
 	}
 	
+	
+	// print the entries of lexicon lock map
+	public void print_originalMaps() {
+		System.out.println(("--print_originalMaps"));
+		HashMap<String, HashMap<String, Long>> LockInfoMap = lexicon_locker.get_lockInfoMap();
+		HashMap<String, ReentrantLock> lockMap = lexicon_locker.get_lockMap();
+		
+		// print out the lexiconLockMap
+		for (String term : LockInfoMap.keySet()) {
+			System.out.println("\n" + term + "--");
+			System.out.println("INFO: " + LockInfoMap.get(term).entrySet());
+			System.out.println("LOCK: " + lockMap.get(term));
+		}
+		System.out.println("");
+	}
+	
+	
 	// prepare the lexiconLockMap
 	public void fill_lexiconLockMap() {
-		HashMap<String, Long> metaMap_1 = new HashMap<String, Long>();
-		metaMap_1.put("termLock", 1L); // expired time, the lock can be required successfully
-		metaMap_1.put("threadNum", 1L);
 		
-		HashMap<String, Long> metaMap_2 = new HashMap<String, Long>();
-		metaMap_2.put("termLock", System.currentTimeMillis() - keeper_config.lockExpireTime); // just expired time, lock can be required
-		metaMap_2.put("threadNum", 2L);
-
-		HashMap<String, Long> metaMap_3 = new HashMap<String, Long>();
-		metaMap_3.put("termLock", System.currentTimeMillis() + 3000); // not expired time, lock cannot be required
-		metaMap_3.put("threadNum", 3L);
+		HashMap<String, HashMap<String, Long>> lockInfoMap = kpr.get_lockInfoMap(lexicon_locker.class);
+		HashMap<String, ReentrantLock> lockMap = kpr.get_lockMap(lexicon_locker.class);
 		
-		kpr.lexiconLockMap.put("t1", metaMap_1);
-		kpr.lexiconLockMap.put("t2", metaMap_2);
-		kpr.lexiconLockMap.put("t3", metaMap_3);
+		kpr.add_target(lexicon_locker.class, "a");
+		kpr.add_target(lexicon_locker.class, "b");
+		kpr.add_target(lexicon_locker.class, "c");
 		
-		print_lexiconLockMap();
+		HashMap<String, Long> infoMap = lockInfoMap.get("c");
+		infoMap.put("lockStatus", System.currentTimeMillis() - 5000); // expired
+		
+		print_lexiconLockRelatedMaps();
 	}
 	
 
@@ -46,14 +66,32 @@ public class keeper_test {
 	public static void main(String[] args) {
 		keeper_test kTest = new keeper_test();
 		kTest.fill_lexiconLockMap();
-		kpr.require_lock("t1", "5"); // required expected
-		kpr.require_lock("t2", "5"); // required expected
-		kpr.require_lock("t3", "5"); // not required expected
 		
-		for (String term : kpr.lexiconLockMap.keySet()) {
-			kpr.release_lock(term, "0005"); // one thread can only release its own lock, so t1 t2 are released
-		}
-		kTest.print_lexiconLockMap();
+		HashMap<String, HashMap<String, Long>> lockInfoMap = kpr.get_lockInfoMap(lexicon_locker.class);
+		HashMap<String, ReentrantLock> lockMap = kpr.get_lockMap(lexicon_locker.class);
+		
+		System.out.println(kpr.require_lock(lexicon_locker.class, "a", "1")); // required expected
+		System.out.println(kpr.require_lock(lexicon_locker.class, "b", "1")); // required expected
+		System.out.println(kpr.require_lock(lexicon_locker.class, "a", "1")); // not required expected
+		
+		for (String term : lockMap.keySet()) {
+			try {
+				System.out.println(lockMap.get(term));
+				System.out.println("->" + kpr.check_lock_expiration(lexicon_locker.class, term, "1"));
+				System.out.println(kpr.release_lock(lexicon_locker.class, term, "1"));
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+
+		} // release lock of c will raise exception for its not locked == not locked by main thread
+		kTest.print_lexiconLockRelatedMaps();
+		kTest.print_originalMaps();
+	
+		// only reset set the reference instead of the original hashmap
+		kpr.clear_maps(lexicon_locker.class);
+		kTest.print_lexiconLockRelatedMaps();
+		kTest.print_originalMaps();
 	}
 	
 }

@@ -3,6 +3,8 @@ package inverted_index;
 import java.util.*;
 import configs.*;
 import utils.*;
+import inverted_index.keepe_plugins.*;
+
 
 // cleaner should only be used on the off-line inverted-index
 // clean it and replace the on-line one
@@ -83,14 +85,14 @@ public class cleaner {
 		}
 		
 		public void run() {		
-			// lock operations
-			try {
-				for (String term : targetTerms) {
-						if(kpr.require_lock(term, this.getName()) == 1) { // if required the lock on term successfully
-							availableTargetTerms_temp.add(term);	
-						}
+			// require locks firstly
+			for (String term : targetTerms) {
+				if(kpr.require_lock(lexicon_locker.class, term, this.getName()) == 1) {
+					availableTargetTerms_temp.add(term);	
 				}
-				
+			}
+			
+			try {	
 				// TODO: testing
 				// System.out.println("--> lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
 				availableTargetTerms = availableTargetTerms_temp.toArray(new String[0]); // ArrayList<String> -> String[]
@@ -101,8 +103,8 @@ public class cleaner {
 				e.printStackTrace();
 				
 			} finally {
-				for (String term : availableTargetTerms) { // no matter what, release the lock at the end
-					kpr.release_lock(term, this.getName());	
+				for (String term : availableTargetTerms) { // release the locks that successfully required
+					kpr.release_lock(lexicon_locker.class, term, this.getName());	
 				}
 			}
 		}

@@ -2,9 +2,11 @@ package engine_api;
 
 import py4j.GatewayServer;
 import inverted_index.*;
+import inverted_index.keepe_plugins.*;
 import probes.index_probe;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 
@@ -25,28 +27,32 @@ public class engineEntryPoint {
 	}
 	
 	// main objects 
-	public index getIndex() {
+	public index get_index() {
 		return idx;
 	}
 	
-	public keeper getKeeper() {
+	public keeper get_keeper() {
 		return kpr;
 	}
 	
-	public cleaner getCleaner() {
+	public cleaner get_cleaner() {
 		return clr;
 	}
 	
-	public HashMap<String, ArrayList<Long>> getLexicon() {
+	public HashMap<String, ArrayList<Long>> get_lexicon() {
 		return idx.lexicon;
 	}	
 	
-	public HashMap<Long, posting_unit> getPostUnitMap() {
+	public HashMap<Long, posting_unit> get_postUnitMap() {
 		return idx.postUnitMap;
 	}
 	
-	public HashMap<String, HashMap<String, Long>> getLexiconLockMap() {
-		return kpr.lexiconLockMap;
+	public HashMap<String, HashMap<String, Long>> get_lexiconLockInfoMap() {
+		return kpr.get_lockInfoMap(lexicon_locker.class);
+	}
+	
+	public HashMap<String, ReentrantLock> get_lexiconLockMap() {
+		return kpr.get_lockMap(lexicon_locker.class);
 	}
 	
 	

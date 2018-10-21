@@ -1,5 +1,7 @@
 package test;
 import inverted_index.*;
+import inverted_index.keepe_plugins.lexicon_locker;
+
 import java.util.*;
 import probes.*;
 
@@ -19,38 +21,26 @@ public class index_test {
 		for(String t : termList) {
 			idx.add_term(t);
 		}
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-		System.out.println("");
+		idxProb.display_content("Sure");
 	}
 	
 	// del_term
 	public void test_2() {
 		idx.del_term("b");
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-		System.out.println("");
+		idxProb.display_content("Sure");
 	}
 	
 	// add_posting_unit
 	public void test_3() {
 		posting_unit postUnit = new posting_unit();
 		idx.add_posting_unit("a " + postUnit.flatten());
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-		System.out.println("");
-		
+		idxProb.display_content("Sure");
 	}
 	
 	// del_posting_unit
 	public void test_4() {
 		idx.del_posting_unit(3);
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+		idxProb.display_content("Sure");
 		
 		// print out all the status
 		HashMap<Long, Integer> postUnitStatusMap = new HashMap<Long, Integer>();
@@ -71,14 +61,16 @@ public class index_test {
 	// test the retry mechanism of add_posting_unit
 	public void test_5() {
 		HashMap<String, Long> metaMap_1 = new HashMap<String, Long> ();
-		metaMap_1.put("termLock", 0L); // the lock can be required
+		metaMap_1.put("lockStatus", 0L); // the lock can be required
 		metaMap_1.put("threadNum", -1L);
-		kpr.lexiconLockMap.put("a", metaMap_1);
+		kpr.get_lockInfoMap(lexicon_locker.class).put("a", metaMap_1);
 		
 		HashMap<String, Long> metaMap_2 = new HashMap<String, Long> ();
-		metaMap_2.put("termLock", System.currentTimeMillis() - 5000); // without -5000 the lock cannot be required, otherwise successful
+		metaMap_2.put("lockStatus", System.currentTimeMillis() - 5000); // the lock status here is not 0, so that the following add will failed
 		metaMap_2.put("threadNum", 2L);
-		kpr.lexiconLockMap.put("c", metaMap_2);
+		kpr.get_lockInfoMap(lexicon_locker.class).put("c", metaMap_2);
+		
+		idxProb.display_content("Sure");
 		
 		posting_unit postUnit = new posting_unit();
 		postUnit.uProp.put("tfidf", 3.33);
@@ -86,12 +78,9 @@ public class index_test {
 		
 		posting_unit postUnit_2 = new posting_unit();
 		postUnit_2.uProp.put("tfidf", 3.35);
-		idx.add_posting_unit("c " + postUnit_2.flatten()); // without - 5000 failed
+		idx.add_posting_unit("c " + postUnit_2.flatten());
 		
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-		System.out.println("");
+		idxProb.display_content("Sure");
 	}
 	
 	
@@ -104,10 +93,7 @@ public class index_test {
 	// clear index
 	public void test_7() {
 		idx.clear_index();
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-		System.out.println("");
+		idxProb.display_content("Sure");
 	}
 	
 	

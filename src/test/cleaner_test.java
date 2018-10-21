@@ -1,6 +1,8 @@
 package test;
 import java.util.*;
+
 import inverted_index.*;
+import inverted_index.keepe_plugins.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +35,8 @@ public class cleaner_test {
 		
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + kpr.lexiconLockMap.entrySet());
+		System.out.println("lexiconKeeper: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
+		System.out.println("lexiconKeeper: " + kpr.get_lockMap(lexicon_locker.class));
 		
 		// print out all the status
 		HashMap<Long, Integer> postUnitStatusMap = new HashMap<Long, Integer>();
@@ -53,7 +56,8 @@ public class cleaner_test {
 		System.out.println("delPostUnitList: " + delPostUnitList);
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + kpr.lexiconLockMap.entrySet());
+		System.out.println("lexiconKeeper: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
+		System.out.println("lexiconKeeper: " + kpr.get_lockMap(lexicon_locker.class));
 		
 		System.out.println("postUnitMap.get(0L): " + idx.postUnitMap.get(0L).previousId + " " + idx.postUnitMap.get(0L).nextId);
 		System.out.println("postUnitMap.get(2L): " + idx.postUnitMap.get(2L).previousId + " " + idx.postUnitMap.get(2L).nextId);
@@ -70,8 +74,8 @@ public class cleaner_test {
 		
 		System.out.println("\npostUnitMap: " + idx.postUnitMap.entrySet());
 		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + kpr.lexiconLockMap.entrySet());
-
+		System.out.println("lexiconKeeper: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
+		System.out.println("lexiconKeeper: " + kpr.get_lockMap(lexicon_locker.class));
 	}
 	
 	public static void main(String[] args) {

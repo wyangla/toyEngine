@@ -1,8 +1,10 @@
 package probes;
 
 import java.util.Arrays;
+
 import java.util.HashMap;
 import inverted_index.*;
+import inverted_index.keepe_plugins.*;
 
 
 public class index_probe {
@@ -17,12 +19,14 @@ public class index_probe {
 		if(areYouSureAboutPrintTheWholeIndex.matches("Sure")) {
 			System.out.println("postUnitMap: " + idx.postUnitMap.entrySet()); // only display 10 items for illustration
 			System.out.println("lexicon: " + idx.lexicon.entrySet());
-			System.out.println("lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
+			System.out.println("lexiconLockInfoMap: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
+			System.out.println("lexiconLockMap: " + kpr.get_lockMap(lexicon_locker.class));
 			System.out.println("");
 			
 			infoMap.put("postUnitMap: ", idx.postUnitMap.entrySet().toString());
 			infoMap.put("lexicon: ", idx.lexicon.entrySet().toString());
-			infoMap.put("lexiconLockMap: ", kpr.lexiconLockMap.entrySet().toString());
+			infoMap.put("lexiconLockInfoMap: ", kpr.get_lockInfoMap(lexicon_locker.class).entrySet().toString());
+			infoMap.put("lexiconLockMap: ",kpr.get_lockMap(lexicon_locker.class).toString());
 			
 		} else {
 			System.out.println("Dont print out the whole inverted index only if you are sure");

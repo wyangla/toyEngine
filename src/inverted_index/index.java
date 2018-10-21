@@ -8,6 +8,7 @@ import utils.name_generator;
 import exceptions.*;
 
 import utils.*;
+import inverted_index.keepe_plugins.*;
 
 
 
@@ -51,7 +52,7 @@ public class index {
 		lexicon.put(term, postingUnitIds);  
 		
 		// initialize the lock for each term in lexicon
-		kpr.add_term(term);
+		kpr.add_target(lexicon_locker.class, term);
 		
 		return postUnit.currentId;
 	}
@@ -86,7 +87,7 @@ public class index {
 		ArrayList<Long> postUnitList = lexicon.get(term);
 		lexicon.remove(term); // delete from lexicon
 		
-		kpr.del_term(term);
+		kpr.del_target(lexicon_locker.class, term);
 		
 		for(long postUnitId : postUnitList) {
 			postUnitMap.remove(postUnitId); // delete specific posting unites
@@ -101,15 +102,10 @@ public class index {
 		String threadNum = "" + name_generator.thread_name_gen();
 		long addedUnitId = -1L;
 		
-		try {
-			// put the retry logic here instead of keeper, is for making the keeper as simple as possible
-			for (int i = 0; i < index_config.retryTimes; i ++) {
-				
-				if (i != 0) {
-					System.out.println("retried: " + (i));
-				}
-				
-				if (kpr.require_lock(term, threadNum) == 1) { // successfully required the lock
+		if (kpr.require_lock(lexicon_locker.class, term, threadNum) == 1) { // if could not require the lock, will not try to execute and release the lock
+			try {				
+				// eliminating the retrying logic here, just block
+				  // successfully required the lock
 					postUnit.currentId = pc.postingId; // even if the old unit has the id it will be reset
 					postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
 					pc.postingId ++; // TODO: here the id is being updated, should I use a different method to only load the persisted ids?
@@ -125,15 +121,15 @@ public class index {
 						prevUnit.link_to_next(postUnit);
 					}
 					addedUnitId = postUnit.currentId;
-					break;
-				}
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			} 
+			finally {
+				kpr.release_lock(lexicon_locker.class, term, threadNum);
 			}
-		} catch(Exception e) {
-			e.printStackTrace();
-		} 
-		finally {
-			kpr.release_lock(term, threadNum);
 		}
+
 				
 		if (addedUnitId == -1) { // if all retries are all failed, print the customised exception
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
@@ -289,7 +285,7 @@ public class index {
 					}
 					
 					// create lock in keeper
-					kpr.add_term(term);
+					kpr.add_target(lexicon_locker.class, term);
 				}
 			} while (termString != null);
 			lb.close();
@@ -377,7 +373,7 @@ public class index {
 	public void clear_index() {
 		postUnitMap = new HashMap<Long, posting_unit>();
 		lexicon = new HashMap<String, ArrayList<Long>>();
-		kpr.lexiconLockMap = new HashMap<String, HashMap<String, Long>>();
+		kpr.clear_maps(lexicon_locker.class);
 		pc = new counters();
 	}
 	

@@ -23,7 +23,7 @@ public class locker {
 	
 	
 	public void conduct(Method operationOnTarget) {
-		synchronized(synchronizedTarget) {
+		synchronized(synchronizedTarget) { // this object is the reference of the lock, e.g. new String[0] will lead to various different locks, so this block is not really exclusively used by threads
 			try {
 				operationOnTarget.invoke(null); // better to be the static operation, with no input
 			}catch(Exception e) {
