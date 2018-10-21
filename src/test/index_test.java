@@ -141,16 +141,16 @@ public class index_test {
 	
 	public static void main(String[] args) {
 		index_test idx_test = new index_test();
-		idx_test.test_1();
-		idx_test.test_2();
-		idx_test.test_3();
-		idx_test.test_4();
-		idx_test.test_5();
-		idx_test.test_6();
-		idx_test.test_7();
+//		idx_test.test_1();
+//		idx_test.test_2();
+//		idx_test.test_3();
+//		idx_test.test_4();
+//		idx_test.test_5();
+//		idx_test.test_6();
+//		idx_test.test_7();
 		idx_test.test_8();
-		idx_test.test_9();
-		idx_test.test_10();
+//		idx_test.test_9();
+//		idx_test.test_10();
 		
 	}
 }
