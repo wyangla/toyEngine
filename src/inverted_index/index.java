@@ -49,6 +49,7 @@ public class index {
 		// TODO: need a global id generator?
 		postUnit.currentId = pc.postingId;
 		postUnitMap.put(postUnit.currentId, postUnit);
+		lastPostUnitId = postUnit.currentId;
 		pc.postingId ++;
 
 		// initialize the posting list for one term
@@ -500,7 +501,7 @@ public class index {
 						}
 						posting_unit pUnit = posting_unit.deflatten(persistedUnit);
 						if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
-							_add_posting_unit(term, pUnit); // re assign the ids, and link the units
+							_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated
 						}
 					}
 				} while(pUnitString != null);
