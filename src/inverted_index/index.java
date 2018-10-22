@@ -36,6 +36,11 @@ public class index {
 	counters pc = new counters();  
 	static long lastPostUnitId = 0; 
 	
+	public long get_pc() {
+		return pc.postingId;
+	}
+	
+	
 
 	// initialise the posting list for one term
 	private long ini_posting_list(String term) {
@@ -201,6 +206,7 @@ public class index {
 			}
 			
 			// persist posting list
+			long curPUnitId = 0L; // TODO: for testing
 			FileWriter pf = new FileWriter(configs.index_config.posting_persistance_path);
 			try {
 				for(String term : lexicon.keySet()) {
@@ -209,6 +215,7 @@ public class index {
 					for(Long pUnitId : postingUnitIds) {
 						String pUnitString = postUnitMap.get(pUnitId).flatten();
 						pUnitStrings.add(term + " " + pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+						curPUnitId = pUnitId;
 					}
 					
 					for(String uS : pUnitStrings) {
@@ -217,6 +224,7 @@ public class index {
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
+				System.out.println("--> error pUnitId: " + curPUnitId);
 			} finally {
 				pf.flush();
 				pf.close();
@@ -344,7 +352,10 @@ public class index {
 		boolean loadedFlag = false;
 		ArrayList<Long> pUnitIds = lexicon.get(term);
 		if(pUnitIds.size() > 1) {
-			long pUnitSecondId = pUnitIds.get(1); // cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit 
+			// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
+			// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
+			// TODO: use [0], as one generated, it will always in the local file?
+			long pUnitSecondId = pUnitIds.get(0);  
 			loadedFlag = postUnitMap.containsKey(pUnitSecondId);
 		}
 		return loadedFlag;
@@ -425,6 +436,7 @@ public class index {
 	
 	
 	// reset index
+	// TODO: when use this method need to be very careful, as it will lead to the pc -> 0
 	public void clear_index() {
 		postUnitMap = new HashMap<Long, posting_unit>();
 		lexicon = new HashMap<String, ArrayList<Long>>();

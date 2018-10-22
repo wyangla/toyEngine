@@ -106,6 +106,11 @@ public class engineEntryPoint {
 		idx.reload_index();
 	}
 	
+	public void clean_index() {
+		clr.clean();
+	}
+	
+	
 	// print the whole inverted-index
 	public HashMap<String, String> display_content(String areYouSureAboutPrintTheWholeIndex) {
 		HashMap<String, String> infoMap = idxProb.display_content(areYouSureAboutPrintTheWholeIndex);
@@ -118,9 +123,9 @@ public class engineEntryPoint {
 		return infoMap;
 	}
 	
-	// cleaner index
-	public void clean_index() {
-		clr.clean();
+	// display the current post unit id counter value
+	public long get_pc() {
+		return idx.get_pc();
 	}
 	
 	
