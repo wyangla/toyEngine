@@ -290,7 +290,6 @@ public class index {
 			// load the whole lexicon firstly, for the early stop of loading posting units
 			FileReader lf = new FileReader(configs.index_config.lexicon_persistance_path);
 			BufferedReader lb = new BufferedReader(lf);
-			
 			try {			
 				String termString;
 				do {
@@ -318,17 +317,21 @@ public class index {
 				
 			} catch(Exception e) {
 				e.printStackTrace();
-				if(e.getMessage().contains("FileNotFoundException")) {
-					file_creater.create_file(configs.index_config.lexicon_persistance_path);
-				};
 			} finally {
 				lb.close();
 				lf.close();
 			}
 			
-			
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+				file_creater.create_file(configs.index_config.lexicon_persistance_path);
+			};
+		}
+		
+		
+		try {
 			// load last post unit id
-			System.out.println("--->");
 			FileReader idf = new FileReader(configs.index_config.last_post_unit_id_path);
 			BufferedReader idfb = new BufferedReader(idf);
 			try {
@@ -348,7 +351,7 @@ public class index {
 			
 		} catch(Exception e) {
 			e.printStackTrace();
-			if(e.getMessage().contains("FileNotFoundException")) {
+			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
 				file_creater.create_file(configs.index_config.last_post_unit_id_path);
 			};
 		}
@@ -426,15 +429,15 @@ public class index {
 
 			} catch(Exception e) {
 				e.printStackTrace();
-				if(e.getMessage().contains("FileNotFoundException")) {
-					file_creater.create_file(configs.index_config.posting_persistance_path);
-				};
 			} finally {
 				pf.close();
 				pb.close();
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
+			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+				file_creater.create_file(configs.index_config.posting_persistance_path);
+			};
 		}
 		return loaded_units;
 	}
