@@ -151,7 +151,10 @@ public class index {
 	public long add_posting_unit(String persistedUnit) {
 		String[] tempList = persistedUnit.split(" ");
 		String term = tempList[0];
-		add_term(term); // no matter what try to add the term firstly
+		long starterPUnitId = add_term(term); // no matter what try to add the term firstly
+		if(starterPUnitId == -1) { // means the term is already existing
+			load_posting(new String[] {term}); // load the whole posting list before add new things in
+		}
 		posting_unit postUnit = posting_unit.deflatten(persistedUnit.replaceFirst(term + " ", ""));
 		long addedUnitId = _add_posting_unit(term, postUnit);
 		return addedUnitId;
