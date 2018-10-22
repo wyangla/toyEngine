@@ -20,4 +20,10 @@ public class index_advanced_operations {
 		return affectedUnitIds;
 	}
 	
+	public ArrayList<String> search(String[] targetTerms) {
+		ArrayList<String> relatedDocs = new ArrayList<String>(); 
+		// TODO: make use of scanner
+		return relatedDocs;
+	}
+	
 }
