@@ -17,7 +17,7 @@ public class cleaner_test {
 	
 	// prepare the inverted-index
 	public void fill_index() {
-		String[] termList = {"a", "b", "c"};
+		String[] termList = {"a", "b", "c", "d"};
 		for(String t : termList) {
 			idx.add_term(t);
 		}

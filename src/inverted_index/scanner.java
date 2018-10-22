@@ -63,14 +63,14 @@ public class scanner {
 	public static class scan_term_thread extends Thread {
 		private Class opCls;
 		private Object opClsParam;
-		private String tTerm;
+		private String[] tTerms;
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
 		private scanner snr;
 		
-		public scan_term_thread(scanner scannerIns, Class operationClass, Object operationClassParameter, String targetTerm) {
+		public scan_term_thread(scanner scannerIns, Class operationClass, Object operationClassParameter, String[] targetTerms) {
 			opCls = operationClass;
 			opClsParam = operationClassParameter; // in order to collect all the 
-			tTerm = targetTerm;
+			tTerms = targetTerms;
 			snr = scannerIns;
 		}
 		
@@ -78,7 +78,7 @@ public class scanner {
 			try {
 				Method setParamMethod = opCls.getMethod("set_parameters", opClsParam.getClass()); // get the set_parameter from the operation class
 				setParamMethod.invoke(opCls, opClsParam); // use this method to set parameter to the class
-				affectedUnitIds = snr.scan(new String[] {tTerm}, opCls); // pass the class to scanner
+				affectedUnitIds = snr.scan(tTerms, opCls); // pass the class to scanner
 				
 			} catch(Exception e) {
 				e.printStackTrace();

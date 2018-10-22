@@ -144,7 +144,7 @@ public class cleaner {
 			
 			if(load_temp.size() >= loadPerWorker || noMoreTerms == 1) { // one workload is ready or no more terms
 				// TODO: testing
-				// System.out.println(">" + load_temp);
+				System.out.println(">" + load_temp);
 				try {
 					thread_clean ct = new thread_clean( load_temp.toArray(new String[0]), "" + name_generator.thread_name_gen() );
 					allThreads.add(ct);
