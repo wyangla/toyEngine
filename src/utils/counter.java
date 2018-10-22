@@ -2,6 +2,8 @@ package utils;
 import java.util.*;
 
 
+// refer to the collections.Counter in Python 
+// for merging the searching results
 public class counter extends HashMap<String, Double> {
 	
 	public counter update(counter anotherCounter) {

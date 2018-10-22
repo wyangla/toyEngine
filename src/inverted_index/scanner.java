@@ -43,6 +43,9 @@ public class scanner {
 	}
 	
 	
+	// TODO: method with single thread uses this method 
+	// not using the multi-threading here, instead, use the multi-threading outside to invoke this method
+	// this is for the convenience of collecting different types of running result
 	public ArrayList<Long> scan(String[] targetTerms, Class operationOnPostingList){ // input parameter better be not dynamic
 		ArrayList<Long> affectedUnits = new ArrayList<Long> (); // collect Ids of units which are affected
 		idx.load_posting(targetTerms); // load the corresponding posting list into memory
@@ -52,4 +55,41 @@ public class scanner {
 		}
 		return affectedUnits;
 	}
+	
+	
+	// TODO: method with multi-thread uses this class
+	// general purpose thread class
+	// each thread scanning the posting list of one term
+	public static class scan_term_thread extends Thread {
+		private Class opCls;
+		private Object opClsParam;
+		private String tTerm;
+		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
+		private scanner snr;
+		
+		public scan_term_thread(scanner scannerIns, Class operationClass, Object operationClassParameter, String targetTerm) {
+			opCls = operationClass;
+			opClsParam = operationClassParameter; // in order to collect all the 
+			tTerm = targetTerm;
+			snr = scannerIns;
+		}
+		
+		public void run() {
+			try {
+				Method setParamMethod = opCls.getMethod("set_parameters", opClsParam.getClass()); // get the set_parameter from the operation class
+				setParamMethod.invoke(opCls, opClsParam); // use this method to set parameter to the class
+				affectedUnitIds = snr.scan(new String[] {tTerm}, opCls); // pass the class to scanner
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// invoke after the threads ends to collect the affected posting units' ids
+		public ArrayList<Long> get_affectedUnitIds(){
+			return affectedUnitIds;
+		}
+	}
+	
+	
 }
