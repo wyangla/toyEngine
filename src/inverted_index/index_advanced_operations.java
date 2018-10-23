@@ -33,7 +33,7 @@ public class index_advanced_operations {
 	}
 	
 	
-// TODO: single thread method, fast when the posting list is short?
+//	// single thread method, fast when the posting list is short?
 //	// delete a specific document from the inverted-index
 //	public ArrayList<Long> delete_doc(String[] containedTerms, String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
 //		ArrayList<Long> affectedUnitIds = new ArrayList<Long>();

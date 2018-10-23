@@ -387,58 +387,59 @@ public class index {
 			}
 		}
 		
-		
-		try {
-			FileReader pf = new FileReader(configs.index_config.posting_persistance_path);
-			BufferedReader pb = new BufferedReader(pf);
-			
+		if(targetTermsSet.size() != 0) {
 			try {
-				// calculate how many units need to be loaded in total
-				long totalUnits = 0L;
-				for (String term : targetTerms) {
-					totalUnits += lexicon.get(term).size();
-				}
+				FileReader pf = new FileReader(configs.index_config.posting_persistance_path);
+				BufferedReader pb = new BufferedReader(pf);
 				
-				// load the posting lists of targetTerms
-				long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
-				
-				String pUnitString;
-				do {
-					pUnitString = pb.readLine();
-					
-					if (pUnitString != null) {
-						pUnitString = pUnitString.trim();
-						String term = pUnitString.split(" ")[0];
-						String persistedUnit = pUnitString.substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
-						
-						if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
-							load_posting_unit(term,  posting_unit.deflatten(persistedUnit)); 
-							addedUnits ++;
-						}
-						
-						// early stop
-						// so that do not scan the whole posting list each time load the posting list into memory
-						// TODO: this in fact is not a very efficient early stopping strategy, use offset?
-						if (addedUnits >= totalUnits) {
-							break;
-						}
-						
+				try {
+					// calculate how many units need to be loaded in total
+					long totalUnits = 0L;
+					for (String term : targetTerms) {
+						totalUnits += lexicon.get(term).size();
 					}
-				} while(pUnitString != null);
-				
-
+					
+					// load the posting lists of targetTerms
+					long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
+					
+					String pUnitString;
+					do {
+						pUnitString = pb.readLine();
+						
+						if (pUnitString != null) {
+							pUnitString = pUnitString.trim();
+							String term = pUnitString.split(" ")[0];
+							String persistedUnit = pUnitString.substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
+							
+							if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
+								load_posting_unit(term,  posting_unit.deflatten(persistedUnit)); 
+								addedUnits ++;
+							}
+							
+							// early stop
+							// so that do not scan the whole posting list each time load the posting list into memory
+							// TODO: this in fact is not a very efficient early stopping strategy, use offset?
+							if (addedUnits >= totalUnits) {
+								break;
+							}
+							
+						}
+					} while(pUnitString != null);
+					
+				} catch(Exception e) {
+					e.printStackTrace();
+				} finally {
+					pf.close();
+					pb.close();
+				}
 			} catch(Exception e) {
 				e.printStackTrace();
-			} finally {
-				pf.close();
-				pb.close();
+				if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+					file_creater.create_file(configs.index_config.posting_persistance_path);
+				};
 			}
-		} catch(Exception e) {
-			e.printStackTrace();
-			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
-				file_creater.create_file(configs.index_config.posting_persistance_path);
-			};
 		}
+		
 		return loaded_units;
 	}
 	
