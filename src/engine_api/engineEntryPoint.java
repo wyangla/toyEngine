@@ -7,6 +7,7 @@ import probes.index_probe;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import utils.*;
 
 
 
@@ -139,6 +140,16 @@ public class engineEntryPoint {
 			e.printStackTrace();
 		}
 		return affectedUnits;
+	}
+	
+	public counter search(ArrayList<String> queryTerms) {
+		counter relatedDocumentScores = new counter();
+		try {
+			relatedDocumentScores = advOps.search(queryTerms.toArray(new String[0]));
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return relatedDocumentScores;
 	}
 	
 	

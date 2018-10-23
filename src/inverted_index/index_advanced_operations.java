@@ -72,9 +72,11 @@ public class index_advanced_operations {
 		
 		// merging all the searching result
 		for(counter c : counterList) {
+			System.out.println(c);
 			totalDocumentScoreCounter = totalDocumentScoreCounter.update(c);
 		}
-		
+		System.out.println("--");
+		System.out.println(totalDocumentScoreCounter);
 		return totalDocumentScoreCounter;
 	}
 	

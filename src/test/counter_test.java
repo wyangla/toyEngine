@@ -8,8 +8,8 @@ public class counter_test {
 	
 	public static void main(String[] args) {
 		c1.put("a", 1.);
-		c1.put("b", 2.);
-		c2.put("b", 3.);
+		c1.put("b", 1.);
+		c2.put("b", 1.);
 		c2.put("c", 1.);
 		
 		counter c3 = c1.update(c2);
@@ -17,5 +17,7 @@ public class counter_test {
 		System.out.println(c2);
 		System.out.println(c3);
 		
+		c3.increase("b", 3.);
+		System.out.println(c3);
 	}
 }

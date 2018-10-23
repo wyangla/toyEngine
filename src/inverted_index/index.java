@@ -364,12 +364,16 @@ public class index {
 	private boolean checkTermLoaded(String term) {
 		boolean loadedFlag = false;
 		ArrayList<Long> pUnitIds = lexicon.get(term);
-		if(pUnitIds.size() > 1) {
-			// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
-			// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
-			// TODO: use [0], as one generated, it will always in the local file?
-			long pUnitSecondId = pUnitIds.get(0);  
-			loadedFlag = postUnitMap.containsKey(pUnitSecondId);
+		if(pUnitIds == null) {
+			loadedFlag = true; // here use loaded signal to ignore the not existing term
+		} else {
+			if(pUnitIds.size() > 1) {
+				// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
+				// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
+				// TODO: use [0], as one generated, it will always in the local file?
+				long pUnitSecondId = pUnitIds.get(0);  
+				loadedFlag = postUnitMap.containsKey(pUnitSecondId);
+			}
 		}
 		return loadedFlag;
 	}
@@ -395,7 +399,7 @@ public class index {
 				try {
 					// calculate how many units need to be loaded in total
 					long totalUnits = 0L;
-					for (String term : targetTerms) {
+					for (String term : targetTermsSet) {
 						totalUnits += lexicon.get(term).size();
 					}
 					

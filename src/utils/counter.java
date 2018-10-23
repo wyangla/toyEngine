@@ -28,4 +28,12 @@ public class counter extends HashMap<String, Double> {
 		
 		return updatedCounter;
 	}
+	
+	public void increase(String key, Double value) {
+		if(this.get(key) == null) {
+			this.put(key, value);
+		} else {
+			this.put(key, this.get(key) + value);
+		}
+	}
 }

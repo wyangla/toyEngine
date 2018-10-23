@@ -30,14 +30,17 @@ public class scanner {
 		
 		// get the starter post unit id
 		ArrayList<Long> postUnitIds = idx.lexicon.get(term);
-		posting_unit pUnitStarter = idx.postUnitMap.get(postUnitIds.get(0));
 		
-		// load the unit operations
-		try {
-			visit_next_unit(pUnitStarter, operationOnPostingList, affectedUnits);
-		} catch (Exception e) {
-			e.printStackTrace();
+		if(postUnitIds != null) {
+			posting_unit pUnitStarter = idx.postUnitMap.get(postUnitIds.get(0));
+			// load the unit operations
+			try {
+				visit_next_unit(pUnitStarter, operationOnPostingList, affectedUnits);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
+
 		
 		return processedTerm;
 	}
