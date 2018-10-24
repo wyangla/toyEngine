@@ -1,10 +1,9 @@
-package inverted_index.scorer_plugins;
+package entities.scorer_plugins;
+import data_structures.posting_unit;
 import inverted_index.*;
 
 
-public class tfidf {
-	private static index idx = index.get_instance();
-	
+public class oh {
 	public static double cal_score(posting_unit postUnit) {
 		double score = 0.;
 		return score;

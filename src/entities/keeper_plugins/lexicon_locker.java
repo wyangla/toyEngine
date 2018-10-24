@@ -1,4 +1,4 @@
-package inverted_index.keepe_plugins;
+package entities.keeper_plugins;
 
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;

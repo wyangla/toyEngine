@@ -1,4 +1,4 @@
-package inverted_index;
+package entities;
 
 import java.util.ArrayList;
 import java.util.HashMap;

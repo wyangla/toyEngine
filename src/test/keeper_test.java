@@ -2,7 +2,9 @@ package test;
 import inverted_index.*;
 import java.util.*;
 import configs.*;
-import inverted_index.keepe_plugins.*;
+import entities.keeper;
+import entities.keeper_plugins.lexicon_locker;
+import entities.keeper_plugins.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 

@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import configs.scanner_config;
+import entities.scanner;
+import entities.scanner_plugins.delete_doc;
 import inverted_index.*;
-import inverted_index.scanner_plugins.*;
+import entities.scanner_plugins.*;
 import probes.index_probe;
 
 

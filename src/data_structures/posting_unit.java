@@ -1,4 +1,4 @@
-package inverted_index;
+package data_structures;
 import java.util.*;
 import java.lang.reflect.*;
 import org.json.*;

@@ -1,8 +1,11 @@
 package test;
 import inverted_index.*;
-import inverted_index.keepe_plugins.lexicon_locker;
 
 import java.util.*;
+
+import data_structures.posting_unit;
+import entities.keeper;
+import entities.keeper_plugins.lexicon_locker;
 import probes.*;
 
 

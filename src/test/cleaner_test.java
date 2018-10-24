@@ -2,9 +2,14 @@ package test;
 import java.util.*;
 
 import inverted_index.*;
-import inverted_index.keepe_plugins.*;
+import entities.keeper_plugins.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import data_structures.posting_unit;
+import entities.cleaner;
+import entities.keeper;
+import entities.keeper_plugins.lexicon_locker;
 
 
 

@@ -3,8 +3,11 @@ package probes;
 import java.util.Arrays;
 
 import java.util.HashMap;
+
+import entities.keeper;
+import entities.keeper_plugins.lexicon_locker;
 import inverted_index.*;
-import inverted_index.keepe_plugins.*;
+import entities.keeper_plugins.*;
 
 
 public class index_probe {

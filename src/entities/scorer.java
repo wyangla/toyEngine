@@ -1,5 +1,7 @@
-package inverted_index;
+package entities;
 import configs.*;
+import data_structures.posting_unit;
+
 import java.lang.reflect.*;
 import exceptions.*;
 

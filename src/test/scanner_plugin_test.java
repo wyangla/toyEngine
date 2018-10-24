@@ -1,7 +1,10 @@
 package test;
-import inverted_index.scanner_plugins.*;
+import entities.scanner_plugins.*;
 import inverted_index.*;
 import java.lang.reflect.*;
+
+import data_structures.posting_unit;
+import entities.scanner_plugins.delete_doc;
 
 
 public class scanner_plugin_test {

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.json.*;
 
 import configs.scanner_config;
+import data_structures.posting_unit;
 import inverted_index.*;
 
 

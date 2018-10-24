@@ -1,9 +1,12 @@
-package inverted_index;
+package entities;
 
 import java.util.*;
 import configs.*;
+import data_structures.posting_unit;
+import entities.keeper_plugins.lexicon_locker;
 import utils.*;
-import inverted_index.keepe_plugins.*;
+import inverted_index.index;
+import entities.keeper_plugins.*;
 
 
 // cleaner should only be used on the off-line inverted-index

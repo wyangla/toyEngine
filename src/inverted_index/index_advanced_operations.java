@@ -1,9 +1,12 @@
 package inverted_index;
-import inverted_index.scanner_plugins.*;
+import entities.scanner_plugins.*;
 import java.util.*;
 import utils.*;
 import java.lang.reflect.*;
 import configs.*;
+import entities.scanner;
+import entities.scanner_plugins.delete_doc;
+import entities.scanner_plugins.search_term;
 
 
 // operatiosn demands scanning the posting list

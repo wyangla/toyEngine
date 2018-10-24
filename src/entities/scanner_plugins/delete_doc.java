@@ -1,4 +1,5 @@
-package inverted_index.scanner_plugins;
+package entities.scanner_plugins;
+import data_structures.posting_unit;
 import inverted_index.*;
 
 

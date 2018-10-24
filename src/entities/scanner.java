@@ -1,7 +1,9 @@
-package inverted_index;
+package entities;
 import java.util.*;
 import java.lang.reflect.*;
-import configs.scanner_config;;
+import configs.scanner_config;
+import data_structures.posting_unit;
+import inverted_index.index;;
 
 
 // This class invokes corresponding plugins to conduct the operations on each unit on posting lists

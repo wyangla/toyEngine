@@ -1,7 +1,8 @@
-package inverted_index.scanner_plugins;
+package entities.scanner_plugins;
 
-import inverted_index.posting_unit;
 import java.util.*;
+
+import data_structures.posting_unit;
 import utils.*;
 
 

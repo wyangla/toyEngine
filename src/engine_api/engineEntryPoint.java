@@ -2,11 +2,16 @@ package engine_api;
 
 import py4j.GatewayServer;
 import inverted_index.*;
-import inverted_index.keepe_plugins.*;
+import entities.keeper_plugins.*;
 import probes.index_probe;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+
+import data_structures.posting_unit;
+import entities.cleaner;
+import entities.keeper;
+import entities.keeper_plugins.lexicon_locker;
 import utils.*;
 
 
