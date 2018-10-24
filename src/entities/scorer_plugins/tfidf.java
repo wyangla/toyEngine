@@ -2,7 +2,7 @@ package entities.scorer_plugins;
 import inverted_index.*;
 import java.util.*;
 
-import data_structures.posting_unit;
+import data_structures.*;
 
 
 public class tfidf {
@@ -17,9 +17,11 @@ public class tfidf {
 		if(tfTemp != null && postUnitIds != null) {
 			double tf = (double) tfTemp;
 			double df = (double) postUnitIds.size();
-			score = tf * Math.log(1. / df); 
+			double totalDocNum = (double) idx.docMap.size();
+			
+			score = tf * Math.log(totalDocNum / df); 
 		}
 		
-		return score;
+		return score; // for testing the scorer
 	}
 }

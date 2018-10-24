@@ -11,6 +11,11 @@ import exceptions.*;
 //make use of the configured plugin classes to calculate the score for one post unit
 public class scorer {
 	
+	private scorer() {}
+	public static scorer getInstance() {
+		return new scorer();
+	}
+	
 	public double cal_score(posting_unit postUnit) {
 		double docScoreFromUnit = 0.;
 		String[] targetModels = scorer_config.modelsInUse;
