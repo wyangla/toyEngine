@@ -5,4 +5,5 @@ public class index_config {
 	public static String postingPersistancePath = "persistance/posting"; // this is the relevance path from the classpath
 	public static String lexiconPersistancePath = "persistance/lexicon";
 	public static String lastPostUnitIdPath = "persistance/lastId";
+	public static String docsPath = "persistance/docs";
 }

@@ -7,12 +7,13 @@ import configs.*;
 import entities.scanner;
 import entities.scanner_plugins.delete_doc;
 import entities.scanner_plugins.search_term;
+import data_structures.*;
 
 
-// operatiosn demands scanning the posting list
 public class index_advanced_operations {
 	
-	scanner snr = new scanner();
+	private scanner snr = new scanner();
+	private index idx = index.get_instance();
 	
 	// delete a specific document from the inverted-index
 	public ArrayList<Long> delete_doc(String[] containedTerms, String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
@@ -32,6 +33,8 @@ public class index_advanced_operations {
 			totalAffectedUnitIds.addAll(st.get_affectedUnitIds());
 		}
 		
+		idx.docMap.remove(targetDocName); // remove from the doc map
+		
 		return totalAffectedUnitIds;
 	}
 	
@@ -47,7 +50,6 @@ public class index_advanced_operations {
 //		
 //		return affectedUnitIds;
 //	}
-	
 
 	
 	public counter search(String[] targetTerms) {

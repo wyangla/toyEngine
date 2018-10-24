@@ -1,4 +1,5 @@
 package test;
+import data_structures.doc;
 import inverted_index.*;
 import probes.*;
 
@@ -12,12 +13,17 @@ public class index_advanced_operations_test {
 	// test delete_doc
 	public void test_1() {
 		try {
-			System.out.print(idxAdOp.delete_doc(new String[] {"wanted", "tasty"}, "/test_1/EKAN4jw3LsE3631feSaA_g"));
+			System.out.println(idxAdOp.delete_doc(new String[] {"wanted", "tasty"}, "/test_1/EKAN4jw3LsE3631feSaA_g"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+	// test add_doc, moved to the index
+//	public void test_2() {
+//		idxAdOp.add_doc(new String[] {"your 2499 5131 2203 {\"tf\":1,\"oh\":1} /test_1/EKAN4jw3LsE3631feSaA_g 1"}, "/test_1/EKAN4jw3LsE3631feSaA_g");
+//	}
 	
 	
 	public static void main(String[] args) {
@@ -31,6 +37,13 @@ public class index_advanced_operations_test {
 		idxProbe.show();
 		
 		idxAdOpTest.test_1();
+//		idxAdOpTest.test_2();
+		
+		idxProbe.display_content("Sure");
+		System.out.println(idx.docMap.get("/test_1/EKAN4jw3LsE3631feSaA_g").flatten());
+		System.out.println(doc.deflatten(idx.docMap.get("/test_1/EKAN4jw3LsE3631feSaA_g").flatten()).docId);
+		System.out.println(doc.deflatten(idx.docMap.get("/test_1/EKAN4jw3LsE3631feSaA_g").flatten()).docLength);
+		System.out.println(doc.deflatten(idx.docMap.get("/test_1/EKAN4jw3LsE3631feSaA_g").flatten()).docProp);
 	}
 	
 }

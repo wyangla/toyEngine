@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import configs.index_config;
-import data_structures.posting_unit;
+import data_structures.*;
 import entities.cleaner;
 import entities.keeper;
 import entities.keeper_plugins.lexicon_locker;
@@ -32,6 +32,7 @@ public class index {
 	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
 	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
+	public HashMap<String, doc> docMap = new HashMap<String, doc>();
 	
 	// for generating the unique posting unit id s
 	private class counters {
@@ -109,9 +110,9 @@ public class index {
 	
 	// the analysing of doc and find the term:postUnit pair is handled by a higher level
 	// used as the sequentially add, the posting list and lexicon growing at the same time
-	private long _add_posting_unit(String term, posting_unit postUnit) {
+	private posting_unit _add_posting_unit(String term, posting_unit postUnit) {
 		String threadNum = "" + name_generator.thread_name_gen();
-		long addedUnitId = -1L;
+		posting_unit addedPostUnit = null;
 		
 		if (kpr.require_lock(lexicon_locker.class, term, threadNum) == 1) { // if could not require the lock, will not try to execute and release the lock
 			try {				
@@ -132,8 +133,9 @@ public class index {
 					if (prevUnit != null) {
 						prevUnit.link_to_next(postUnit);
 					}
-					addedUnitId = postUnit.currentId;
-					lastPostUnitId = addedUnitId; // for setting the pc in load lexicon, making sure the old units are not overwritten when new units added
+					
+					lastPostUnitId = postUnit.currentId; // for setting the pc in load lexicon, making sure the old units are not overwritten when new units added
+					addedPostUnit = postUnit;
 					
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -144,18 +146,18 @@ public class index {
 		}
 
 				
-		if (addedUnitId == -1) { // if all retries are all failed, print the customised exception
+		if (addedPostUnit == null) { // if all retries are all failed, print the customised exception
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
 		}
 		
-		return addedUnitId;
+		return addedPostUnit;
 	}
 	
 	
 	// provided in APIs
 	// [term] currentId nextId previousId {uProp} docId status
 	// e.g. place 2 -1 -1 {} -- 1
-	public long add_posting_unit(String persistedUnit) {
+	public posting_unit add_posting_unit(String persistedUnit) {
 		String[] tempList = persistedUnit.split(" ");
 		String term = tempList[0];
 		long starterPUnitId = add_term(term); // no matter what try to add the term firstly
@@ -163,8 +165,8 @@ public class index {
 			load_posting(new String[] {term}); // load the whole posting list before add new things in
 		}
 		posting_unit postUnit = posting_unit.deflatten(persistedUnit);
-		long addedUnitId = _add_posting_unit(term, postUnit);
-		return addedUnitId;
+		posting_unit addedPostUnit = _add_posting_unit(term, postUnit);
+		return addedPostUnit;
 	}
 	
 	
@@ -178,8 +180,22 @@ public class index {
 		delUnit.status = 0;
 		return delUnit.currentId;
 	}
-	
 
+	
+	public doc add_doc(String[] persistedUnits, String targetDocName) {
+		doc addedDoc = new doc();
+		addedDoc.docId = targetDocName;
+		docMap.put(targetDocName, addedDoc);
+		
+		for(String persistedUnit : persistedUnits) {
+			posting_unit addedPostUnit = add_posting_unit(persistedUnit);
+			if(addedPostUnit != null) {
+				addedDoc.docLength ++;
+			}
+		}
+		return addedDoc;
+	}
+	
 	
 	// persist the inverted index on to local hard disk, 
 	// with the posting units written in line in the order of posting list
@@ -251,6 +267,20 @@ public class index {
 				idf.close();
 			}
 			
+			// persist docMap
+			FileWriter dm = new FileWriter(configs.index_config.docsPath);
+			try {
+				dm.write(""); // when the docMap is empty, make sure that the docInfo file is emptied
+				for(String docId : docMap.keySet()) {
+					dm.write(docMap.get(docId).flatten() + "\r\n");
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				dm.flush();
+				dm.close();
+			}
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -291,7 +321,6 @@ public class index {
 	
 	
 	public void load_lexicon() {
-		
 		try {
 			// load the whole lexicon firstly, for the early stop of loading posting units
 			FileReader lf = new FileReader(configs.index_config.lexiconPersistancePath);
@@ -315,7 +344,6 @@ public class index {
 						for (String pUnitId : pUnitIds) {
 							lexicon.get(term).add(Long.parseLong(pUnitId)); // String -> Long
 						}
-						
 						// create lock in keeper
 						kpr.add_target(lexicon_locker.class, term);
 					}
@@ -334,8 +362,10 @@ public class index {
 				file_creater.create_file(configs.index_config.lexiconPersistancePath);
 			};
 		}
+	}
 		
-		
+
+	public void load_lastId() {
 		try {
 			// load last post unit id
 			FileReader idf = new FileReader(configs.index_config.lastPostUnitIdPath);
@@ -354,16 +384,13 @@ public class index {
 				idf.close();
 				idfb.close();
 			}
-			
 		} catch(Exception e) {
 			e.printStackTrace();
 			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
 				file_creater.create_file(configs.index_config.lastPostUnitIdPath);
 			};
 		}
-		
 	}
-		
 	
 	
 	// check if the last posting unit is existing in the posting list of term, to check if the term is loaded 
@@ -396,45 +423,37 @@ public class index {
 				targetTermsSet.remove(term);
 			}
 		}
-		
 		if(targetTermsSet.size() != 0) {
 			try {
 				FileReader pf = new FileReader(configs.index_config.postingPersistancePath);
 				BufferedReader pb = new BufferedReader(pf);
-				
 				try {
 					// calculate how many units need to be loaded in total
 					long totalUnits = 0L;
 					for (String term : targetTermsSet) {
 						totalUnits += lexicon.get(term).size();
 					}
-					
 					// load the posting lists of targetTerms
 					long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
-					
 					String pUnitString;
 					do {
 						pUnitString = pb.readLine();
-						
 						if (pUnitString != null) {
 							pUnitString = pUnitString.trim();
 							String term = pUnitString.split(" ")[0];
-							
 							if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
 								load_posting_unit(posting_unit.deflatten(pUnitString)); 
 								addedUnits ++;
 							}
-							
 							// early stop
 							// so that do not scan the whole posting list each time load the posting list into memory
 							// TODO: this in fact is not a very efficient early stopping strategy, use offset?
 							if (addedUnits >= totalUnits) {
 								break;
-							}
-							
+							}	
 						}
 					} while(pUnitString != null);
-					
+
 				} catch(Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -448,7 +467,6 @@ public class index {
 				};
 			}
 		}
-		
 		return loaded_units;
 	}
 	
@@ -458,6 +476,38 @@ public class index {
 	public void load_all_posting() {
 		String[] allTerms = lexicon.keySet().toArray(new String[0]);
 		load_posting(allTerms);
+	}
+	
+	
+	public void load_docMap() {
+		
+		try {
+			// load the whole lexicon firstly, for the early stop of loading posting units
+			FileReader df = new FileReader(configs.index_config.docsPath);
+			BufferedReader db = new BufferedReader(df);
+			try {			
+				String docString;
+				do {
+					docString = db.readLine();
+					if (docString != null) {
+						docString = docString.trim();
+						doc docIns = doc.deflatten(docString);
+						docMap.put(docIns.docId, docIns);
+					}
+				} while (docString != null);
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				db.close();
+				df.close();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+				file_creater.create_file(configs.index_config.docsPath);
+			};
+		}		
 	}
 	
 	
@@ -507,8 +557,6 @@ public class index {
 			
 			try {
 				// load the posting lists of targetTerms
-
-				
 				String pUnitString;
 				do {
 					pUnitString = pb.readLine();

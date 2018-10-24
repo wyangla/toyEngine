@@ -8,7 +8,7 @@ import probes.index_probe;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import data_structures.posting_unit;
+import data_structures.*;
 import entities.cleaner;
 import entities.keeper;
 import entities.keeper_plugins.lexicon_locker;
@@ -31,6 +31,17 @@ public class engineEntryPoint {
 		idx.load_lexicon();
 		System.out.println("Lexicon loaded");
 	}
+	
+	private void load_lastId() {
+		idx.load_lastId();
+		System.out.println("lastId loaded");
+	}
+	
+	private void load_docMap() {
+		idx.load_docMap();
+		System.out.println("doc map loaded");
+	}
+	
 	
 	// main objects 
 	public index get_index() {
@@ -75,7 +86,7 @@ public class engineEntryPoint {
 	
 	// persistedUnit: [term<String>] currentId<Long> nextId<Long> previousId<Long> {uProp}<String, Long> docId<String> status<Integer>
 	public long add_posting_unit(String persistedUnit) {
-		long addedUnitId = idx.add_posting_unit(persistedUnit);
+		long addedUnitId = idx.add_posting_unit(persistedUnit).currentId;
 		return addedUnitId;
 	}
 	
@@ -83,6 +94,7 @@ public class engineEntryPoint {
 		long delUnitId = idx.del_posting_unit(postingUnitId);
 		return delUnitId;
 	}
+	
 	
 	public void persist_index() {
 		idx.persist_index();
@@ -135,8 +147,12 @@ public class engineEntryPoint {
 	}
 	
 	
+	public String add_doc(ArrayList<String> persistedUnits, String targetDocName) {
+		doc addedDoc = idx.add_doc(persistedUnits.toArray(new String[0]), targetDocName);
+		return addedDoc.docId;
+	}
 	
-	// advanced operations
+	
 	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
 		ArrayList<Long> affectedUnits = new ArrayList<Long>();
 		try {
@@ -146,6 +162,7 @@ public class engineEntryPoint {
 		}
 		return affectedUnits;
 	}
+	
 	
 	public counter search(ArrayList<String> queryTerms) {
 		counter relatedDocumentScores = new counter();
@@ -161,7 +178,9 @@ public class engineEntryPoint {
 	
 	public static void main(String[] args) {
 		engineEntryPoint ep = new engineEntryPoint();
-		ep.load_lexicon(); // load the lexicon into memory firstly
+		ep.load_lexicon();
+		ep.load_lastId();
+		ep.load_docMap();
 		
 		GatewayServer gServer = new GatewayServer(ep); 
 		gServer.start();
