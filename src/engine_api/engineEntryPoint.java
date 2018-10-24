@@ -83,8 +83,8 @@ public class engineEntryPoint {
 		idx.persist_index();
 	}
 	
-	public long load_posting_unit(String term, posting_unit postUnit) {
-		long addedUnitId = idx.load_posting_unit(term, postUnit);
+	public long load_posting_unit(posting_unit postUnit) {
+		long addedUnitId = idx.load_posting_unit(postUnit);
 		return addedUnitId;
 	}
 	

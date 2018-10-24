@@ -47,6 +47,7 @@ public class index {
 		posting_unit postUnit = new posting_unit();
 		
 		// TODO: need a global id generator?
+		postUnit.term = term;
 		postUnit.currentId = pc.postingId;
 		postUnitMap.put(postUnit.currentId, postUnit);
 		lastPostUnitId = postUnit.currentId;
@@ -112,6 +113,7 @@ public class index {
 			try {				
 				// eliminating the retrying logic here, just block
 				  // successfully required the lock
+					postUnit.term = term;
 					postUnit.currentId = pc.postingId; // even if the old unit has the id it will be reset
 					postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
 					pc.postingId ++; // TODO: here the id is being updated, should I use a different method to only load the persisted ids?
@@ -156,7 +158,7 @@ public class index {
 		if(starterPUnitId == -1) { // means the term is already existing
 			load_posting(new String[] {term}); // load the whole posting list before add new things in
 		}
-		posting_unit postUnit = posting_unit.deflatten(persistedUnit.replaceFirst(term + " ", ""));
+		posting_unit postUnit = posting_unit.deflatten(persistedUnit);
 		long addedUnitId = _add_posting_unit(term, postUnit);
 		return addedUnitId;
 	}
@@ -218,7 +220,7 @@ public class index {
 					ArrayList<Long> postingUnitIds = lexicon.get(term);
 					for(Long pUnitId : postingUnitIds) {
 						String pUnitString = postUnitMap.get(pUnitId).flatten();
-						pUnitStrings.add(term + " " + pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+						pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
 						curPUnitId = pUnitId;
 					}
 					
@@ -259,7 +261,7 @@ public class index {
 	// only operate the postUnitMap and link the units
 	// thus the persisted posting needs to be correct, 
 	// if one unit miss its previous one, it will lead to error
-	public long load_posting_unit(String term, posting_unit postUnit) {
+	public long load_posting_unit(posting_unit postUnit) {
 		long addedUnitId = -1L;
 		
 		try {
@@ -413,10 +415,9 @@ public class index {
 						if (pUnitString != null) {
 							pUnitString = pUnitString.trim();
 							String term = pUnitString.split(" ")[0];
-							String persistedUnit = pUnitString.substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
 							
 							if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
-								load_posting_unit(term,  posting_unit.deflatten(persistedUnit)); 
+								load_posting_unit(posting_unit.deflatten(pUnitString)); 
 								addedUnits ++;
 							}
 							
@@ -511,12 +512,11 @@ public class index {
 					if (pUnitString != null) {
 						pUnitString = pUnitString.trim();
 						String term = pUnitString.split(" ")[0];
-						String persistedUnit = pUnitString.replaceFirst(term + " ", ""); // substring(term.length() + 1, pUnitString.length()); // term currentId nextId ..., sub string from the "c.."
 						
 						if (lexicon.containsKey(term) == false) { // add the term into lexicon for the first time it was seen
 							add_term(term);
 						}
-						posting_unit pUnit = posting_unit.deflatten(persistedUnit);
+						posting_unit pUnit = posting_unit.deflatten(pUnitString);
 						if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
 							_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated
 						}

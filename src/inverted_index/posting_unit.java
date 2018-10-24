@@ -19,7 +19,7 @@ public class posting_unit {
 	
 	public int status = 1; // 1 linked, 0 disconnected
 	public String docId = "--"; // the unique id (path) of doc in the file system
-	
+	public String term = "--";
 	
 	
 	// link to the previous posting list unit
@@ -53,7 +53,7 @@ public class posting_unit {
 	// [term] is added in index
 	public String flatten() {
 		JSONObject uPropJson = new JSONObject(uProp);
-		return String.format("%s %s %s %s %s %s", currentId, nextId, previousId, uPropJson, docId, status);
+		return String.format("%s %s %s %s %s %s %s", term, currentId, nextId, previousId, uPropJson, docId, status);
 	}
 	
 	
@@ -64,13 +64,14 @@ public class posting_unit {
 		posting_unit pUnit = new posting_unit();
 		String[] pUnitFields = persistedUnitNoTerm.split(" ");
 		
-		pUnit.currentId = Long.parseLong(pUnitFields[0]);
-		pUnit.nextId = Long.parseLong(pUnitFields[1]);
-		pUnit.previousId = Long.parseLong(pUnitFields[2]);
-		pUnit.docId = pUnitFields[4];
-		pUnit.status = Integer.parseInt(pUnitFields[5]);
+		pUnit.term = pUnitFields[0];
+		pUnit.currentId = Long.parseLong(pUnitFields[1]);
+		pUnit.nextId = Long.parseLong(pUnitFields[2]);
+		pUnit.previousId = Long.parseLong(pUnitFields[3]);
+		pUnit.docId = pUnitFields[5];
+		pUnit.status = Integer.parseInt(pUnitFields[6]);
 		
-		JSONObject uPropJson = new JSONObject(pUnitFields[3]);
+		JSONObject uPropJson = new JSONObject(pUnitFields[4]);
 		Map<String, Object> uProp = uPropJson.toMap(); 
 		for(String p : uProp.keySet()) {
 			pUnit.uProp.put(p, Double.parseDouble("" + uProp.get(p)));
