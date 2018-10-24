@@ -49,7 +49,7 @@ public class keeper {
 	
 	
 	// clear lockInfoMap and lockMap
-	public  void clear_maps(Class lockerClass) {
+	public void clear_maps(Class lockerClass) {
 		try {
 			Method clear_maps = lockerClass.getMethod("clear_maps");
 			clear_maps.invoke(null);

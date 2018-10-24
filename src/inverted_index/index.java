@@ -187,7 +187,7 @@ public class index {
 			// TODO: persist the offset of terms instead of lexicon??
 			
 			// persist lexicon
-			FileWriter lf = new FileWriter(configs.index_config.lexicon_persistance_path);
+			FileWriter lf = new FileWriter(configs.index_config.lexiconPersistancePath);
 			try {
 				ArrayList<String> termStrings = new ArrayList<String>();
 				for(String term : lexicon.keySet()) {
@@ -211,7 +211,7 @@ public class index {
 			
 			// persist posting list
 			long curPUnitId = 0L; // TODO: for testing
-			FileWriter pf = new FileWriter(configs.index_config.posting_persistance_path);
+			FileWriter pf = new FileWriter(configs.index_config.postingPersistancePath);
 			try {
 				for(String term : lexicon.keySet()) {
 					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
@@ -235,7 +235,7 @@ public class index {
 			}
 			
 			// persist last post unit id
-			FileWriter idf = new FileWriter(configs.index_config.last_post_unit_id_path);
+			FileWriter idf = new FileWriter(configs.index_config.lastPostUnitIdPath);
 			try {
 				idf.write("" + lastPostUnitId);
 			} catch(Exception e) {
@@ -288,7 +288,7 @@ public class index {
 		
 		try {
 			// load the whole lexicon firstly, for the early stop of loading posting units
-			FileReader lf = new FileReader(configs.index_config.lexicon_persistance_path);
+			FileReader lf = new FileReader(configs.index_config.lexiconPersistancePath);
 			BufferedReader lb = new BufferedReader(lf);
 			try {			
 				String termString;
@@ -325,14 +325,14 @@ public class index {
 		} catch(Exception e) {
 			e.printStackTrace();
 			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
-				file_creater.create_file(configs.index_config.lexicon_persistance_path);
+				file_creater.create_file(configs.index_config.lexiconPersistancePath);
 			};
 		}
 		
 		
 		try {
 			// load last post unit id
-			FileReader idf = new FileReader(configs.index_config.last_post_unit_id_path);
+			FileReader idf = new FileReader(configs.index_config.lastPostUnitIdPath);
 			BufferedReader idfb = new BufferedReader(idf);
 			try {
 				String idString = idfb.readLine();
@@ -352,7 +352,7 @@ public class index {
 		} catch(Exception e) {
 			e.printStackTrace();
 			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
-				file_creater.create_file(configs.index_config.last_post_unit_id_path);
+				file_creater.create_file(configs.index_config.lastPostUnitIdPath);
 			};
 		}
 		
@@ -393,7 +393,7 @@ public class index {
 		
 		if(targetTermsSet.size() != 0) {
 			try {
-				FileReader pf = new FileReader(configs.index_config.posting_persistance_path);
+				FileReader pf = new FileReader(configs.index_config.postingPersistancePath);
 				BufferedReader pb = new BufferedReader(pf);
 				
 				try {
@@ -439,7 +439,7 @@ public class index {
 			} catch(Exception e) {
 				e.printStackTrace();
 				if(e.getClass().equals(java.io.FileNotFoundException.class)) {
-					file_creater.create_file(configs.index_config.posting_persistance_path);
+					file_creater.create_file(configs.index_config.postingPersistancePath);
 				};
 			}
 		}
@@ -497,7 +497,7 @@ public class index {
 		clear_index();
 		
 		try {
-			FileReader pf = new FileReader(configs.index_config.posting_persistance_path);
+			FileReader pf = new FileReader(configs.index_config.postingPersistancePath);
 			BufferedReader pb = new BufferedReader(pf);
 			
 			try {

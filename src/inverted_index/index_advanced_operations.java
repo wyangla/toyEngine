@@ -16,7 +16,7 @@ public class index_advanced_operations {
 		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		
-		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpu_num, containedTerms);
+		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, containedTerms);
 		
 		for(String[] workLoad : workLoads ) {
 			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, delete_doc.class, targetDocName, workLoad);
@@ -52,7 +52,7 @@ public class index_advanced_operations {
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		ArrayList<counter> counterList = new ArrayList<counter>();
 		
-		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpu_num, targetTerms);
+		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, targetTerms);
 		
 		for(String[] workLoad : workLoads) {
 			counter documentScoreCounter = new counter();
