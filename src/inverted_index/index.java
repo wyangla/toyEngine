@@ -1,7 +1,9 @@
 package inverted_index;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
+import java.util.stream.*;
 
 import data_structures.*;
 import entities.*;
@@ -217,44 +219,60 @@ public class index {
 		index_io_operations.get_instance().load_all_posting();
 		clr.clean();
 		
-		index_io_operations.get_instance()._persist_index(); // at this time the ids are not corrected
+		index_io_operations.get_instance().persist_index(); // at this time the ids are not corrected
 		clear_index();
 		
 		try {
-			FileReader pf = new FileReader(configs.index_config.postingPersistancePath);
-			BufferedReader pb = new BufferedReader(pf);
+			// collect the pathes of posting files
+			// ref: https://stackoverrun.com/cn/q/12079625
+			List<String> postingPathes =  Files.walk(Paths.get(configs.index_config.postingsPersistancePath), 2)
+					.map(path -> path.toString())
+					.filter(path -> path.endsWith("posting"))
+					.collect(Collectors.toList());
 			
-			try {
-				// load the posting lists of targetTerms
-				String pUnitString;
-				do {
-					pUnitString = pb.readLine();
-					
-					if (pUnitString != null) {
-						pUnitString = pUnitString.trim();
-						String term = pUnitString.split(" ")[0];
-						
-						if (lexicon.containsKey(term) == false) { // add the term into lexicon for the first time it was seen
-							add_term(term);
-						}
-						posting_unit pUnit = posting_unit.deflatten(pUnitString);
-						if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
-							_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated
-						}
-					}
-				} while(pUnitString != null);
-			
-				index_io_operations.get_instance()._persist_index(); // the ids are corrected
+			for (String postingPath : postingPathes) {
+				FileReader pf = new FileReader(postingPath);
+				BufferedReader pb = new BufferedReader(pf);
 				
-			} catch(Exception e) {
-				e.printStackTrace();
-			} finally {
-				pf.close();
-				pb.close();
+				try {
+					// load the posting lists of one term
+					String pUnitString;
+					long i = 0;
+					do {
+						pUnitString = pb.readLine();
+						
+						if (pUnitString != null) {
+							pUnitString = pUnitString.trim();
+							String term = pUnitString.split(" ")[0];
+							
+							// check loading status and adding the term into lexicon for the first time it was seen
+							if (i == 0 && lexicon.containsKey(term) == false) { 
+								add_term(term);
+							}
+							
+							posting_unit pUnit = posting_unit.deflatten(pUnitString);
+							if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
+								_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated
+							}
+						}
+						
+						i++;
+					} while(pUnitString != null);
+					
+				} catch(Exception e) {
+					e.printStackTrace();
+				} finally {
+					pf.close();
+					pb.close();
+				}
 			}
+			
 		} catch(Exception e) {
 			e.printStackTrace();
-		}	
+		}
+		
+		// re-persist the inverted index
+		index_io_operations.get_instance().persist_index(); // the ids are corrected now
 	}
 }
 

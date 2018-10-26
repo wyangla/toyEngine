@@ -29,96 +29,6 @@ public class index_io_operations {
 	}
 	
 	
-//	// persist the inverted index on to local hard disk, 
-//	// with the posting units written in line in the order of posting list
-//	// this method doesnt load all postings in to memory, so that cannot found all the units in the lexicon
-//	public void _persist_index() {
-//		try {
-//			// does not need to lock up the index, as the inverted-index is not dynamically adding on real time
-//			// 1. generate, 2. persist, 3. lazily load and serve
-//			// such that the generation process will consume the biggest amount of memory
-//			
-//			// TODO: persist the offset of terms instead of lexicon??
-//			
-//			// persist lexicon
-//			FileWriter lf = new FileWriter(configs.index_config.lexiconPersistancePath);
-//			try {
-//				ArrayList<String> termStrings = new ArrayList<String>();
-//				for(String term : idx.lexicon.keySet()) {
-//					Long[] termPosting = idx.lexicon.get(term).toArray(new Long[0]); // ArrayList -> String
-//					String termString = ""; 
-//					// concatenate all the posting unit ids of one term together
-//					for(long pUId : termPosting) {
-//						termString += " " + pUId;
-//					}
-//					termStrings.add(term + termString + "\r\n");
-//					}
-//				for(String tS : termStrings) {
-//					lf.write(tS); // write posting units into file, each line per unit
-//				}
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//			} finally {
-//				lf.flush();
-//				lf.close();
-//			}
-//			
-//			// persist posting list
-//			long curPUnitId = 0L; // TODO: for testing
-//			FileWriter pf = new FileWriter(configs.index_config.postingPersistancePath);
-//			try {
-//				for(String term : idx.lexicon.keySet()) {
-//					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
-//					ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
-//					for(Long pUnitId : postingUnitIds) {
-//						String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
-//						pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
-//						curPUnitId = pUnitId;
-//					}
-//					
-//					for(String uS : pUnitStrings) {
-//						pf.write(uS); // write posting units into file, each line per unit
-//					}	
-//				}
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//				System.out.println("--> error pUnitId: " + curPUnitId);
-//			} finally {
-//				pf.flush();
-//				pf.close();
-//			}
-//			
-//			// persist last post unit id
-//			FileWriter idf = new FileWriter(configs.index_config.lastPostUnitIdPath);
-//			try {
-//				idf.write("" + idx.lastPostUnitId);
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//			} finally {
-//				idf.flush();
-//				idf.close();
-//			}
-//			
-//			// persist docMap
-//			FileWriter dm = new FileWriter(configs.index_config.docsPath);
-//			try {
-//				dm.write(""); // when the docMap is empty, make sure that the docInfo file is emptied
-//				for(String docId : idx.docMap.keySet()) {
-//					dm.write(idx.docMap.get(docId).flatten() + "\r\n");
-//				}
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//			} finally {
-//				dm.flush();
-//				dm.close();
-//			}
-//			
-//			
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-	
 	
 	private void persist_lexicon() {
 		try {
@@ -149,36 +59,78 @@ public class index_io_operations {
 		}
 	}
 	
+	
+//	private void persist_postings() {
+//		try {
+//			// persist posting list
+//			long curPUnitId = 0L; // TODO: for testing
+//			FileWriter pf = new FileWriter(configs.index_config.postingPersistancePath);
+//			try {
+//				for(String term : idx.lexicon.keySet()) {
+//					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
+//					ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
+//					for(Long pUnitId : postingUnitIds) {
+//						String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
+//						pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+//						curPUnitId = pUnitId;
+//					}
+//					for(String uS : pUnitStrings) {
+//						pf.write(uS); // write posting units into file, each line per unit
+//					}	
+//				}
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//				System.out.println("--> error pUnitId: " + curPUnitId);
+//			} finally {
+//				pf.flush();
+//				pf.close();
+//			}
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
 	private void persist_postings() {
 		try {
-			// persist posting list
-			long curPUnitId = 0L; // TODO: for testing
-			FileWriter pf = new FileWriter(configs.index_config.postingPersistancePath);
-			try {
-				for(String term : idx.lexicon.keySet()) {
+			for(String term : idx.lexicon.keySet()) {
+				
+				if(check_term_loaded(term)) { // only try to persist the posting of loaded terms, so that does not need to load all postings before persistance 
+					
 					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
 					ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
-					for(Long pUnitId : postingUnitIds) {
-						String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
-						pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
-						curPUnitId = pUnitId;
+
+					// check the directory of one term is existing or not
+					File postingDir = new File(configs.index_config.postingsPersistancePath + '/' + term);
+					if(!postingDir.exists()) {
+						postingDir.mkdirs();
 					}
 					
-					for(String uS : pUnitStrings) {
-						pf.write(uS); // write posting units into file, each line per unit
-					}	
-				}
-			} catch(Exception e) {
-				e.printStackTrace();
-				System.out.println("--> error pUnitId: " + curPUnitId);
-			} finally {
-				pf.flush();
-				pf.close();
+					long curPUnitId = 0L;
+					FileWriter pf = new FileWriter(postingDir.getPath() + "/posting");
+					try {
+						for(Long pUnitId : postingUnitIds) {
+							String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
+							pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+							curPUnitId = pUnitId;
+						}
+						for(String uS : pUnitStrings) {
+							pf.write(uS); // write posting units into file, each line per unit
+						}	
+
+					} catch(Exception e) {
+						e.printStackTrace();
+						System.out.println("--> error pUnitId: " + curPUnitId);
+					} finally {
+						pf.flush();
+						pf.close();
+					}
+				} 
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
 	
 	private void persist_lastPostUnitId() {
 		try {
@@ -218,11 +170,13 @@ public class index_io_operations {
 	}
 	
 
+	// stop loading all the postings into memory before persist
+	// as the persist_index contains check loading status of posting list
 	
 	// persist the inverted index on to local hard disk, 
 	// with the posting units written in line in the order of posting list
 	// this method doesnt load all postings in to memory, so that cannot found all the units in the lexicon
-	public void _persist_index() {
+	public void persist_index() {
 		// 1. generate, 2. persist, 3. lazily load and serve
 		// such that the generation process will consume the biggest amount of memory
 		
@@ -339,13 +293,16 @@ public class index_io_operations {
 	
 	
 	// check if the last posting unit is existing in the posting list of term, to check if the term is loaded 
-	private boolean checkTermLoaded(String term) {
+	private boolean check_term_loaded(String term) {
 		boolean loadedFlag = false;
 		ArrayList<Long> pUnitIds = idx.lexicon.get(term);
 		if(pUnitIds == null) {
 			loadedFlag = true; // here use loaded signal to ignore the not existing term
 		} else {
-			if(pUnitIds.size() > 1) {
+			if(pUnitIds.size() > 0) { 
+				// 1 -> 0, should only be used as prevent the .get(0) throwing error
+				// and if use 1, after delete all docs, all the postings are only with length 1, all will be reloaded no matter if they are in memory already.
+				
 				// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
 				// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
 				// TODO: use [0], as one generated, it will always in the local file?
@@ -357,61 +314,105 @@ public class index_io_operations {
 	}
 	
 	
+//	// lazily load the posting list of target terms
+//	public long[] load_posting(String[] targetTerms) {
+//		long[] loaded_units = new long[] {};
+//		HashSet<String> targetTermsSet = new HashSet<String>(Arrays.asList(targetTerms));
+//
+//		// check if a term is loaded, if it is, remove from the targetTermsSet
+//		for(String term : targetTerms) {
+//			if(check_term_loaded(term)) { // if loaded
+//				targetTermsSet.remove(term);
+//			}
+//		}
+//		if(targetTermsSet.size() != 0) {
+//			try {
+//				FileReader pf = new FileReader(configs.index_config.postingPersistancePath);
+//				BufferedReader pb = new BufferedReader(pf);
+//				try {
+//					// calculate how many units need to be loaded in total
+//					long totalUnits = 0L;
+//					for (String term : targetTermsSet) {
+//						totalUnits += idx.lexicon.get(term).size();
+//					}
+//					// load the posting lists of targetTerms
+//					long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
+//					String pUnitString;
+//					do {
+//						pUnitString = pb.readLine();
+//						if (pUnitString != null) {
+//							pUnitString = pUnitString.trim();
+//							String term = pUnitString.split(" ")[0];
+//							if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
+//								load_posting_unit(posting_unit.deflatten(pUnitString)); 
+//								addedUnits ++;
+//							}
+//							// early stop
+//							// so that do not scan the whole posting list each time load the posting list into memory
+//							// TODO: this in fact is not a very efficient early stopping strategy, use offset?
+//							if (addedUnits >= totalUnits) {
+//								break;
+//							}	
+//						}
+//					} while(pUnitString != null);
+//
+//				} catch(Exception e) {
+//					e.printStackTrace();
+//				} finally {
+//					pf.close();
+//					pb.close();
+//				}
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//				if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+//					file_creater.create_file(configs.index_config.postingPersistancePath);
+//				};
+//			}
+//		}
+//		return loaded_units;
+//	}
+	
+
 	// lazily load the posting list of target terms
 	public long[] load_posting(String[] targetTerms) {
 		long[] loaded_units = new long[] {};
-		HashSet<String> targetTermsSet = new HashSet<String>(Arrays.asList(targetTerms));
 
-		// check if a term is loaded, if it is, remove from the targetTermsSet
 		for(String term : targetTerms) {
-			if(checkTermLoaded(term)) { // if loaded
-				targetTermsSet.remove(term);
-			}
-		}
-		if(targetTermsSet.size() != 0) {
-			try {
-				FileReader pf = new FileReader(configs.index_config.postingPersistancePath);
-				BufferedReader pb = new BufferedReader(pf);
+			if(!check_term_loaded(term)) { // if not loaded
+				
+				String postingPath = configs.index_config.postingsPersistancePath + "/" + term + "/posting";
 				try {
-					// calculate how many units need to be loaded in total
-					long totalUnits = 0L;
-					for (String term : targetTermsSet) {
-						totalUnits += idx.lexicon.get(term).size();
-					}
-					// load the posting lists of targetTerms
-					long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
-					String pUnitString;
-					do {
-						pUnitString = pb.readLine();
-						if (pUnitString != null) {
-							pUnitString = pUnitString.trim();
-							String term = pUnitString.split(" ")[0];
-							if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
+					FileReader pf = new FileReader(postingPath);
+					BufferedReader pb = new BufferedReader(pf);
+					try {
+						// load the posting lists of one term
+						String pUnitString;
+						do {
+							pUnitString = pb.readLine();
+							if (pUnitString != null) {
+								pUnitString = pUnitString.trim();
 								load_posting_unit(posting_unit.deflatten(pUnitString)); 
-								addedUnits ++;
 							}
-							// early stop
-							// so that do not scan the whole posting list each time load the posting list into memory
-							// TODO: this in fact is not a very efficient early stopping strategy, use offset?
-							if (addedUnits >= totalUnits) {
-								break;
-							}	
-						}
-					} while(pUnitString != null);
-
+						} while(pUnitString != null);
+						
+					} catch(Exception e) {
+						e.printStackTrace();
+					} finally {
+						pf.close();
+						pb.close();
+					}
+					
 				} catch(Exception e) {
 					e.printStackTrace();
-				} finally {
-					pf.close();
-					pb.close();
+					if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+						file_creater.create_file(postingPath);
+					};
 				}
-			} catch(Exception e) {
-				e.printStackTrace();
-				if(e.getClass().equals(java.io.FileNotFoundException.class)) {
-					file_creater.create_file(configs.index_config.postingPersistancePath);
-				};
+				
 			}
 		}
+	
+			
 		return loaded_units;
 	}
 	
@@ -453,15 +454,5 @@ public class index_io_operations {
 				file_creater.create_file(configs.index_config.docsPath);
 			};
 		}		
-	}
-	
-	
-	// before persist load all the postings into memory
-	public void persist_index() {
-		load_all_posting();
-		// TODO: TEST
-		index_probe idxProb = new index_probe();
-		idxProb.show();
-		_persist_index();
 	}
 }
