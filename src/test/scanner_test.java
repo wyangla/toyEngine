@@ -19,8 +19,8 @@ public class scanner_test {
 	
 	// test scan_posting_list
 	public void test_1() {
-		idx.load_lexicon();
-		idx.load_posting(new String[] {"wanted"});
+		index_io_operations.get_instance().load_lexicon();
+		index_io_operations.get_instance().load_posting(new String[] {"wanted"});
 		ArrayList<Long> affectedUnits = new ArrayList<Long> (); // collect Ids of units which are affected
 		
 		delete_doc.set_parameters("/test_1/EKAN4jw3LsE3631feSaA_g");
@@ -40,7 +40,7 @@ public class scanner_test {
 //		Method setParameters = operationClass.getMethod("set_parameters", String.class); // get the set parameter method
 //		setParameters.invoke(operationClass, "/test_1/EKAN4jw3LsE3631feSaA_g"); // set the parameter
 		
-		idx.load_lexicon();
+		index_io_operations.get_instance().load_lexicon();
 		delete_doc.set_parameters("/test_1/EKAN4jw3LsE3631feSaA_g");
 		System.out.println(snr.scan(new String[] {"wanted", "tasty"}, delete_doc.class)); // input the class which contains the parameters
 	}

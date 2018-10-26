@@ -8,7 +8,7 @@ import probes.*;
 public class index_advanced_operations_test {
 	
 	index_advanced_operations idxAdOp = new index_advanced_operations();
-	
+	index idx = index.get_instance();
 	
 	// test delete_doc
 	public void test_1() {
@@ -21,9 +21,9 @@ public class index_advanced_operations_test {
 	}
 	
 	// test add_doc, moved to the index
-//	public void test_2() {
-//		idxAdOp.add_doc(new String[] {"your 2499 5131 2203 {\"tf\":1,\"oh\":1} /test_1/EKAN4jw3LsE3631feSaA_g 1"}, "/test_1/EKAN4jw3LsE3631feSaA_g");
-//	}
+	public void test_2() {
+		idx.add_doc(new String[] {"your 2499 5131 2203 {\"tf\":1,\"oh\":1} /test_1/EKAN4jw3LsE3631feSaA_g 1"}, "/test_1/EKAN4jw3LsE3631feSaA_g");
+	}
 	
 	
 	public static void main(String[] args) {
@@ -32,12 +32,12 @@ public class index_advanced_operations_test {
 		index_advanced_operations_test idxAdOpTest = new index_advanced_operations_test();
 		
 		// prepare the inverted-index
-		idx.load_lexicon();
-		idx.load_posting(new String[] {"wanted", "tasty"});
+		index_io_operations.get_instance().load_lexicon();
+		index_io_operations.get_instance().load_posting(new String[] {"wanted", "tasty"});
 		idxProbe.show();
 		
 		idxAdOpTest.test_1();
-//		idxAdOpTest.test_2();
+		idxAdOpTest.test_2();
 		
 		idxProbe.display_content("Sure");
 		System.out.println(idx.docMap.get("/test_1/EKAN4jw3LsE3631feSaA_g").flatten());

@@ -24,21 +24,22 @@ public class engineEntryPoint {
 	private cleaner clr = cleaner.getInstance();
 	index_probe idxProb = new index_probe();
 	index_advanced_operations advOps = new index_advanced_operations();
+	index_io_operations ioOps = index_io_operations.get_instance(); // the order is not important, as it firstly initiated idx, whose definiton does not contain the ioOps 
 	
 	
 	// start serving
 	private void load_lexicon() {
-		idx.load_lexicon();
+		ioOps.load_lexicon();
 		System.out.println("Lexicon loaded");
 	}
 	
 	private void load_lastId() {
-		idx.load_lastId();
+		ioOps.load_lastId();
 		System.out.println("lastId loaded");
 	}
 	
 	private void load_docMap() {
-		idx.load_docMap();
+		ioOps.load_docMap();
 		System.out.println("doc map loaded");
 	}
 	
@@ -97,23 +98,23 @@ public class engineEntryPoint {
 	
 	
 	public void persist_index() {
-		idx.persist_index();
+		ioOps.persist_index();
 	}
 	
 	public long load_posting_unit(posting_unit postUnit) {
-		long addedUnitId = idx.load_posting_unit(postUnit);
+		long addedUnitId = ioOps.load_posting_unit(postUnit);
 		return addedUnitId;
 	}
 	
 	public long[] load_posting(ArrayList<String> targetTermsAL) {
 		String[] targetTerms = targetTermsAL.toArray(new String[0]); // (String[]) 
-		long[] loaded_units = idx.load_posting(targetTerms);
+		long[] loaded_units = ioOps.load_posting(targetTerms);
 		return loaded_units;
 	}
 	
 	// load all the postings into memory
 	public void load_all_posting() {
-		idx.load_all_posting();
+		ioOps.load_all_posting();
 	}
 	
 	public void clear_index() {

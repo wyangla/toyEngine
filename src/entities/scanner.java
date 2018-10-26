@@ -3,7 +3,7 @@ import java.util.*;
 import java.lang.reflect.*;
 import configs.scanner_config;
 import data_structures.posting_unit;
-import inverted_index.index;;
+import inverted_index.*;;
 
 
 // This class invokes corresponding plugins to conduct the operations on each unit on posting lists
@@ -53,7 +53,7 @@ public class scanner {
 	// this is for the convenience of collecting different types of running result
 	public ArrayList<Long> scan(String[] targetTerms, Class operationOnPostingList){ // input parameter better be not dynamic
 		ArrayList<Long> affectedUnits = new ArrayList<Long> (); // collect Ids of units which are affected
-		idx.load_posting(targetTerms); // load the corresponding posting list into memory
+		index_io_operations.get_instance().load_posting(targetTerms); // load the corresponding posting list into memory
 		
 		for(String term : targetTerms) {
 			scan_posting_list(term, operationOnPostingList, affectedUnits);

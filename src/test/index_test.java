@@ -36,7 +36,8 @@ public class index_test {
 	// add_posting_unit
 	public void test_3() {
 		posting_unit postUnit = new posting_unit();
-		idx.add_posting_unit("a " + postUnit.flatten());
+		postUnit.term = "a";
+		idx.add_posting_unit(postUnit.flatten());
 		idxProb.display_content("Sure");
 	}
 	
@@ -77,11 +78,13 @@ public class index_test {
 		
 		posting_unit postUnit = new posting_unit();
 		postUnit.uProp.put("tfidf", 3.33);
-		idx.add_posting_unit("a " + postUnit.flatten()); // successful
+		postUnit.term = "a";
+		idx.add_posting_unit(postUnit.flatten()); // successful
 		
 		posting_unit postUnit_2 = new posting_unit();
 		postUnit_2.uProp.put("tfidf", 3.35);
-		idx.add_posting_unit("c " + postUnit_2.flatten());
+		postUnit_2.term = "c";
+		idx.add_posting_unit(postUnit_2.flatten());
 		
 		idxProb.display_content("Sure");
 	}
@@ -89,7 +92,7 @@ public class index_test {
 	
 	// test persist_index
 	public void test_6() {
-		idx.persist_index();
+		index_io_operations.get_instance().persist_index();
 	}
 	
 	
@@ -102,7 +105,7 @@ public class index_test {
 	
 	// test load lexicon
 	public void test_8() {
-		idx.load_lexicon();
+		index_io_operations.get_instance().load_lexicon();
 		idxProb.display_content("Sure");
 	}
 	
@@ -110,7 +113,7 @@ public class index_test {
 	// test load posting
 	public void test_9() {
 		idx.postUnitMap.put(3L, null); // 3 not the end of a, so "a" should be loaded 
-		idx.load_posting(new String[] {"a", "c"});
+		index_io_operations.get_instance().load_posting(new String[] {"a", "c"});
 		idxProb.display_content("Sure");
 		
 //		idx.postUnitMap.put(4L, new posting_unit()); // 4 is the end of a, so "a" should not be loaded 
@@ -144,16 +147,16 @@ public class index_test {
 	
 	public static void main(String[] args) {
 		index_test idx_test = new index_test();
-//		idx_test.test_1();
-//		idx_test.test_2();
-//		idx_test.test_3();
-//		idx_test.test_4();
-//		idx_test.test_5();
-//		idx_test.test_6();
-//		idx_test.test_7();
+		idx_test.test_1();
+		idx_test.test_2();
+		idx_test.test_3();
+		idx_test.test_4();
+		idx_test.test_5();
+		idx_test.test_6();
+		idx_test.test_7();
 		idx_test.test_8();
-//		idx_test.test_9();
-//		idx_test.test_10();
+		idx_test.test_9();
+		idx_test.test_10();
 		
 	}
 }
