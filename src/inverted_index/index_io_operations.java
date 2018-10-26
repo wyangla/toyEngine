@@ -29,17 +29,99 @@ public class index_io_operations {
 	}
 	
 	
-	// persist the inverted index on to local hard disk, 
-	// with the posting units written in line in the order of posting list
-	// this method doesnt load all postings in to memory, so that cannot found all the units in the lexicon
-	public void _persist_index() {
+//	// persist the inverted index on to local hard disk, 
+//	// with the posting units written in line in the order of posting list
+//	// this method doesnt load all postings in to memory, so that cannot found all the units in the lexicon
+//	public void _persist_index() {
+//		try {
+//			// does not need to lock up the index, as the inverted-index is not dynamically adding on real time
+//			// 1. generate, 2. persist, 3. lazily load and serve
+//			// such that the generation process will consume the biggest amount of memory
+//			
+//			// TODO: persist the offset of terms instead of lexicon??
+//			
+//			// persist lexicon
+//			FileWriter lf = new FileWriter(configs.index_config.lexiconPersistancePath);
+//			try {
+//				ArrayList<String> termStrings = new ArrayList<String>();
+//				for(String term : idx.lexicon.keySet()) {
+//					Long[] termPosting = idx.lexicon.get(term).toArray(new Long[0]); // ArrayList -> String
+//					String termString = ""; 
+//					// concatenate all the posting unit ids of one term together
+//					for(long pUId : termPosting) {
+//						termString += " " + pUId;
+//					}
+//					termStrings.add(term + termString + "\r\n");
+//					}
+//				for(String tS : termStrings) {
+//					lf.write(tS); // write posting units into file, each line per unit
+//				}
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				lf.flush();
+//				lf.close();
+//			}
+//			
+//			// persist posting list
+//			long curPUnitId = 0L; // TODO: for testing
+//			FileWriter pf = new FileWriter(configs.index_config.postingPersistancePath);
+//			try {
+//				for(String term : idx.lexicon.keySet()) {
+//					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
+//					ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
+//					for(Long pUnitId : postingUnitIds) {
+//						String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
+//						pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+//						curPUnitId = pUnitId;
+//					}
+//					
+//					for(String uS : pUnitStrings) {
+//						pf.write(uS); // write posting units into file, each line per unit
+//					}	
+//				}
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//				System.out.println("--> error pUnitId: " + curPUnitId);
+//			} finally {
+//				pf.flush();
+//				pf.close();
+//			}
+//			
+//			// persist last post unit id
+//			FileWriter idf = new FileWriter(configs.index_config.lastPostUnitIdPath);
+//			try {
+//				idf.write("" + idx.lastPostUnitId);
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				idf.flush();
+//				idf.close();
+//			}
+//			
+//			// persist docMap
+//			FileWriter dm = new FileWriter(configs.index_config.docsPath);
+//			try {
+//				dm.write(""); // when the docMap is empty, make sure that the docInfo file is emptied
+//				for(String docId : idx.docMap.keySet()) {
+//					dm.write(idx.docMap.get(docId).flatten() + "\r\n");
+//				}
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				dm.flush();
+//				dm.close();
+//			}
+//			
+//			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
+	
+	private void persist_lexicon() {
 		try {
-			// does not need to lock up the index, as the inverted-index is not dynamically adding on real time
-			// 1. generate, 2. persist, 3. lazily load and serve
-			// such that the generation process will consume the biggest amount of memory
-			
-			// TODO: persist the offset of terms instead of lexicon??
-			
 			// persist lexicon
 			FileWriter lf = new FileWriter(configs.index_config.lexiconPersistancePath);
 			try {
@@ -62,7 +144,13 @@ public class index_io_operations {
 				lf.flush();
 				lf.close();
 			}
-			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void persist_postings() {
+		try {
 			// persist posting list
 			long curPUnitId = 0L; // TODO: for testing
 			FileWriter pf = new FileWriter(configs.index_config.postingPersistancePath);
@@ -87,7 +175,13 @@ public class index_io_operations {
 				pf.flush();
 				pf.close();
 			}
-			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void persist_lastPostUnitId() {
+		try {
 			// persist last post unit id
 			FileWriter idf = new FileWriter(configs.index_config.lastPostUnitIdPath);
 			try {
@@ -98,7 +192,13 @@ public class index_io_operations {
 				idf.flush();
 				idf.close();
 			}
-			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void persist_docMap() {
+		try {
 			// persist docMap
 			FileWriter dm = new FileWriter(configs.index_config.docsPath);
 			try {
@@ -112,11 +212,25 @@ public class index_io_operations {
 				dm.flush();
 				dm.close();
 			}
-			
-			
-		} catch (Exception e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+
+	
+	// persist the inverted index on to local hard disk, 
+	// with the posting units written in line in the order of posting list
+	// this method doesnt load all postings in to memory, so that cannot found all the units in the lexicon
+	public void _persist_index() {
+		// 1. generate, 2. persist, 3. lazily load and serve
+		// such that the generation process will consume the biggest amount of memory
+		
+		// TODO: use separated sub directories to store posting list of each term
+		persist_lexicon();
+		persist_postings();
+		persist_lastPostUnitId();
+		persist_docMap();
 	}
 	
 	
