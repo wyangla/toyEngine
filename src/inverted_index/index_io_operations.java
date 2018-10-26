@@ -410,9 +410,7 @@ public class index_io_operations {
 				}
 				
 			}
-		}
-	
-			
+		}		
 		return loaded_units;
 	}
 	

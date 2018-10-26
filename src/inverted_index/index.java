@@ -227,9 +227,12 @@ public class index {
 			// collect the pathes of posting files
 			// ref: https://stackoverrun.com/cn/q/12079625
 			List<String> postingPathes =  Files.walk(Paths.get(configs.index_config.postingsPersistancePath), 2)
+					.filter(path -> Files.isRegularFile(path))
 					.map(path -> path.toString())
 					.filter(path -> path.endsWith("posting"))
 					.collect(Collectors.toList());
+			
+			System.out.println("--->" + postingPathes.size()); // TODO: for testing
 			
 			for (String postingPath : postingPathes) {
 				FileReader pf = new FileReader(postingPath);
