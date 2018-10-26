@@ -306,8 +306,8 @@ public class index_io_operations {
 				// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
 				// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
 				// TODO: use [0], as one generated, it will always in the local file?
-				long pUnitSecondId = pUnitIds.get(0);  
-				loadedFlag = idx.postUnitMap.containsKey(pUnitSecondId);
+				long pUnitStarterId = pUnitIds.get(0);  
+				loadedFlag = idx.postUnitMap.containsKey(pUnitStarterId);
 			}
 		}
 		return loadedFlag;

@@ -140,7 +140,7 @@ public class index {
 			}
 		}
 
-				
+		// TODO: add retry for muti-threading situation
 		if (addedPostUnit == null) { // if all retries are all failed, print the customised exception
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
 		}
@@ -152,6 +152,7 @@ public class index {
 	// provided in APIs
 	// [term] currentId nextId previousId {uProp} docId status
 	// e.g. place 2 -1 -1 {} -- 1
+	// TODO: add a ArrayList<posting_unit> to collect adding failed units and retry, until success
 	public posting_unit add_posting_unit(String persistedUnit) {
 		String[] tempList = persistedUnit.split(" ");
 		String term = tempList[0];
