@@ -15,10 +15,10 @@ public class keeper {
 
 	// singleton
 	// ref: http://www.runoob.com/design-pattern/singleton-pattern.html
-	private static keeper keeper_ins = new keeper();
+	private static keeper kpr = new keeper();
 	private keeper() {}
 	public static keeper get_instance() {
-		return keeper_ins;
+		return kpr;
 	}
 	
 	

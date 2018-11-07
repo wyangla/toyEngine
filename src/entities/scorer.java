@@ -11,6 +11,7 @@ import exceptions.*;
 //make use of the configured plugin classes to calculate the score for one post unit
 public class scorer {
 	
+	// not singleton here, as scorer is used in multiple-threading context like advanced_ops.search
 	private scorer() {}
 	public static scorer getInstance() {
 		return new scorer();

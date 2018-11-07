@@ -18,10 +18,10 @@ public class index {
 	
 	// singleton
 	// ref: http://www.runoob.com/design-pattern/singleton-pattern.html
-	private static index index_ins = new index();
+	private static index idx = new index();
 	private index() {}
 	public static index get_instance() {
-		return index_ins;
+		return idx;
 	}
 	
 	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
