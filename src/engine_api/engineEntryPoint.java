@@ -3,6 +3,7 @@ package engine_api;
 import py4j.GatewayServer;
 import inverted_index.*;
 import entities.keeper_plugins.*;
+import entities.information_manager_plugins.*;
 import probes.index_probe;
 
 import java.util.*;
@@ -10,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import data_structures.*;
 import entities.cleaner;
+import entities.information_manager;
 import entities.keeper;
 import entities.keeper_plugins.lexicon_locker;
 import utils.*;
@@ -25,6 +27,7 @@ public class engineEntryPoint {
 	index_probe idxProb = new index_probe();
 	index_advanced_operations advOps = new index_advanced_operations();
 	index_io_operations ioOps = index_io_operations.get_instance(); // the order is not important, as it firstly initiated idx, whose definiton does not contain the ioOps 
+	information_manager infoManager = information_manager.get_instance();
 	
 	
 	// start serving
@@ -174,6 +177,18 @@ public class engineEntryPoint {
 		}
 		return relatedDocumentScores;
 	}
+	
+	
+	// high level information
+	public HashMap<String, Double> get_posting_loaded_status() {
+		return posting_loaded_status.infoMap;
+	}
+	
+	
+	public HashMap<String, Double> get_term_max_tf() {
+		return term_max_tf.infoMap;
+	}
+	
 	
 	
 	

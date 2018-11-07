@@ -8,6 +8,7 @@ import java.util.stream.*;
 import data_structures.*;
 import entities.*;
 import entities.keeper_plugins.*;
+import entities.information_manager_plugins.*;
 import utils.name_generator;
 import exceptions.*;
 
@@ -28,6 +29,7 @@ public class index {
 	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
 	public HashMap<String, doc> docMap = new HashMap<String, doc>();
+	private information_manager infoManager = information_manager.get_instance();	// only used when adding/removing new posting unit into/from index
 	
 	// for generating the unique posting unit id s
 	public class counters {
@@ -60,6 +62,10 @@ public class index {
 		
 		// initialize the lock for each term in lexicon
 		kpr.add_target(lexicon_locker.class, term);
+		
+		// record the current max tf and posting list loaded status
+		infoManager.set_info(term_max_tf.class, postUnit);
+		infoManager.set_info(posting_loaded_status.class, postUnit);
 		
 		return postUnit.currentId;
 	}
@@ -100,6 +106,9 @@ public class index {
 			postUnitMap.remove(postUnitId); // delete specific posting unites
 		}
 		
+		infoManager.del_info(term_max_tf.class, term);
+		infoManager.del_info(posting_loaded_status.class, term);
+		
 	}
 	
 	
@@ -131,6 +140,12 @@ public class index {
 					
 					lastPostUnitId = postUnit.currentId; // for setting the pc in load lexicon, making sure the old units are not overwritten when new units added
 					addedPostUnit = postUnit;
+					
+					// here does not need to set the posting_loaded_status is because
+					// _add_posting_unit is always occur with add_term
+					// but for the potential single usage, here still use the status setting
+					infoManager.set_info(term_max_tf.class, postUnit);
+					infoManager.set_info(posting_loaded_status.class, postUnit);
 					
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -170,6 +185,14 @@ public class index {
 	// just set flags instead of directly remove, ref: SSTable
 	// need an independent process scanning and cleaning the postUnitMap & lexicon
 	// the starter unit should never be deleted
+	
+	// not using infoManager here to set the high level information
+	// and infoManager not implementing the tf decreasing
+	// is because of the units are not really removed from index until the cleaner.clean the index
+	// the cleaner is only used in index.reload, so that no need of changing the information when setting the status here
+	
+	// if manually used the cleaner.clean, the posting_loaded_status is not affected, as cleaner will not affect the starter unit
+	// the term_max_tf could be over estimated, but still have no big harm as the scoring will always care about the large tf more
 	public long del_posting_unit(long postingUnitId) {
 		// TODO: + require lock
 		posting_unit delUnit = postUnitMap.get(postingUnitId);
@@ -200,12 +223,17 @@ public class index {
 		lexicon = new HashMap<String, ArrayList<Long>>();
 		kpr.clear_maps(lexicon_locker.class);
 		pc = new counters();
+		
+		// clear high level information
+		infoManager.clear_info(posting_loaded_status.class);
+		infoManager.clear_info(term_max_tf.class);
 	}
 
 	
 	// re-generate the posint unit ids
 	// fully scan the persisted posting
 	// single threading one, as only processing the persisted posting instead of the docs
+	// TODO: use multi-threading and add lock to pc?
 	public void reload_index() {
 		
 		// if not cleaned by cleaner, this reload will not work as expected,

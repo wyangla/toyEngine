@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import data_structures.*;
 import entities.*;
+import entities.information_manager_plugins.*;
 import entities.keeper_plugins.*;
 import exceptions.*;
 import probes.*;
@@ -16,6 +17,7 @@ public class index_io_operations {
 	
 	private static index idx = index.get_instance();
 	private static keeper kpr = keeper.get_instance();
+	private static information_manager infoManager = information_manager.get_instance();
 	
 	
 	// here use the lazy loading singleton is for the convenience of reuse in index 
@@ -185,6 +187,9 @@ public class index_io_operations {
 		persist_postings();
 		persist_lastPostUnitId();
 		persist_docMap();
+		
+		// persist max tf infomation
+		infoManager.persist_info(term_max_tf.class);
 	}
 	
 	
@@ -215,6 +220,11 @@ public class index_io_operations {
 			e.printStackTrace();
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace();
 		}
+		
+		// set the high level information
+		infoManager.set_info(posting_loaded_status.class, postUnit);
+		infoManager.set_info(term_max_tf.class, postUnit);
+		
 		return addedUnitId;
 	}
 	
@@ -291,24 +301,33 @@ public class index_io_operations {
 		}
 	}
 	
+//	 // check if the last posting unit is existing in the posting list of term, to check if the term is loaded 
+//	private boolean check_term_loaded(String term) {
+//		boolean loadedFlag = false;
+//		ArrayList<Long> pUnitIds = idx.lexicon.get(term);
+//		if(pUnitIds == null) {
+//			loadedFlag = true; // here use loaded signal to ignore the not existing term
+//		} else {
+//			if(pUnitIds.size() > 0) { 
+//				// 1 -> 0, should only be used as prevent the .get(0) throwing error
+//				// and if use 1, after delete all docs, all the postings are only with length 1, all will be reloaded no matter if they are in memory already.
+//				
+//				// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
+//				// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
+//				// TODO: use [0], as one generated, it will always in the local file?
+//				long pUnitStarterId = pUnitIds.get(0);  
+//				loadedFlag = idx.postUnitMap.containsKey(pUnitStarterId);
+//			}
+//		}
+//		return loadedFlag;
+//	}
 	
-	// check if the last posting unit is existing in the posting list of term, to check if the term is loaded 
+	// check if the last posting unit is existing in the posting list of term, to check if the term is loaded
 	private boolean check_term_loaded(String term) {
 		boolean loadedFlag = false;
-		ArrayList<Long> pUnitIds = idx.lexicon.get(term);
-		if(pUnitIds == null) {
-			loadedFlag = true; // here use loaded signal to ignore the not existing term
-		} else {
-			if(pUnitIds.size() > 0) { 
-				// 1 -> 0, should only be used as prevent the .get(0) throwing error
-				// and if use 1, after delete all docs, all the postings are only with length 1, all will be reloaded no matter if they are in memory already.
-				
-				// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
-				// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
-				// TODO: use [0], as one generated, it will always in the local file?
-				long pUnitStarterId = pUnitIds.get(0);  
-				loadedFlag = idx.postUnitMap.containsKey(pUnitStarterId);
-			}
+		Double lf = infoManager.get_info(posting_loaded_status.class, term);
+		if(lf != null && lf == 1.0) {
+			loadedFlag = true;
 		}
 		return loadedFlag;
 	}
