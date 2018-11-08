@@ -326,7 +326,7 @@ public class index_io_operations {
 	private boolean check_term_loaded(String term) {
 		boolean loadedFlag = false;
 		Double lf = infoManager.get_info(posting_loaded_status.class, term);
-		if(lf != null) {	// as long as the info is existing is existing means is loaded
+		if(lf != null) {	// as long as the info is existing means is loaded
 			loadedFlag = true;
 		}
 		return loadedFlag;
@@ -397,7 +397,7 @@ public class index_io_operations {
 		long[] loaded_units = new long[] {};
 
 		for(String term : targetTerms) {
-			if(!check_term_loaded(term)) { // if not loaded
+			if(!check_term_loaded(term) && idx.lexicon.containsKey(term)) { // if not loaded and term existing in lexicon
 				
 				String postingPath = configs.index_config.postingsPersistancePath + "/" + term + "/posting";
 				try {
