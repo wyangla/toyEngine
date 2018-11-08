@@ -472,4 +472,10 @@ public class index_io_operations {
 			};
 		}		
 	}
+	
+	
+	public void load_info() {
+		infoManager.load_info(term_max_tf.class);
+	}
+	
 }

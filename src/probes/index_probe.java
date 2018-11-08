@@ -25,6 +25,7 @@ public class index_probe {
 			System.out.println("lexiconLockMap: " + kpr.get_lockMap(lexicon_locker.class));
 			System.out.println("docMap: " + idx.docMap);
 			System.out.println("loadedStatus: " + posting_loaded_status.infoMap.keySet());
+			System.out.println("maxTf: " + term_max_tf.infoMap.keySet());
 			
 			System.out.println("");
 			
@@ -34,6 +35,7 @@ public class index_probe {
 			infoMap.put("lexiconLockMap: ", kpr.get_lockMap(lexicon_locker.class).toString());
 			infoMap.put("docMap: ", idx.docMap.entrySet().toString());
 			infoMap.put("loadedStatus: ", posting_loaded_status.infoMap.keySet().toString());
+			infoMap.put("maxTf: ", "" + term_max_tf.infoMap.keySet().toString());
 			
 		} else {
 			System.out.println("Dont print out the whole inverted index only if you are sure");
@@ -53,6 +55,7 @@ public class index_probe {
 		infoMap.put("lexicon size: ", "" + idx.lexicon.size());
 		infoMap.put("docMap size: ", "" + idx.docMap.size());
 		infoMap.put("loadedStatus size: ", "" + posting_loaded_status.infoMap.size());
+		infoMap.put("maxTf size: ", "" + term_max_tf.infoMap.size());
 		return infoMap;	
 	}
 

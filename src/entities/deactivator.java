@@ -86,18 +86,26 @@ public class deactivator {
 	}
 	
 	
-	public void start_monitoring() throws Exception{
-		while(true) {
+	public class deactivator_thread extends Thread {
+		public void run() {
 			try {
-				// TODO: testing
-				System.out.println("-- monitoring --");
-				idxIOOp.persist_index();	// persist before deactivating, otherwise the newly added units will be lost
-				deactivate();
+				while(true) {
+					// TODO: testing
+					System.out.println("-- monitoring --");
+					idxIOOp.persist_index();	// persist before deactivating, otherwise the newly added units will be lost
+					deactivate();
+					Thread.sleep(deactivator_config.monitoringInterval);
+				}
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
-			
-			Thread.sleep(deactivator_config.monitoringInterval);
 		}
+	}
+	
+	
+	public void start_monitoring() throws Exception{
+		deactivator_thread dt = new deactivator_thread();
+		dt.setDaemon(true);	// so that will exit after the main exit
+		dt.start();
 	}
 }

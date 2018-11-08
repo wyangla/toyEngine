@@ -15,9 +15,10 @@ public class term_max_tf{
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			Double tf = infoMap.get(pUnit.term);
-			if(tf != null) {
-				if(pUnit.uProp.get("tf") > tf) {	// only update when the new tf is larger than the original one
+			Double origTf = infoMap.get(pUnit.term);
+			if(origTf != null) {
+				Double curTf = pUnit.uProp.get("tf");
+				if(curTf != null && curTf > origTf) {	// only update when the new tf is larger than the original one
 					infoMap.put(pUnit.term, pUnit.uProp.get("tf"));
 				}
 			}else {

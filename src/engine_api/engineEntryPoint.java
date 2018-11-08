@@ -10,10 +10,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import data_structures.*;
-import entities.cleaner;
-import entities.information_manager;
-import entities.keeper;
-import entities.keeper_plugins.lexicon_locker;
+import entities.*;
 import utils.*;
 
 
@@ -28,6 +25,7 @@ public class engineEntryPoint {
 	index_advanced_operations advOps = new index_advanced_operations();
 	index_io_operations ioOps = index_io_operations.get_instance(); // the order is not important, as it firstly initiated idx, whose definiton does not contain the ioOps 
 	information_manager infoManager = information_manager.get_instance();
+	deactivator dac = deactivator.get_instance();
 	
 	
 	// start serving
@@ -46,6 +44,10 @@ public class engineEntryPoint {
 		System.out.println("doc map loaded");
 	}
 	
+	private void load_info() {
+		ioOps.load_info();
+		System.out.println("info loaded");
+	}
 	
 	// main objects 
 	public index get_index() {
@@ -190,6 +192,14 @@ public class engineEntryPoint {
 	}
 	
 	
+	// deactivator
+	public void start_monitoring() {
+		try {
+			dac.start_monitoring();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 	
 	public static void main(String[] args) {
@@ -197,6 +207,8 @@ public class engineEntryPoint {
 		ep.load_lexicon();
 		ep.load_lastId();
 		ep.load_docMap();
+		ep.load_info();
+		ep.start_monitoring();
 		
 		GatewayServer gServer = new GatewayServer(ep); 
 		gServer.start();

@@ -43,7 +43,7 @@ public class information_manager {
 		int addedFlag = -1;
 		try {
 			Method setInfoMethod = targetClass.getMethod("set_info", posting_unit.class);
-			addedFlag = (int)setInfoMethod.invoke(null, pUnit);
+			addedFlag = (Integer)setInfoMethod.invoke(null, pUnit);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -55,7 +55,7 @@ public class information_manager {
 		int deletedFlag = -1;
 		try {
 			Method delInfoMethod = targetClass.getMethod("del_info",String.class);
-			deletedFlag = (int)delInfoMethod.invoke(null, targetName);
+			deletedFlag = (Integer)delInfoMethod.invoke(null, targetName);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -66,7 +66,7 @@ public class information_manager {
 		int clearedFlag = -1;
 		try {
 			Method delInfoMethod = targetClass.getMethod("clear_info");
-			clearedFlag = (int)delInfoMethod.invoke(null);
+			clearedFlag = (Integer)delInfoMethod.invoke(null);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -77,7 +77,7 @@ public class information_manager {
 		int loadedFlag = -1;
 		try {
 			Method loadInfoFlag = targetClass.getMethod("load_info");
-			loadedFlag = (int)loadInfoFlag.invoke(null);
+			loadedFlag = (Integer)loadInfoFlag.invoke(null);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -88,7 +88,7 @@ public class information_manager {
 		int persistedFlag = -1;
 		try {
 			Method persistInfoFlag = targetClass.getMethod("persist_info");
-			persistedFlag = (int)persistInfoFlag.invoke(null);
+			persistedFlag = (Integer)persistInfoFlag.invoke(null);
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
