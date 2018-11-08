@@ -5,16 +5,19 @@ import java.util.HashMap;
 import configs.information_manager_config;
 import data_structures.posting_unit;
 
+
+
 public class posting_loaded_status {
 	public static HashMap<String, Double> infoMap = new HashMap<String, Double>();
 	public static String persistingPath = information_manager_config.persistingDir + "/posting_loaded_status";
 	
 	
-	
+	// if the infoMap of posting_loaded_status contains the (term:timestamp) means loaded
+	// when the k:v does not existing, means not loaded
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			infoMap.put(pUnit.term, 1.0);	// 1 loaded, 0 not loaded
+			infoMap.put(pUnit.term, (double)System.currentTimeMillis());
 			addedFlag = 1;
 		}catch(Exception e) {
 			e.printStackTrace();
