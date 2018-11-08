@@ -326,7 +326,7 @@ public class index_io_operations {
 	private boolean check_term_loaded(String term) {
 		boolean loadedFlag = false;
 		Double lf = infoManager.get_info(posting_loaded_status.class, term);
-		if(lf != null && lf == 1.0) {
+		if(lf != null) {	// as long as the info is existing is existing means is loaded
 			loadedFlag = true;
 		}
 		return loadedFlag;

@@ -1,34 +1,41 @@
 package entities;
-import entities.information_manager_plugins.*;
-import entities.keeper_plugins.lexicon_locker;
-import entities.scanner_plugins.*;
-import inverted_index.index;
-import utils.*;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import configs.*;
-import data_structures.*;
+import configs.deactivator_config;
+import entities.information_manager_plugins.posting_loaded_status;
+import entities.scanner_plugins.delete_posting;
+import inverted_index.*;
+import utils.task_spliter;
 
 
 
-// controlling the activation and deactivation of posting list
-// periodically running as services
-public class activator {
+public class deactivator {
 	private static information_manager infoManager = information_manager.get_instance();
 	private static index idx = index.get_instance();
+	private static index_io_operations idxIOOp = index_io_operations.get_instance();
 	private static scanner snr = new scanner();
-	private static keeper kpr = keeper.get_instance();
 	
 	
-	private boolean check_expired(String targetTerm) {
+	
+	private static deactivator dac;
+	private deactivator() {}
+	public static deactivator get_instance() {
+		if(dac == null) {
+			dac = new deactivator();
+		}
+		return dac;
+	}
+	
+	
+	
+	public boolean check_expired(String targetTerm) {
 		boolean expiredFlag = false;
 		Double vistTimeStamp = infoManager.get_info(posting_loaded_status.class, targetTerm);	// the last visit time stamp
 		Double curTimeStamp = (double)System.currentTimeMillis();
 		
 		// only the loaded can be expired
-		if(vistTimeStamp != null && curTimeStamp > vistTimeStamp + (double)activator_config.loadExpireTime) {
+		if(vistTimeStamp != null && curTimeStamp > vistTimeStamp + (double)deactivator_config.loadExpireTime) {
 			expiredFlag = true;
 		}
 		return expiredFlag;
@@ -51,7 +58,7 @@ public class activator {
 		}
 		
 		// delete the posting units of one term
-		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(activator_config.workerNum, expiredTerms.toArray(new String[0]));
+		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(deactivator_config.workerNum, expiredTerms.toArray(new String[0]));
 
 		for(String[] workLoad : workLoads ) {
 			scanner.scan_term_thread_with_lock st = new scanner.scan_term_thread_with_lock(snr, delete_posting.class, "", workLoad);
@@ -72,8 +79,8 @@ public class activator {
 		}
 		
 		// TODO: for testing
-		System.out.println("-- deactivation");
-		System.out.println(deactivatedTerms);
+		System.out.println("-- deactivation --");
+		System.out.println("deactivated: " + deactivatedTerms.toString());
 		
 		return affectedUnitIds;
 	}
@@ -82,16 +89,15 @@ public class activator {
 	public void start_monitoring() throws Exception{
 		while(true) {
 			try {
+				// TODO: testing
+				System.out.println("-- monitoring --");
+				idxIOOp.persist_index();	// persist before deactivating, otherwise the newly added units will be lost
 				deactivate();
 			}catch(Exception e) {
 				e.printStackTrace();
 			}
 			
-			Thread.sleep(activator_config.monitoringInterval);
+			Thread.sleep(deactivator_config.monitoringInterval);
 		}
 	}
-	
-	
-	
-	
 }

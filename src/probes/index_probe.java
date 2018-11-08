@@ -1,13 +1,12 @@
 package probes;
 
-import java.util.Arrays;
-
 import java.util.HashMap;
 
 import entities.keeper;
-import entities.keeper_plugins.lexicon_locker;
 import inverted_index.*;
 import entities.keeper_plugins.*;
+import entities.information_manager_plugins.*;
+
 
 
 public class index_probe {
@@ -25,6 +24,8 @@ public class index_probe {
 			System.out.println("lexiconLockInfoMap: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
 			System.out.println("lexiconLockMap: " + kpr.get_lockMap(lexicon_locker.class));
 			System.out.println("docMap: " + idx.docMap);
+			System.out.println("loadedStatus: " + posting_loaded_status.infoMap.keySet());
+			
 			System.out.println("");
 			
 			infoMap.put("postUnitMap: ", idx.postUnitMap.entrySet().toString());
@@ -32,6 +33,7 @@ public class index_probe {
 			infoMap.put("lexiconLockInfoMap: ", kpr.get_lockInfoMap(lexicon_locker.class).entrySet().toString());
 			infoMap.put("lexiconLockMap: ", kpr.get_lockMap(lexicon_locker.class).toString());
 			infoMap.put("docMap: ", idx.docMap.entrySet().toString());
+			infoMap.put("loadedStatus: ", posting_loaded_status.infoMap.keySet().toString());
 			
 		} else {
 			System.out.println("Dont print out the whole inverted index only if you are sure");
@@ -50,6 +52,7 @@ public class index_probe {
 		infoMap.put("postUnitMap size: ", "" + idx.postUnitMap.size());
 		infoMap.put("lexicon size: ", "" + idx.lexicon.size());
 		infoMap.put("docMap size: ", "" + idx.docMap.size());
+		infoMap.put("loadedStatus size: ", "" + posting_loaded_status.infoMap.size());
 		return infoMap;	
 	}
 
