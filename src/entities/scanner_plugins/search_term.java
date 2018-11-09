@@ -17,7 +17,7 @@ public class search_term {
 	public static long conduct(posting_unit pUnit) { // conduct the operation on each post unit
 		long relatedUnitId = -1L; 
 		double score = scorer.getInstance().cal_score(pUnit);
-		docScoreCounter.increase(pUnit.docId, score); // TODO: make use of the scorer here
+		docScoreCounter.increase(pUnit.docId, score);
 		return relatedUnitId; // affected post unit Ids
 	}
 }

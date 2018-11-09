@@ -17,10 +17,10 @@ public class scorer {
 		return new scorer();
 	}
 	
-	public double cal_score(posting_unit postUnit) {
+	
+	// require manually input the models and weights
+	public double cal_score(String[] targetModels, double[] modelWeights, posting_unit postUnit) {
 		double docScoreFromUnit = 0.;
-		String[] targetModels = scorer_config.modelsInUse;
-		double[] modelWeights = scorer_config.modelWeight;
 		
 		if(targetModels.length == modelWeights.length) {
 			
@@ -41,4 +41,18 @@ public class scorer {
 		}
 		return docScoreFromUnit;
 	}
+	
+	
+	// use the config file to do plan scoring
+	public double cal_score(posting_unit postUnit) {
+		double docScoreFromUnit = 0.;
+		String[] targetModels = scorer_config.modelsInUse;
+		double[] modelWeights = scorer_config.modelWeight;
+		docScoreFromUnit = cal_score(targetModels, modelWeights, postUnit);
+		return docScoreFromUnit;
+	}
+	
+	
+
+	
 }

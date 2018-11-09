@@ -4,9 +4,9 @@ import java.util.*;
 import utils.*;
 import java.lang.reflect.*;
 import configs.*;
-import entities.scanner;
-import entities.scanner_plugins.delete_doc;
-import entities.scanner_plugins.search_term;
+import entities.*;
+import entities.scanner_plugins.*;
+import entities.information_manager_plugins.*;
 import data_structures.*;
 
 
@@ -14,6 +14,8 @@ public class index_advanced_operations {
 	
 	private scanner snr = new scanner();
 	private index idx = index.get_instance();
+	private information_manager infoManager = information_manager.get_instance();
+	
 	
 	// delete a specific document from the inverted-index
 	public ArrayList<Long> delete_doc(String[] containedTerms, String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
@@ -117,5 +119,25 @@ public class index_advanced_operations {
 		System.out.println(totalDocumentScoreCounter);
 		return totalDocumentScoreCounter;
 	}
+	
+	
+	
+	// one iteration of the max score searching
+	// curThreshold, current lowest score of top-K docs
+	// the first round, cal the upper bound of scores of all document and get the highest topK to cal the actual score
+	private counter _search_MaxScore_iteration(String[] targetTerms, counter documentScoreCounter, int topK, double curThreshold) {
+		return documentScoreCounter;
+	}
+	
+	
+	// MaxScore searching
+	public counter search_MaxScore(String[] targetTerms) {
+		counter totalDocumentScoreCounter = new counter(); // used for merging all the result of searching each term
+		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
+		ArrayList<counter> counterList = new ArrayList<counter>();
+		
+		return totalDocumentScoreCounter;
+	}
+	
 	
 }
