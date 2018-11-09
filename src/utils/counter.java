@@ -36,4 +36,14 @@ public class counter extends HashMap<String, Double> {
 			this.put(key, this.get(key) + value);
 		}
 	}
+	
+	// ref: http://www.cnblogs.com/unclecc/p/9400939.html
+	public String get_min_key() {
+		String minKey = null;
+		ArrayList<Map.Entry<String, Double>> entryList = new ArrayList<Map.Entry<String, Double>>();
+		entryList.addAll(this.entrySet());
+		entryList.sort((e1, e2) -> e1.getValue().compareTo(e2.getValue()));
+		minKey = entryList.get(0).getKey();
+		return minKey;
+	}
 }

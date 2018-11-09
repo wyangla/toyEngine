@@ -9,6 +9,7 @@ public class counter_test {
 	public static void main(String[] args) {
 		c1.put("a", 1.);
 		c1.put("b", 1.);
+		c1.put("c", -1.0);
 		c2.put("b", 1.);
 		c2.put("c", 1.);
 		
@@ -19,5 +20,7 @@ public class counter_test {
 		
 		c3.increase("b", 3.);
 		System.out.println(c3);
+		
+		System.out.print(c3.get_min_key());
 	}
 }

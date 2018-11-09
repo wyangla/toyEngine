@@ -170,26 +170,26 @@ public class index_advanced_operations {
 	
 	// MaxScore searching
 	public counter search_MaxScore(String[] targetTerms, int topK) {
-		counter documentUpperBoundScores = _get_upper_bounds(targetTerms);	// pass
+		counter documentUpperBoundScores = get_upper_bounds(targetTerms);	// pass
 		counter totalDocumentScoreCounter = new counter();	// pass
 		
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		ArrayList<counter> counterList = new ArrayList<counter>();
 		
-		for(String term : targetTerms) {
-			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, get_upper_bound_score.class, totalDocumentScoreCounter, new String[] {term});
-			st.run();
-			threadList.add(st); 
-			counterList.add(totalDocumentScoreCounter);
-		}
-		for(scanner.scan_term_thread st : threadList) {
-			try {
-				st.join();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+//		for(String term : targetTerms) {
+//			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, get_upper_bound_score.class, totalDocumentScoreCounter, new String[] {term});
+//			st.run();
+//			threadList.add(st); 
+//			counterList.add(totalDocumentScoreCounter);
+//		}
+//		for(scanner.scan_term_thread st : threadList) {
+//			try {
+//				st.join();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
 		
 		return totalDocumentScoreCounter;
 	}
