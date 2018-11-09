@@ -6,8 +6,8 @@ import utils.*;
 import entities.*;
 
 
-public class search_term_max_score {
-	public static counter docScoreCounter; // passed from the outside method which makes use of the scanner
+public class get_upper_bound_score {
+	public static counter docScoreCounter; // need to be shared by all threads, not merged at the end
 	
 	public static void set_parameters (counter documentScoreCounter) {
 		docScoreCounter = documentScoreCounter;
