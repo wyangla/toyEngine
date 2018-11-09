@@ -125,16 +125,36 @@ public class index_advanced_operations {
 	// one iteration of the max score searching
 	// curThreshold, current lowest score of top-K docs
 	// the first round, cal the upper bound of scores of all document and get the highest topK to cal the actual score
-	private counter _search_MaxScore_iteration(String[] targetTerms, counter documentScoreCounter, int topK, double curThreshold) {
-		return documentScoreCounter;
+	private counter _get_upper_bounds(String[] targetTerms) {
+		counter documentUpperBoundScores = new counter(); // used for merging all the result of searching each term
+		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
+		ArrayList<counter> counterList = new ArrayList<counter>();
+		
+		for(String term : targetTerms) {
+			counter documentScoreCounter = new counter();
+			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, search_term_max_score.class, documentScoreCounter, new String[] {term});
+			st.run();
+			threadList.add(st); 
+			counterList.add(documentScoreCounter);
+		}
+		for(scanner.scan_term_thread st : threadList) {
+			try {
+				st.join();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		for(counter c : counterList) {
+			documentUpperBoundScores = documentUpperBoundScores.update(c);
+		}
+		return documentUpperBoundScores;
 	}
 	
 	
 	// MaxScore searching
-	public counter search_MaxScore(String[] targetTerms) {
-		counter totalDocumentScoreCounter = new counter(); // used for merging all the result of searching each term
-		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
-		ArrayList<counter> counterList = new ArrayList<counter>();
+	public counter search_MaxScore(String[] targetTerms, int topK) {
+		counter totalDocumentScoreCounter = new counter();
+		counter documentUpperBoundScores = _get_upper_bounds(targetTerms);
 		
 		return totalDocumentScoreCounter;
 	}

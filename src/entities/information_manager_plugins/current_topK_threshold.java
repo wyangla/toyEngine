@@ -6,7 +6,7 @@ import configs.information_manager_config;
 
 
 
-public class term_max_tf{
+public class current_topK_threshold{
 	public static HashMap<String, Double> infoMap = new HashMap<String, Double>();
 	public static String persistingPath = information_manager_config.persistingDir + "/term_max_tf";
 	
@@ -15,15 +15,15 @@ public class term_max_tf{
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			Double origTf = infoMap.get(pUnit.term);
-			Double curTf = pUnit.uProp.get("tf");
+			Double origThres = infoMap.get("threshold");	// only one key "threshold" in this infoMap
+			Double curThres = pUnit.uProp.get("tf");
 			
-			if(origTf != null) {
-				if(curTf != null && curTf > origTf) {	// only update when the new tf is larger than the original one
-					infoMap.put(pUnit.term, curTf);
+			if(origThres != null) {
+				if(curThres != null && curThres > origThres) {
+					infoMap.put("threshold", curThres);
 				}
 			}else {
-				infoMap.put(pUnit.term, curTf);
+				infoMap.put(pUnit.term, curThres);
 			}
 
 			addedFlag = 1;
