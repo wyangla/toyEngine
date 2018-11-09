@@ -52,16 +52,49 @@ public class index_advanced_operations {
 //	}
 
 	
+//	public counter search(String[] targetTerms) {
+//		counter totalDocumentScoreCounter = new counter(); // used for merging all the result of searching each term
+//		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
+//		ArrayList<counter> counterList = new ArrayList<counter>();
+//		
+//		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, targetTerms);
+//		
+//		for(String[] workLoad : workLoads) {
+//			counter documentScoreCounter = new counter();
+//			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, search_term.class, documentScoreCounter, workLoad);
+//			st.run();
+//			threadList.add(st); 
+//			counterList.add(documentScoreCounter);
+//		}
+//		
+//		for(scanner.scan_term_thread st : threadList) {
+//			try {
+//				st.join();
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		// merging all the searching result
+//		for(counter c : counterList) {
+//			System.out.println(c);
+//			totalDocumentScoreCounter = totalDocumentScoreCounter.update(c);
+//		}
+//		System.out.println("--");
+//		System.out.println(totalDocumentScoreCounter);
+//		return totalDocumentScoreCounter;
+//	}
+	
+	
 	public counter search(String[] targetTerms) {
 		counter totalDocumentScoreCounter = new counter(); // used for merging all the result of searching each term
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		ArrayList<counter> counterList = new ArrayList<counter>();
 		
-		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, targetTerms);
-		
-		for(String[] workLoad : workLoads) {
+		// DAAT
+		for(String term : targetTerms) {
 			counter documentScoreCounter = new counter();
-			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, search_term.class, documentScoreCounter, workLoad);
+			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, search_term.class, documentScoreCounter, new String[] {term});
 			st.run();
 			threadList.add(st); 
 			counterList.add(documentScoreCounter);

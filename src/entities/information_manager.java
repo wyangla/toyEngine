@@ -26,7 +26,7 @@ public class information_manager {
 	
 	
 	// targetName could be the term when trying to get the max score on a term
-	public static Double get_info(Class targetClass, String targetName) {
+	public Double get_info(Class targetClass, String targetName) {
 		Double info = null;
 		try {
 			Method getInfoMethod = targetClass.getMethod("get_info", String.class);
@@ -39,7 +39,7 @@ public class information_manager {
 	
 	
 	// all the new information come from the posting_unit
-	public static int set_info(Class targetClass, posting_unit pUnit) {
+	public int set_info(Class targetClass, posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
 			Method setInfoMethod = targetClass.getMethod("set_info", posting_unit.class);
@@ -51,7 +51,7 @@ public class information_manager {
 	}
 	
 	
-	public static int del_info(Class targetClass, String targetName) {
+	public int del_info(Class targetClass, String targetName) {
 		int deletedFlag = -1;
 		try {
 			Method delInfoMethod = targetClass.getMethod("del_info",String.class);
@@ -62,7 +62,7 @@ public class information_manager {
 		return deletedFlag;
 	}  
 	
-	public static int clear_info(Class targetClass) {
+	public int clear_info(Class targetClass) {
 		int clearedFlag = -1;
 		try {
 			Method delInfoMethod = targetClass.getMethod("clear_info");
@@ -73,7 +73,7 @@ public class information_manager {
 		return clearedFlag;
 	}  
 	
-	public static int load_info(Class targetClass) {
+	public int load_info(Class targetClass) {
 		int loadedFlag = -1;
 		try {
 			Method loadInfoFlag = targetClass.getMethod("load_info");
@@ -84,7 +84,7 @@ public class information_manager {
 		return loadedFlag;
 	}
 	
-	public static int persist_info(Class targetClass) {
+	public int persist_info(Class targetClass) {
 		int persistedFlag = -1;
 		try {
 			Method persistInfoFlag = targetClass.getMethod("persist_info");
