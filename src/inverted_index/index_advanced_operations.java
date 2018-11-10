@@ -253,6 +253,7 @@ public class index_advanced_operations {
 	// WAND searching
 	// totalDocumentScoreCounter is shared here, so that need synchronisation
 	public counter search_WAND(String[] targetTerms, int topK) {
+		counter termMaxScores = get_term_upper_bounds(targetTerms); // pass
 		HashMap<String, HashSet<String>> termDocIdSetMap = get_term_docId_set(targetTerms); // pass	
 		counter totalDocumentScoreCounter = new counter();	// pass
 		
@@ -261,8 +262,8 @@ public class index_advanced_operations {
 		for(String term : targetTerms) {
 			scanner.scan_term_thread st = new scanner.scan_term_thread(
 					snr, 
-					search_term_maxScore.class, 
-					new param_search_term_maxScore(scorer.getInstance(), docUpperBounds, totalDocumentScoreCounter, topK),
+					search_term_WAND.class, 
+					new param_search_term_WAND(scorer.getInstance(), termMaxScores, termDocIdSetMap, totalDocumentScoreCounter, topK),
 					new String[] {term});
 			st.run();
 			threadList.add(st); 

@@ -13,7 +13,7 @@ public class search_term_WAND {
 	// operations are done by methods provided by param
 	public static long conduct(posting_unit pUnit) {
 		long relatedUnitId = -1L; 
-		relatedUnitId = param.try_to_replace_min_score_doc(pUnit);
+		relatedUnitId = param.try_to_score_add_doc(pUnit);
 		return relatedUnitId;
 	}
 }
