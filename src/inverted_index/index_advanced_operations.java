@@ -189,7 +189,7 @@ public class index_advanced_operations {
 	
 	// MaxScore searching
 	// totalDocumentScoreCounter is shared here, so that need synchronisation
-	public counter search_MaxScore(String[] targetTerms, int topK) {
+	public counter search_maxScore(String[] targetTerms, int topK) {
 		counter docUpperBounds = get_doc_upper_bounds(targetTerms);	// pass
 		counter totalDocumentScoreCounter = new counter();	// pass
 		
@@ -214,6 +214,43 @@ public class index_advanced_operations {
 		totalDocumentScoreCounter.sort();	// sort the searching result big -> small, topK are ensured to be good result
 		return totalDocumentScoreCounter;
 	}
+	
+	
+	/*
+	 * 
+	 * WAND
+	 * 
+	 * */
+	
+	// return the sets filled by the docIds of terms
+	public HashMap<String, HashSet<String>> get_posting_docId_set(String[] targetTerms) {
+		HashMap<String, HashSet<String>> termDocIdSetMap = new HashMap<String, HashSet<String>>();
+		
+		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
+		for(String term : targetTerms) {
+			HashSet<String> docIdSet = new HashSet<String>();
+			scanner.scan_term_thread st = new scanner.scan_term_thread(
+					snr, 
+					get_docId_set.class, 
+					docIdSet, 
+					new String[] {term});
+			
+			st.run();
+			threadList.add(st); 
+			termDocIdSetMap.put(term, docIdSet);	// put all docId set into the map
+		}
+		for(scanner.scan_term_thread st : threadList) {
+			try {
+				st.join();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return termDocIdSetMap;
+	}
+	
+	
+	
 	
 	
 }

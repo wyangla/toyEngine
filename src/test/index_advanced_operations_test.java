@@ -50,9 +50,14 @@ public class index_advanced_operations_test {
 		long t2 = System.currentTimeMillis();
 		System.out.println(t2 - t1);
 		
-		System.out.println(idxAdOp.search_MaxScore(new String[] {"wanted", "a", "want"}, 2));
+		System.out.println(idxAdOp.search_maxScore(new String[] {"wanted", "a", "want"}, 2));
 		long t3 = System.currentTimeMillis();
 		System.out.println(t3 - t2);
+	}
+	
+	// test get_posting_docId_set
+	public void test_6() {
+		System.out.println(idxAdOp.get_posting_docId_set(new String[] {"wanted", "want"}));
 	}
 	
 	
@@ -79,7 +84,8 @@ public class index_advanced_operations_test {
 		
 //		idxAdOpTest.test_3();
 //		idxAdOpTest.test_4();
-		idxAdOpTest.test_5();
+//		idxAdOpTest.test_5();
+		idxAdOpTest.test_6();
 	}
 	
 }

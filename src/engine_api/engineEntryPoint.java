@@ -170,6 +170,7 @@ public class engineEntryPoint {
 	}
 	
 	
+	// naive search
 	public counter search(ArrayList<String> queryTerms) {
 		counter relatedDocumentScores = new counter();
 		try {
@@ -179,6 +180,20 @@ public class engineEntryPoint {
 		}
 		return relatedDocumentScores;
 	}
+	
+	
+	// maxScore
+	public counter search_maxScore(ArrayList<String> queryTerms, int topK) {
+		counter relatedDocumentScores = new counter();
+		try {
+			relatedDocumentScores = advOps.search_maxScore(queryTerms.toArray(new String[0]), topK);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return relatedDocumentScores;
+	}
+	
+	
 	
 	
 	// high level information
