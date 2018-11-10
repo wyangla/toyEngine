@@ -158,6 +158,8 @@ public class index {
 		}
 
 		// TODO: add retry for muti-threading situation
+		// as some locking attempts will be blocked by the lock status,
+		// so use a recursive adding?
 		if (addedPostUnit == null) { // if all retries are all failed, print the customised exception
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
 		}

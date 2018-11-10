@@ -30,9 +30,29 @@ public class index_advanced_operations_test {
 	}
 	
 	// test get_term_upper_bounds
+	// need the lexicon generated
 	public void test_3() {
-		idIOOp.load_posting(new String[] {"wanted"});
-		System.out.println(idxAdOp.get_term_upper_bounds(new String[] {"wanted"}));
+		System.out.println(idx.lexicon.get("wanted"));
+		System.out.println(infoManager.get_info(term_max_tf.class, "wanted")); // 4.701457146816058
+		System.out.println(idxAdOp.get_term_upper_bounds(new String[] {"wanted", "a"})); // 2.0481418383862344
+	}
+	
+	// test get_doc_upper_bounds
+	public void test_4() {
+		System.out.println(idxAdOp.get_doc_upper_bounds(new String[] {"wanted"}));
+	}
+	
+	// test search_MaxScore
+	public void test_5() {
+		System.out.println("-->");
+		long t1 = System.currentTimeMillis();
+		System.out.println(idxAdOp.search(new String[] {"wanted", "a", "want"}));
+		long t2 = System.currentTimeMillis();
+		System.out.println(t2 - t1);
+		
+		System.out.println(idxAdOp.search_MaxScore(new String[] {"wanted", "a", "want"}, 2));
+		long t3 = System.currentTimeMillis();
+		System.out.println(t3 - t2);
 	}
 	
 	
@@ -44,6 +64,8 @@ public class index_advanced_operations_test {
 		// prepare the inverted-index
 		index_io_operations.get_instance().load_lexicon();
 		index_io_operations.get_instance().load_posting(new String[] {"wanted", "tasty"});
+		index_io_operations.get_instance().load_info();
+		index_io_operations.get_instance().load_docMap();
 		idxProbe.show();
 		
 //		idxAdOpTest.test_1();
@@ -55,7 +77,9 @@ public class index_advanced_operations_test {
 //		System.out.println(doc.deflatten(idx.docMap.get("/test_1/EKAN4jw3LsE3631feSaA_g").flatten()).docLength);
 //		System.out.println(doc.deflatten(idx.docMap.get("/test_1/EKAN4jw3LsE3631feSaA_g").flatten()).docProp);
 		
-		idxAdOpTest.test_3();
+//		idxAdOpTest.test_3();
+//		idxAdOpTest.test_4();
+		idxAdOpTest.test_5();
 	}
 	
 }

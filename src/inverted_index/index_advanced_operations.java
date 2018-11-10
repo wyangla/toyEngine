@@ -114,11 +114,11 @@ public class index_advanced_operations {
 		
 		// merging all the searching result
 		for(counter c : counterList) {
-			System.out.println(c);
+			// System.out.println(c);
 			totalDocumentScoreCounter = totalDocumentScoreCounter.update(c);
 		}
-		System.out.println("--");
-		System.out.println(totalDocumentScoreCounter);
+		// System.out.println("--");
+		// System.out.println(totalDocumentScoreCounter);
 		return totalDocumentScoreCounter;
 	}
 	
@@ -142,6 +142,7 @@ public class index_advanced_operations {
 				maxTf = 0.0;
 			}
 			posting_unit maxTfPUnit = new posting_unit();
+			maxTfPUnit.term = term;		// term need to be set as it is used in tfidf to get the df value
 			maxTfPUnit.uProp.put("tf", maxTf);
 			Double score = scr.cal_score(maxTfPUnit);
 			
