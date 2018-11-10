@@ -17,7 +17,7 @@ public class param_search_term_maxScore {
 	}
 	
 	// use the current docId replace the one with min score
-	public long try_to_replace_min_score_doc(posting_unit pUnit){
+	public long try_to_score_add_doc(posting_unit pUnit){
 		long newlyAddedUnitId = -1L; 
 		scorer scr = scorer.getInstance();
 		

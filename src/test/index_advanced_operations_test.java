@@ -57,7 +57,7 @@ public class index_advanced_operations_test {
 	
 	// test get_posting_docId_set
 	public void test_6() {
-		System.out.println(idxAdOp.get_posting_docId_set(new String[] {"wanted", "want"}));
+		System.out.println(idxAdOp.get_term_docId_set(new String[] {"wanted", "want"}));
 	}
 	
 	
