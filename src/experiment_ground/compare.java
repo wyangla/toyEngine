@@ -14,5 +14,8 @@ public class compare {
 		
 		l.sort((o1,o2) -> o1.compareTo(o2));
 		System.out.println(l);
+		
+		l.sort((o1,o2) -> o2.compareTo(o1));
+		System.out.println(l);
 	}
 }

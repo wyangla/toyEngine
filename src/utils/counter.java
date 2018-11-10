@@ -42,8 +42,23 @@ public class counter extends HashMap<String, Double> {
 		String minKey = null;
 		ArrayList<Map.Entry<String, Double>> entryList = new ArrayList<Map.Entry<String, Double>>();
 		entryList.addAll(this.entrySet());
-		entryList.sort((e1, e2) -> e1.getValue().compareTo(e2.getValue()));
+		entryList.sort((e1, e2) -> e1.getValue().compareTo(e2.getValue())); // small to big
 		minKey = entryList.get(0).getKey();
 		return minKey;
+	}
+	
+	public void remove_after_topK(int K) {
+		ArrayList<String> removeKey = new ArrayList<String>();
+		ArrayList<Map.Entry<String, Double>> entryList = new ArrayList<Map.Entry<String, Double>>();
+		entryList.addAll(this.entrySet());
+		entryList.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));	// big to small
+		
+		for(int i = K; i < entryList.size(); i ++) {
+			removeKey.add(entryList.get(i).getKey());
+		}
+		
+		for(String key : removeKey) {
+			this.remove(key);
+		}
 	}
 }

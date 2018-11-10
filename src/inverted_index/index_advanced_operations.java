@@ -6,8 +6,10 @@ import java.lang.reflect.*;
 import configs.*;
 import entities.*;
 import entities.scanner_plugins.*;
+import entities.scanner_plugins.parameters.*;
 import entities.information_manager_plugins.*;
 import data_structures.*;
+
 
 
 public class index_advanced_operations {
@@ -121,18 +123,54 @@ public class index_advanced_operations {
 	}
 	
 	
-	// get the upper bound score of documents, currently infact is the upper bound tf
-	private counter get_upper_bounds(String[] targetTerms) {
-		counter documentUpperBoundScores = new counter(); // used for merging all the result of searching each term
+	
+	/*
+	 * 
+	 * MaxScore
+	 * 
+	 * */
+	
+	
+	// get the upper bound score of term
+	// pUnit with maxTf, (term: scorer.cal_score())
+	private counter get_term_upper_bounds(String[] targetTerms) {
+		scorer scr = scorer.getInstance();
+		counter termMaxScores = new counter();
+		for(String term : targetTerms) {
+			Double maxTf = infoManager.get_info(term_max_tf.class, term);
+			if(maxTf == null) {
+				maxTf = 0.0;
+			}
+			posting_unit maxTfPUnit = new posting_unit();
+			maxTfPUnit.uProp.put("tf", maxTf);
+			Double score = scr.cal_score(maxTfPUnit);
+			
+			termMaxScores.put(term, score);
+
+		}
+		return termMaxScores;
+	}
+	
+	
+	// fist scan, using the termMaxScore to ge the upper bound instead of the actual caluclation of score
+	private counter get_doc_upper_bounds(String[] targetTerms) {
+		counter totalDocumentUpperBoundScores = new counter(); // used for merging all the result of searching each term
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		ArrayList<counter> counterList = new ArrayList<counter>();
 		
+		counter termMaxScores = get_term_upper_bounds(targetTerms);
+		
 		for(String term : targetTerms) {
-			counter documentScoreCounter = new counter();
-			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, get_upper_bound_score.class, documentScoreCounter, new String[] {term});
+			counter documentUpperBoundScores = new counter();
+			scanner.scan_term_thread st = new scanner.scan_term_thread(
+					snr, 
+					get_doc_upper_bound_score.class, 
+					new param_get_doc_upper_bound_score(termMaxScores, documentUpperBoundScores), 
+					new String[] {term});
+			
 			st.run();
 			threadList.add(st); 
-			counterList.add(documentScoreCounter);
+			counterList.add(documentUpperBoundScores);
 		}
 		for(scanner.scan_term_thread st : threadList) {
 			try {
@@ -142,54 +180,38 @@ public class index_advanced_operations {
 			}
 		}
 		for(counter c : counterList) {
-			documentUpperBoundScores = documentUpperBoundScores.update(c);
+			totalDocumentUpperBoundScores = totalDocumentUpperBoundScores.update(c);
 		}
-		return documentUpperBoundScores;
+		return totalDocumentUpperBoundScores;	
 	}
 	
-	
-	private class param_maxScore{
-		counter docUpBounds;
-		counter totalDocSC;	// changing
-		int tK;
-		
-		param_maxScore(counter documentUpperBoundScores, counter totalDocumentScoreCounter, int topK){
-			docUpBounds = documentUpperBoundScores;
-			totalDocSC = totalDocumentScoreCounter;
-			tK = topK;
-		}
-		
-		// use the current docId replace the one with min score
-		synchronized String try_to_replace_min_score_doc(posting_unit p){
-			String minScoreDocId = "";
-			// use counter min
-			// compare the current with the min
-			return minScoreDocId;
-		}
-	}
 	
 	// MaxScore searching
+	// totalDocumentScoreCounter is shared here, so that need synchronisation
 	public counter search_MaxScore(String[] targetTerms, int topK) {
-		counter documentUpperBoundScores = get_upper_bounds(targetTerms);	// pass
+		counter docUpperBounds = get_doc_upper_bounds(targetTerms);	// pass
 		counter totalDocumentScoreCounter = new counter();	// pass
-		
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		ArrayList<counter> counterList = new ArrayList<counter>();
 		
-//		for(String term : targetTerms) {
-//			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, get_upper_bound_score.class, totalDocumentScoreCounter, new String[] {term});
-//			st.run();
-//			threadList.add(st); 
-//			counterList.add(totalDocumentScoreCounter);
-//		}
-//		for(scanner.scan_term_thread st : threadList) {
-//			try {
-//				st.join();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
+		for(String term : targetTerms) {
+			scanner.scan_term_thread st = new scanner.scan_term_thread(
+					snr, 
+					search_term_maxScore.class, 
+					new param_search_term_maxScore(scorer.getInstance(), docUpperBounds, totalDocumentScoreCounter, topK),
+					new String[] {term});
+			st.run();
+			threadList.add(st); 
+			counterList.add(totalDocumentScoreCounter);
+		}
+		for(scanner.scan_term_thread st : threadList) {
+			try {
+				st.join();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		
 		return totalDocumentScoreCounter;
 	}

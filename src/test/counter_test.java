@@ -21,6 +21,9 @@ public class counter_test {
 		c3.increase("b", 3.);
 		System.out.println(c3);
 		
-		System.out.print(c3.get_min_key());
+		System.out.println(c3.get_min_key());
+		
+		c3.remove_after_topK(1);
+		System.out.println(c3);
 	}
 }

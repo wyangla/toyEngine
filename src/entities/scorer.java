@@ -45,7 +45,7 @@ public class scorer {
 	
 	// use the config file to do plan scoring
 	// used in plain search_term
-	// aso used in advanced_ops directly for scoring the chosen topK units
+	// also used in max_score for calculating the upper bound score of each term
 	public double cal_score(posting_unit postUnit) {
 		double docScoreFromUnit = 0.;
 		String[] targetModels = scorer_config.modelsInUse;
