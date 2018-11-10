@@ -97,6 +97,7 @@ public class index {
 	
 	// delete a posting list
 	// TODO: firstly require the lock, after releasing the lock delete the lock
+	// TODO: load posting firstly
 	public void del_term(String term) {
 		ArrayList<Long> postUnitList = lexicon.get(term);
 		lexicon.remove(term); // delete from lexicon

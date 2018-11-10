@@ -133,7 +133,7 @@ public class index_advanced_operations {
 	
 	// get the upper bound score of term
 	// pUnit with maxTf, (term: scorer.cal_score())
-	private counter get_term_upper_bounds(String[] targetTerms) {
+	public counter get_term_upper_bounds(String[] targetTerms) {
 		scorer scr = scorer.getInstance();
 		counter termMaxScores = new counter();
 		for(String term : targetTerms) {
@@ -153,7 +153,7 @@ public class index_advanced_operations {
 	
 	
 	// fist scan, using the termMaxScore to ge the upper bound instead of the actual caluclation of score
-	private counter get_doc_upper_bounds(String[] targetTerms) {
+	public counter get_doc_upper_bounds(String[] targetTerms) {
 		counter totalDocumentUpperBoundScores = new counter(); // used for merging all the result of searching each term
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		ArrayList<counter> counterList = new ArrayList<counter>();
@@ -193,7 +193,6 @@ public class index_advanced_operations {
 		counter totalDocumentScoreCounter = new counter();	// pass
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
-		ArrayList<counter> counterList = new ArrayList<counter>();
 		
 		for(String term : targetTerms) {
 			scanner.scan_term_thread st = new scanner.scan_term_thread(
@@ -203,7 +202,6 @@ public class index_advanced_operations {
 					new String[] {term});
 			st.run();
 			threadList.add(st); 
-			counterList.add(totalDocumentScoreCounter);
 		}
 		for(scanner.scan_term_thread st : threadList) {
 			try {
@@ -212,7 +210,7 @@ public class index_advanced_operations {
 				e.printStackTrace();
 			}
 		}
-		
+		totalDocumentScoreCounter.sort();	// sort the searching result big -> small, topK are ensured to be good result
 		return totalDocumentScoreCounter;
 	}
 	

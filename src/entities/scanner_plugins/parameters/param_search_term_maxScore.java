@@ -23,6 +23,7 @@ public class param_search_term_maxScore {
 		
 		// in order to be efficient enough, here does not have the synchronisation,
 		// thus could be more than K scores
+		// if total number of docs is smaller than tpK, they will be all returned
 		if(docSC.size() < tpK) {
 			docSC.increase(pUnit.docId, scr.cal_score(pUnit));
 		}else {

@@ -223,7 +223,7 @@ public class index_io_operations {
 		
 		// set the high level information
 		infoManager.set_info(posting_loaded_status.class, postUnit);
-		infoManager.set_info(term_max_tf.class, postUnit);
+//		infoManager.set_info(term_max_tf.class, postUnit);
 		
 		return addedUnitId;
 	}
