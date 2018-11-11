@@ -194,6 +194,16 @@ public class engineEntryPoint {
 	}
 	
 	
+	// WAND
+	public counter search_WAND(ArrayList<String> queryTerms, int topK) {
+		counter relatedDocumentScores = new counter();
+		try {
+			relatedDocumentScores = advOps.search_WAND(queryTerms.toArray(new String[0]), topK);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return relatedDocumentScores;
+	}
 	
 	
 	// high level information
