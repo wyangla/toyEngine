@@ -6,7 +6,7 @@ import java.util.*;
 // for merging the searching results
 public class counter extends LinkedHashMap<String, Double> {
 	
-	public counter update(counter anotherCounter) {
+	public synchronized counter update(counter anotherCounter) {
 		// copy current Counter
 		counter updatedCounter = new counter();
 		updatedCounter.putAll(this);
@@ -29,7 +29,7 @@ public class counter extends LinkedHashMap<String, Double> {
 		return updatedCounter;
 	}
 	
-	public void increase(String key, Double value) {
+	public synchronized void increase(String key, Double value) {
 		if(this.get(key) == null) {
 			this.put(key, value);
 		} else {
@@ -37,7 +37,7 @@ public class counter extends LinkedHashMap<String, Double> {
 		}
 	}
 	
-	public ArrayList<Map.Entry<String, Double>> sort(){
+	public synchronized ArrayList<Map.Entry<String, Double>> sort(){
 		ArrayList<Map.Entry<String, Double>> entryList = new ArrayList<Map.Entry<String, Double>>();
 		entryList.addAll(this.entrySet());
 		entryList.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue())); // big to small
@@ -51,7 +51,7 @@ public class counter extends LinkedHashMap<String, Double> {
 	
 	
 	// ref: http://www.cnblogs.com/unclecc/p/9400939.html
-	public String get_min_key() {
+	public synchronized String get_min_key() {
 		String minKey = null;				
 		minKey = this.sort().get(this.size() - 1).getKey();
 		return minKey;
@@ -59,20 +59,20 @@ public class counter extends LinkedHashMap<String, Double> {
 	
 	
 	// topK : index = K - 1
-	public String get_topKth_key(int topKth) {
+	public synchronized String get_topKth_key(int topKth) {
 		String topKthKey = null;		
 		topKthKey = this.sort().get(topKth - 1).getKey();
 		return topKthKey;
 	}
 	
 	
-	public String get_max_key() {
+	public synchronized String get_max_key() {
 		return get_topKth_key(1);
 	}
 	
 	
 	// topK : index = K - 1
-	public ArrayList<String> get_topK_keys(int topK) {
+	public synchronized ArrayList<String> get_topK_keys(int topK) {
 		ArrayList<String> topKKeys = new ArrayList<String>();	
 		ArrayList<Map.Entry<String, Double>> entryList = this.sort();
 		
@@ -84,10 +84,19 @@ public class counter extends LinkedHashMap<String, Double> {
 	}
 	
 	
-	public void remove_after_topK(int K) {
+	public synchronized void remove_after_topK(int K) {
 		ArrayList<Map.Entry<String, Double>> entryList = this.sort();
 		if(K < entryList.size()) {
 			entryList.subList(K, entryList.size()).forEach(e -> this.remove(e.getKey(), e.getValue()));
 		}
 	}
+	
+	public synchronized int get_size() {
+		return this.size();
+	}
+	
+	public synchronized Double safe_get(String key) {
+		return this.get(key);
+	}
+	
 }
