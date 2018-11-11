@@ -21,18 +21,29 @@ public class param_search_term_maxScore {
 	// use the current docId replace the one with min score
 	public long try_to_score_add_doc(posting_unit pUnit){
 		long newlyAddedUnitId = -1L; 
+
+		boolean reachMinSize = false;	
+		Double topKthScore = null;
 		
-		// in order to be efficient enough, here does not have the synchronisation,
-		// thus could be more than K scores
+		// atomic
 		// if total number of docs is smaller than tpK, they will be all returned
-		if(docSC.get_size() < tpK) {
-			docSC.increase(pUnit.docId, scr.cal_score(pUnit));
-		}else {
+		synchronized(param_search_term_maxScore.class) {
+			if(docSC.size() < tpK) {
+				docSC.increase(pUnit.docId, scr.cal_score(pUnit));
+			}else {
+				reachMinSize = true;
+			}
+		}
+
+		if(reachMinSize) {
 			// not using clipping here, as could loose sub score contributions from terms 
 			Double docUpperBound = docUB.get(pUnit.docId);
-			String topKthDocId = docSC.get_topKth_key(tpK);
-			Double topKthScore = docSC.safe_get(topKthDocId);
 			
+			// atomic
+			synchronized(param_search_term_maxScore.class) {
+				topKthScore = docSC.get(docSC.get_topKth_key(tpK));
+			}
+
 			// != null prevent new docs added during the ranking after the upper bound calculation
 			// only when the upper bound bigger than the current min score, calculate the actual value
 			// not using remove, as could loose sub score
