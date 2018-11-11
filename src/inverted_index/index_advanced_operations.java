@@ -119,6 +119,7 @@ public class index_advanced_operations {
 		}
 		// System.out.println("--");
 		// System.out.println(totalDocumentScoreCounter);
+		totalDocumentScoreCounter.sort();
 		return totalDocumentScoreCounter;
 	}
 	
@@ -253,8 +254,12 @@ public class index_advanced_operations {
 	// WAND searching
 	// totalDocumentScoreCounter is shared here, so that need synchronisation
 	public counter search_WAND(String[] targetTerms, int topK) {
-		counter termMaxScores = get_term_upper_bounds(targetTerms); // pass
-		HashMap<String, HashSet<String>> termDocIdSetMap = get_term_docId_set(targetTerms); // pass	
+		Iterator<Map.Entry<String, Double>> termMaxScoresIterator = get_term_upper_bounds(targetTerms).sort().iterator(); // pass
+		HashSet<String> validDocSet = new HashSet<String>(); // pass, intersections of docId sets of terms
+		counter currentUpperBound = new counter(); // pass, current upper bound
+		currentUpperBound.put("currentUpperBound", 0.0);
+		
+		HashMap<String, HashSet<String>> termDocIdSetMap = get_term_docId_set(targetTerms); // pass, map from term to docId set
 		counter totalDocumentScoreCounter = new counter();	// pass
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
@@ -263,7 +268,7 @@ public class index_advanced_operations {
 			scanner.scan_term_thread st = new scanner.scan_term_thread(
 					snr, 
 					search_term_WAND.class, 
-					new param_search_term_WAND(scorer.getInstance(), termMaxScores, termDocIdSetMap, totalDocumentScoreCounter, topK),
+					new param_search_term_WAND(scorer.getInstance(), termMaxScoresIterator, validDocSet, currentUpperBound, termDocIdSetMap, totalDocumentScoreCounter, topK),
 					new String[] {term});
 			st.run();
 			threadList.add(st); 

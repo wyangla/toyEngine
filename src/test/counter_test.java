@@ -1,5 +1,7 @@
 package test;
+
 import utils.counter;
+import java.util.*;
 
 
 public class counter_test {
@@ -26,8 +28,8 @@ public class counter_test {
 		System.out.println(c3.get_max_key());
 		System.out.println(c3.get_topK_keys(2));
 		
-		c3.remove_after_topK(1);
-		System.out.println(c3);
+//		c3.remove_after_topK(1);
+//		System.out.println(c3);
 		
 		counter c4 = new counter();
 		for(int i = 0; i < 100000; i ++) {
@@ -46,5 +48,16 @@ public class counter_test {
 		c4.remove_after_topK(1000);
 		System.out.println(c4.size());
 		
+		System.out.println(c3.sort());
+		Iterator<Map.Entry<String, Double>> c3it = c3.sort().iterator();
+		while(true) {
+			try {
+				System.out.println(c3it.next());
+			}catch(Exception e) {
+				break;
+			}
+		}
+		counter c5 = new counter();
+		System.out.println(c5.sort());
 	}
 }

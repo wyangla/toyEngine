@@ -21,37 +21,28 @@ public class param_search_term_maxScore {
 	// use the current docId replace the one with min score
 	public long try_to_score_add_doc(posting_unit pUnit){
 		long newlyAddedUnitId = -1L; 
-
-		boolean reachMinSize = false;	
 		Double topKthScore = null;
+
+		// not using clipping here, as could loose sub score contributions from terms 
+		Double docUpperBound = docUB.get(pUnit.docId);
 		
 		// atomic
-		// if total number of docs is smaller than tpK, they will be all returned
+		// when there are not enough scores in the docSC for getting the threshold
 		synchronized(param_search_term_maxScore.class) {
-			if(docSC.size() < tpK) {
-				docSC.increase(pUnit.docId, scr.cal_score(pUnit));
-			}else {
-				reachMinSize = true;
+			try {
+				topKthScore = docSC.get(docSC.get_topKth_key(tpK));
+			}catch(Exception e) {
+				topKthScore = 0.0;
 			}
 		}
 
-		if(reachMinSize) {
-			// not using clipping here, as could loose sub score contributions from terms 
-			Double docUpperBound = docUB.get(pUnit.docId);
-			
-			// atomic
-			synchronized(param_search_term_maxScore.class) {
-				topKthScore = docSC.get(docSC.get_topKth_key(tpK));
-			}
-
-			// != null prevent new docs added during the ranking after the upper bound calculation
-			// only when the upper bound bigger than the current min score, calculate the actual value
-			// not using remove, as could loose sub score
-			if(docUpperBound != null && docUpperBound > topKthScore) {
-				Double subScore = scr.cal_score(pUnit);		// score contribute by one term to the doc
-				docSC.increase(pUnit.docId, subScore);	// could increase more than K
-				newlyAddedUnitId = pUnit.currentId;
-			}
+		// != null prevent new docs added during the ranking after the upper bound calculation
+		// only when the upper bound bigger than the current min score, calculate the actual value
+		// not using remove, as could loose sub score
+		if(docUpperBound != null && docUpperBound > topKthScore) {
+			Double subScore = scr.cal_score(pUnit);		// score contribute by one term to the doc
+			docSC.increase(pUnit.docId, subScore);	// could increase more than K
+			newlyAddedUnitId = pUnit.currentId;
 		}
 		
 	return newlyAddedUnitId;

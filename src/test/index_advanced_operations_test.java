@@ -4,6 +4,7 @@ import entities.information_manager;
 import inverted_index.*;
 import probes.*;
 import entities.information_manager_plugins.*;
+import java.util.*;
 
 
 
@@ -34,7 +35,7 @@ public class index_advanced_operations_test {
 	public void test_3() {
 		System.out.println(idx.lexicon.get("wanted"));
 		System.out.println(infoManager.get_info(term_max_tf.class, "wanted")); // 4.701457146816058
-		System.out.println(idxAdOp.get_term_upper_bounds(new String[] {"wanted", "a"})); // 2.0481418383862344
+		System.out.println(idxAdOp.get_term_upper_bounds(new String[] {"wanted", "want", "a"})); // 2.0481418383862344
 	}
 	
 	// test get_doc_upper_bounds
@@ -44,13 +45,13 @@ public class index_advanced_operations_test {
 	
 	// test search_MaxScore
 	public void test_5() {
-		System.out.println("-->");
+		System.out.println("--> maxScore");
 		long t1 = System.currentTimeMillis();
 		System.out.println(idxAdOp.search(new String[] {"wanted", "a", "want"}));
 		long t2 = System.currentTimeMillis();
 		System.out.println(t2 - t1);
 		
-		System.out.println(idxAdOp.search_maxScore(new String[] {"wanted", "a", "want"}, 2));
+		System.out.println(idxAdOp.search_maxScore(new String[] {"wanted", "a", "want"}, 5));
 		long t3 = System.currentTimeMillis();
 		System.out.println(t3 - t2);
 	}
@@ -58,6 +59,19 @@ public class index_advanced_operations_test {
 	// test get_posting_docId_set
 	public void test_6() {
 		System.out.println(idxAdOp.get_term_docId_set(new String[] {"wanted", "want"}));
+	}
+	
+	// test search_WAND
+	public void test_7() {
+		System.out.println("--> WAND");
+		long t1 = System.currentTimeMillis();
+		System.out.println(idxAdOp.search(new String[] {"wanted", "a", "want"}));
+		long t2 = System.currentTimeMillis();
+		System.out.println(t2 - t1);
+		
+		System.out.println(idxAdOp.search_WAND(new String[] {"wanted", "a", "want"}, 1));
+		long t3 = System.currentTimeMillis();
+		System.out.println(t3 - t2);
 	}
 	
 	
@@ -84,8 +98,11 @@ public class index_advanced_operations_test {
 		
 //		idxAdOpTest.test_3();
 //		idxAdOpTest.test_4();
-//		idxAdOpTest.test_5();
-		idxAdOpTest.test_6();
+		
+//		new ArrayList<Integer>().sort((o1, o2) -> (o1 - o2));	// TODO: why save the time of sorting in test_5?
+		idxAdOpTest.test_5();
+//		idxAdOpTest.test_6();
+		idxAdOpTest.test_7();
 	}
 	
 }
