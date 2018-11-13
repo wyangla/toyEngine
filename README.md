@@ -1,2 +1,2 @@
 # toyEngine
-![architecture.jpg](./figs/architecture.jpg)
+![toyEngine_architecture.jpg](./figs/toyEngine_architecture.jpg)
