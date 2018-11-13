@@ -1,5 +1,6 @@
 package exceptions;
 
+// not used yet
 public class lack_information_for_scoring extends Exception {
 	public lack_information_for_scoring(String msg) {
 		super(msg);

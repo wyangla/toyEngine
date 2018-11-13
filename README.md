@@ -1,2 +1,2 @@
 # toyEngine
-![Untitled.png](./figs/Untitled.png)
+![architecture.jpg](./figs/architecture.jpg)

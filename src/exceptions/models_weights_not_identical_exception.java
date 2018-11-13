@@ -2,6 +2,7 @@ package exceptions;
 
 
 // indicates the number of models and number of weights are not identical
+// used in scroer
 public class models_weights_not_identical_exception extends Exception {
 	public models_weights_not_identical_exception(String message) {
 		super(message);

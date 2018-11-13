@@ -69,7 +69,7 @@ public class index_advanced_operations_test {
 		long t2 = System.currentTimeMillis();
 		System.out.println(t2 - t1);
 		
-		System.out.println(idxAdOp.search_WAND(new String[] {"wanted", "a", "want"}, 1));
+		System.out.println(idxAdOp.search_WAND(new String[] {"wanted", "a", "want"}, 3));
 		long t3 = System.currentTimeMillis();
 		System.out.println(t3 - t2);
 	}
