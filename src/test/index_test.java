@@ -143,20 +143,25 @@ public class index_test {
 		System.out.println("");
 	}
 	
+	public void test_11() {
+		idx.add_doc(new String[] {"your 2499 5131 2203 {\"tf\":1,\"oh\":1} /test_1/EKAN4jw3LsE3631feSaA_g 1"}, "/test_1/EKAN4jw3LsE3631feSaA_g");
+		idxProb.display_content("Sure");
+	}
+	
 	
 	
 	public static void main(String[] args) {
 		index_test idx_test = new index_test();
-		idx_test.test_1();
-		idx_test.test_2();
-		idx_test.test_3();
-		idx_test.test_4();
-		idx_test.test_5();
-		idx_test.test_6();
-		idx_test.test_7();
-		idx_test.test_8();
-		idx_test.test_9();
-		idx_test.test_10();
-		
+//		idx_test.test_1();
+//		idx_test.test_2();
+//		idx_test.test_3();
+//		idx_test.test_4();
+//		idx_test.test_5();
+//		idx_test.test_6();
+//		idx_test.test_7();
+//		idx_test.test_8();
+//		idx_test.test_9();
+//		idx_test.test_10();
+		idx_test.test_11();
 	}
 }

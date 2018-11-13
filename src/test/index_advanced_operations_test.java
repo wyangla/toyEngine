@@ -25,10 +25,10 @@ public class index_advanced_operations_test {
 		}
 	}
 	
-	// test add_doc, moved to the index
-	public void test_2() {
-		idx.add_doc(new String[] {"your 2499 5131 2203 {\"tf\":1,\"oh\":1} /test_1/EKAN4jw3LsE3631feSaA_g 1"}, "/test_1/EKAN4jw3LsE3631feSaA_g");
-	}
+	// test add_doc, moved to the index_test
+//	public void test_2() {
+//		idx.add_doc(new String[] {"your 2499 5131 2203 {\"tf\":1,\"oh\":1} /test_1/EKAN4jw3LsE3631feSaA_g 1"}, "/test_1/EKAN4jw3LsE3631feSaA_g");
+//	}
 	
 	// test get_term_upper_bounds
 	// need the lexicon generated

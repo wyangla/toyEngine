@@ -153,9 +153,9 @@ public class engineEntryPoint {
 	}
 	
 	
-	public String add_doc(ArrayList<String> persistedUnits, String targetDocName) {
-		doc addedDoc = idx.add_doc(persistedUnits.toArray(new String[0]), targetDocName);
-		return addedDoc.docId;
+	public ArrayList<String> add_doc(ArrayList<String> persistedUnits, String targetDocName) {
+		ArrayList<String> failedPersistedUnits = idx.add_doc(persistedUnits.toArray(new String[0]), targetDocName);
+		return failedPersistedUnits;
 	}
 	
 	

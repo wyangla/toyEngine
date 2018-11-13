@@ -205,18 +205,41 @@ public class index {
 	}
 
 	
-	public doc add_doc(String[] persistedUnits, String targetDocName) {
+	public ArrayList<String> _add_doc(ArrayList<String> persistedUnits, doc targetDoc, int retryTime) {
+		ArrayList<String> failedPersistedUnits = new ArrayList<String>();
+		
+		// try to add unit
+		for(String persistedUnit : persistedUnits) {
+			posting_unit addedPostUnit = add_posting_unit(persistedUnit);
+			if(addedPostUnit != null) {
+				targetDoc.docLength ++;
+			}else {
+				failedPersistedUnits.add(persistedUnit);
+			}
+		}
+		
+		if(!failedPersistedUnits.isEmpty()) {	// if some units are failed
+			if(retryTime < configs.index_config.addingDocRetryTimes) {	// if not reach the max retryTime
+				retryTime ++;
+				failedPersistedUnits = _add_doc(failedPersistedUnits, targetDoc, retryTime);
+			}
+		}
+
+		return failedPersistedUnits;
+	}
+	
+	
+	public ArrayList<String> add_doc(String[] persistedUnits, String targetDocName) {
 		doc addedDoc = new doc();
 		addedDoc.docId = targetDocName;
 		docMap.put(targetDocName, addedDoc);
 		
-		for(String persistedUnit : persistedUnits) {
-			posting_unit addedPostUnit = add_posting_unit(persistedUnit);
-			if(addedPostUnit != null) {
-				addedDoc.docLength ++;
-			}
-		}
-		return addedDoc;
+		// return the failed units
+		int retryTime = 1;
+		ArrayList<String> persistedUnitList = new ArrayList<String>();
+		persistedUnitList.addAll(Arrays.asList(persistedUnits));
+		ArrayList<String> failedPersistedUnits = _add_doc(persistedUnitList, addedDoc, retryTime);
+		return failedPersistedUnits;
 	}
 	
 	
