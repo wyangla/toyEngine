@@ -20,4 +20,4 @@ The design of entities are mostly applying the scheme of “**mainstay and plugi
 #### What need to be noted is the index is currently using the py4j.GatewayServer to provide service.  
 #### More details please refer to /Something_about_toyEngine.pdf ...
 
-![toyEngine_architecture.png](./figs/toyEngine_architecture.png)
+![toyEngine_architecture.jpg](./figs/toyEngine_architecture.jpg)
