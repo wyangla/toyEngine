@@ -17,6 +17,7 @@ From the perspective of design, the program mainly consists of three parts,
     
 The design of entities are mostly applying the scheme of “**mainstay and plugins**”, in which specific functionalities and even data structures are provided and maintained by the plugins, this is for the convenience of developing additional functionalities based on the current backbone.  
 
+What need to be noted is the index is currently using the py4j.GatewayServer to provide service.  
 #### More details please refer to the documetation ...
 
 ![toyEngine_architecture.jpg](./figs/toyEngine_architecture.jpg)
