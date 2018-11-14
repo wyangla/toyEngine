@@ -5,7 +5,9 @@ import configs.scanner_config;
 import data_structures.posting_unit;
 import entities.keeper_plugins.lexicon_locker;
 import inverted_index.*;
-import utils.name_generator;;
+import utils.name_generator;
+import entities.information_manager_plugins.*;
+
 
 
 // This class invokes corresponding plugins to conduct the operations on each unit on posting lists
@@ -13,6 +15,8 @@ import utils.name_generator;;
 public class scanner {
 	private static index idx = index.get_instance();
 	private static keeper kpr = keeper.get_instance();
+	private static information_manager infoManager = information_manager.get_instance();
+	
 	
 	
 	public void visit_next_unit (posting_unit pUnitCurrent, Class operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception { // use the reference to visit the unit directly instead of searching in the HashMap
@@ -37,6 +41,8 @@ public class scanner {
 		
 		if(postUnitIds != null) {
 			posting_unit pUnitStarter = idx.postUnitMap.get(postUnitIds.get(0));
+			infoManager.set_info(posting_loaded_status.class, pUnitStarter);	// update the visiting time in posting_load_status
+			
 			// load the unit operations
 			try {
 				visit_next_unit(pUnitStarter, operationOnPostingList, affectedUnits);
