@@ -17,7 +17,7 @@ public class posting_loaded_status {
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			infoMap.put(pUnit.term, (double)System.currentTimeMillis());
+			infoMap.put(pUnit.term, (double)System.currentTimeMillis());	// last accessing time
 			addedFlag = 1;
 		}catch(Exception e) {
 			e.printStackTrace();
