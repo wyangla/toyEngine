@@ -120,6 +120,7 @@ public class scanner {
 	}
 	
 	
+	// used in deactivator
 	public static class scan_term_thread_with_lock extends Thread {
 		private Class opCls;
 		private Object opClsParam;
