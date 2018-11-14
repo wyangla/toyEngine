@@ -6,8 +6,8 @@ import entities.scanner_plugins.parameters.*;
 public class search_term_WAND {
 	public static param_search_term_WAND param; // need to be shared by all threads, not merged at the end
 	
-	public static void set_parameters (param_search_term_WAND parmSearchTermWAND) {
-		param = parmSearchTermWAND;
+	public static void set_parameters (param_search_term_WAND paramSearchTermWAND) {
+		param = paramSearchTermWAND;
 	}
 	
 	// operations are done by methods provided by param
