@@ -1,5 +1,5 @@
 # toyEngine
-The toyEngine is a implementation of the search engine invert-index, along with basic and advanced functionalities. Specifically this program is currently providing the **functionalities** as services including: 
+The toyEngine is a implementation of the search engine invert-index, along with basic and advanced functionalities. Specifically this program is currently providing the **functionalities** as services including:  
     1. persisting and loading of lexicon / last posting unit id / lexicon / term associated information; 
     2. two layer lock service for terms; 
     3. posting list persisting and lazily loading; 
@@ -10,7 +10,7 @@ The toyEngine is a implementation of the search engine invert-index, along with 
     8. posting list scanning and two simple document scoring models; 
     9. three searching algorithms including plain, maxScore, WAND;  
     
-From the perspective of design, the program mainly consists of three parts, 
+From the perspective of design, the program mainly consists of three parts,  
     1. inverted-index and associated operations; 
     2. entities supporting the implementations of the operations; 
     3. helper classes like commonly used basic data structures and various utils.  
