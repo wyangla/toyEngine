@@ -114,8 +114,12 @@ public class keeper {
 		
 		// does not need to check the thread here, 
 		// as the lock and unlock are paired,
-		// so that the lock will always be the one hold by the current thread 
-		targetLock.unlock(); // here may raise exception when try to unlock the unlocked lock, TODO: add try catch?
+		// so that the lock will always be the one hold by the current thread
+		try {
+			targetLock.unlock();    // here may raise exception when try to unlock the unlocked lock, TODO: add try catch?
+		}catch(IllegalMonitorStateException e) {
+			e.printStackTrace();    // if the lock is not successfully acquired by the thread in the first place
+		}
 		infoMap.put("lockStatus", 0L);
 		infoMap.put("threadNum", -1L);
 		released = 1;
