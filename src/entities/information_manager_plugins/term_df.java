@@ -8,7 +8,7 @@ import configs.information_manager_config;
 
 public class term_df{
 	public static HashMap<String, Double> infoMap = new HashMap<String, Double>();
-	public static String persistingPath = information_manager_config.persistingDir + "/term_max_tf";
+	public static String persistingPath = information_manager_config.persistingDir + "/term_df";
 	
 	
 	

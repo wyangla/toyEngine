@@ -1,32 +1,59 @@
 package entities.information_manager_plugins;
 
 import data_structures.posting_unit;
+import entities.*;
+import inverted_index.*;
+import utils.*;
+
 import java.util.*;
+
+import configs.general_config;
 import configs.information_manager_config;
 
 
 
+// each time the input documents are scanned, this info map is set once
 public class term_idf{
 	public static HashMap<String, Double> infoMap = new HashMap<String, Double>();
-	public static String persistingPath = information_manager_config.persistingDir + "/term_max_tf";
+	public static String persistingPath = information_manager_config.persistingDir + "/term_idf";
+	
+	public static class idf_cal_thread extends Thread{
+		private String[] tTerms;
+		
+		public idf_cal_thread(String[] targetTerms) {
+			tTerms = targetTerms;
+		}
+		
+		public void run() {
+			for (String targetTerm : tTerms) {
+				double df = term_df.get_info(targetTerm);
+				double totalDocNum = (double) index.get_instance().docMap.size();
+				double idf = Math.log(totalDocNum / df); 
+				infoMap.put(targetTerm, idf);
+			}
+			
+		}
+	}
 	
 	
-	
-	public static int set_info(posting_unit pUnit) {
+	// TODO: add get_map in info_magr_plugins and info_mgr, so that all the information access go through info_mgr
+	public static int set_info(posting_unit fakePostUnit) {
 		int addedFlag = -1;
 		try {
-			Double origTf = infoMap.get(pUnit.term);
-			Double curTf = pUnit.uProp.get("tf");
+			String[] targetTerms = term_df.infoMap.keySet().toArray(new String[0]);
+			ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, targetTerms);
 			
-			if(origTf != null) {
-				if(curTf != null && curTf > origTf) {	// only update when the new tf is larger than the original one
-					infoMap.put(pUnit.term, curTf);
-				}
-			}else {
-				infoMap.put(pUnit.term, curTf);
+			ArrayList<idf_cal_thread> threadList = new ArrayList<idf_cal_thread>();
+			
+			for(String[] workload : workLoads ) {
+				idf_cal_thread it = new idf_cal_thread(workload);
+				it.run();
+				threadList.add(it);
 			}
-
-			addedFlag = 1;
+			for(idf_cal_thread it : threadList) {
+				it.join();
+			}
+			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
