@@ -272,7 +272,8 @@ public class index_io_operations {
 		}
 	}
 		
-
+	
+	// each time the engine is restart, the lastId is added with 10, for safety
 	public void load_lastId() {
 		try {
 			// load last post unit id

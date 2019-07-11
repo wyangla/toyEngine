@@ -98,6 +98,14 @@ public class engineEntryPoint {
 		return kpr.get_lockMap(lexicon_locker.class);
 	}
 	
+	// the postUnitMap will be dump to local after not being accessed for a while
+	public Set<Long> get_pUnitList (){
+		return idx.postUnitMap.keySet();
+	}
+	
+	public int check_pUnitStatus(Long pUnitId) {
+		return idx.postUnitMap.get(pUnitId).status;
+	}
 	
 	
 	// basic operations defined in the index
@@ -179,10 +187,20 @@ public class engineEntryPoint {
 	}
 	
 	
-	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
+//	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
+//		ArrayList<Long> affectedUnits = new ArrayList<Long>();
+//		try {
+//			affectedUnits = advOps.delete_doc(containedTerms.toArray(new String[0]), targetDocName);
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//		return affectedUnits;
+//	}
+	
+	public ArrayList<Long> delete_doc(String targetDocName) {
 		ArrayList<Long> affectedUnits = new ArrayList<Long>();
 		try {
-			affectedUnits = advOps.delete_doc(containedTerms.toArray(new String[0]), targetDocName);
+			affectedUnits = advOps.delete_doc(targetDocName);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
