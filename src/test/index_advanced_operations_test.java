@@ -16,23 +16,23 @@ public class index_advanced_operations_test {
 	information_manager infoManager = information_manager.get_instance();
 	
 	// test delete_doc
-//	public void test_1() {
-//		try {
-//			System.out.println(idxAdOp.delete_doc(new String[] {"wanted", "tasty"}, "/test_1/EKAN4jw3LsE3631feSaA_g"));
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-	
 	public void test_1() {
 		try {
-			System.out.println(idxAdOp.delete_doc("/test_1/EKAN4jw3LsE3631feSaA_g"));    // here will not has anything remove, as the docIns.pUnitIdList is empty for now
+			System.out.println(idxAdOp.delete_doc(new String[] {"wanted", "tasty"}, "/test_1/EKAN4jw3LsE3631feSaA_g"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	
+//	public void test_1() {
+//		try {
+//			System.out.println(idxAdOp.delete_doc("/test_1/EKAN4jw3LsE3631feSaA_g"));    // here will not has anything remove, as the docIns.pUnitIdList is empty for now
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 	
 	// test add_doc, moved to the index_test
 //	public void test_2() {

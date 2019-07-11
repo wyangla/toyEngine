@@ -10,7 +10,9 @@ public class doc {
 	public int docLength = 0;
 	public HashMap<String, Double> docProp = new HashMap<String, Double>();
 	
-	public ArrayList<Long> pUnitIdList = new ArrayList<Long> ();    // will be dynamically refilled when reload the postings
+	// public ArrayList<Long> pUnitIdList = new ArrayList<Long> ();   
+		// will be dynamically refilled when reload the postings
+		// depreciated, it will consume too much memory
 	
 	
 	public String flatten() {

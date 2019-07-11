@@ -213,7 +213,7 @@ public class index {
 			posting_unit addedPostUnit = add_posting_unit(persistedUnit);
 			if(addedPostUnit != null) {
 				targetDoc.docLength ++;
-				targetDoc.pUnitIdList.add(addedPostUnit.currentId);    // add the posting unit id to corresponding doc
+				// targetDoc.pUnitIdList.add(addedPostUnit.currentId);    // add the posting unit id to corresponding doc
 			}else {
 				failedPersistedUnits.add(persistedUnit);
 			}

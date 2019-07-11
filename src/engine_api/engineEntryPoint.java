@@ -79,11 +79,11 @@ public class engineEntryPoint {
 			
 			String docLengthStr = "" + docIns.docLength;
 			String docPropStr = "" + docIns.docProp.toString();
-			String pUnitIdListStr = "" + docIns.pUnitIdList.toString();
+			// String pUnitIdListStr = "" + docIns.pUnitIdList.toString();
 			
 			infoMap.put("docLength", docLengthStr);
 			infoMap.put("docProp", docPropStr);
-			infoMap.put("pUnitIdList", pUnitIdListStr);
+			// infoMap.put("pUnitIdList", pUnitIdListStr);
 			
 			docInfoMap.put(docName, infoMap);
 		}
@@ -187,25 +187,25 @@ public class engineEntryPoint {
 	}
 	
 	
-//	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
-//		ArrayList<Long> affectedUnits = new ArrayList<Long>();
-//		try {
-//			affectedUnits = advOps.delete_doc(containedTerms.toArray(new String[0]), targetDocName);
-//		} catch(Exception e) {
-//			e.printStackTrace();
-//		}
-//		return affectedUnits;
-//	}
-	
-	public ArrayList<Long> delete_doc(String targetDocName) {
+	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
 		ArrayList<Long> affectedUnits = new ArrayList<Long>();
 		try {
-			affectedUnits = advOps.delete_doc(targetDocName);
+			affectedUnits = advOps.delete_doc(containedTerms.toArray(new String[0]), targetDocName);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		return affectedUnits;
 	}
+	
+//	public ArrayList<Long> delete_doc(String targetDocName) {
+//		ArrayList<Long> affectedUnits = new ArrayList<Long>();
+//		try {
+//			affectedUnits = advOps.delete_doc(targetDocName);
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//		return affectedUnits;
+//	}
 	
 	
 	// naive search

@@ -20,41 +20,42 @@ public class index_advanced_operations {
 	
 	
 	// delete a specific document from the inverted-index -- using scanner
-//	public ArrayList<Long> delete_doc(String[] containedTerms, String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
-//		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
-//		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
-//		
-//		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, containedTerms);
-//		
-//		for(String[] workLoad : workLoads ) {
-//			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, delete_doc.class, targetDocName, workLoad);
-//			st.run();
-//			threadList.add(st);
-//		}
-//		
-//		for(scanner.scan_term_thread st : threadList) {
-//			st.join();
-//			totalAffectedUnitIds.addAll(st.get_affectedUnitIds());
-//		}
-//		
-//		idx.docMap.remove(targetDocName); // remove from the doc map
-//		
-//		return totalAffectedUnitIds;
-//	}
-	
-	// delete a specific document from the inverted-index -- using doc.pUnitIdList
-	public ArrayList<Long> delete_doc(String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
+	public ArrayList<Long> delete_doc(String[] containedTerms, String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
 		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
-		doc docIns = idx.docMap.get(targetDocName);
-		ArrayList<Long> pUnitIdList = docIns.pUnitIdList;
-		for (Long pUnitId : pUnitIdList) {
-			idx.postUnitMap.get(pUnitId).status = 0;
-			totalAffectedUnitIds.add(pUnitId);
+		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
+		
+		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, containedTerms);
+		
+		for(String[] workLoad : workLoads ) {
+			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, delete_doc.class, targetDocName, workLoad);
+			st.run();
+			threadList.add(st);
 		}
+		
+		for(scanner.scan_term_thread st : threadList) {
+			st.join();
+			totalAffectedUnitIds.addAll(st.get_affectedUnitIds());
+		}
+		
 		idx.docMap.remove(targetDocName); // remove from the doc map
 		
 		return totalAffectedUnitIds;
 	}
+	
+	// delete a specific document from the inverted-index -- using doc.pUnitIdList
+//	public ArrayList<Long> delete_doc(String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
+//		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
+//		
+//		doc docIns = idx.docMap.get(targetDocName);
+//		ArrayList<Long> pUnitIdList = docIns.pUnitIdList;
+//		for (Long pUnitId : pUnitIdList) {
+//			idx.postUnitMap.get(pUnitId).status = 0;
+//			totalAffectedUnitIds.add(pUnitId);
+//		}
+//		idx.docMap.remove(targetDocName); // remove from the doc map
+//		
+//		return totalAffectedUnitIds;
+//	}
 	
 	
 //	// single thread method, fast when the posting list is short?
