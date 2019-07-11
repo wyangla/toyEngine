@@ -70,7 +70,7 @@ public class param_search_term_WAND {
 				}else {
 					try {
 						// TODO: the ideal way is get all the possible combinations of terms which could exceed the topKthScore, 
-						// within combination do set intersection, among combinations do set unioin
+						// within combination do set intersection, among combinations do set union
 						Map.Entry<String, Double> necessaryTermScore = tMaxSI.next();
 						curUB.increase("currentUpperBound", necessaryTermScore.getValue());
 						

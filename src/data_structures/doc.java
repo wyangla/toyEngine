@@ -10,6 +10,8 @@ public class doc {
 	public int docLength = 0;
 	public HashMap<String, Double> docProp = new HashMap<String, Double>();
 	
+	public ArrayList<Long> pUnitIdList = new ArrayList<Long> ();    // will be dynamically refilled when reload the postings
+	
 	
 	public String flatten() {
 		JSONObject docPropJson = new JSONObject(docProp);

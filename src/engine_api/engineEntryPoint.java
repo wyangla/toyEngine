@@ -70,6 +70,26 @@ public class engineEntryPoint {
 		return idx.postUnitMap;
 	}
 	
+	public HashMap<String, HashMap<String, String>> get_docMap() {
+		HashMap<String, HashMap<String, String>> docInfoMap = new HashMap<String, HashMap<String, String>> ();
+		
+		for (String docName : idx.docMap.keySet()) {
+			HashMap<String, String> infoMap = new HashMap<String, String> ();
+			doc docIns = idx.docMap.get(docName);
+			
+			String docLengthStr = "" + docIns.docLength;
+			String docPropStr = "" + docIns.docProp.toString();
+			String pUnitIdListStr = "" + docIns.pUnitIdList.toString();
+			
+			infoMap.put("docLength", docLengthStr);
+			infoMap.put("docProp", docPropStr);
+			infoMap.put("pUnitIdList", pUnitIdListStr);
+			
+			docInfoMap.put(docName, infoMap);
+		}
+		return docInfoMap;
+	}
+	
 	public HashMap<String, HashMap<String, Long>> get_lexiconLockInfoMap() {
 		return kpr.get_lockInfoMap(lexicon_locker.class);
 	}
