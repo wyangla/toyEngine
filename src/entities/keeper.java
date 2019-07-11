@@ -107,7 +107,7 @@ public class keeper {
 	
 	// release the lock
 	public int release_lock(Class lockerClass, String targetName, String threadNum) {
-		int released; // 0 not released, 1 released
+		int released = 0; // 0 not released, 1 released
 		
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
@@ -116,13 +116,14 @@ public class keeper {
 		// as the lock and unlock are paired,
 		// so that the lock will always be the one hold by the current thread
 		try {
-			targetLock.unlock();    // here may raise exception when try to unlock the unlocked lock, TODO: add try catch?
+			targetLock.unlock();    // here may raise exception when try to unlock the unacquired lock, TODO: add try catch?
+			infoMap.put("lockStatus", 0L);
+			infoMap.put("threadNum", -1L);
+			released = 1;
+			
 		}catch(IllegalMonitorStateException e) {
 			e.printStackTrace();    // if the lock is not successfully acquired by the thread in the first place
 		}
-		infoMap.put("lockStatus", 0L);
-		infoMap.put("threadNum", -1L);
-		released = 1;
 
 		return released;
 	}
