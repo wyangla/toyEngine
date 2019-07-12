@@ -265,6 +265,7 @@ public class index {
 		infoManager.clear_info(posting_loaded_status.class);
 		infoManager.clear_info(term_max_tf.class);
 		infoManager.clear_info(term_df.class);
+		infoManager.clear_info(term_idf.class);
 	}
 
 	
@@ -340,6 +341,8 @@ public class index {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+		
+		cal_termIdf();
 		
 		// re-persist the inverted index
 		index_io_operations.get_instance().persist_index(); // the ids are corrected now

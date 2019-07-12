@@ -171,6 +171,13 @@ public class index_io_operations {
 		}
 	}
 	
+	
+	public void persist_info() {
+		infoManager.persist_info(term_max_tf.class);
+		infoManager.persist_info(term_df.class);
+		infoManager.persist_info(term_idf.class);
+	}
+	
 
 	// stop loading all the postings into memory before persist
 	// as the persist_index contains check loading status of posting list
@@ -187,10 +194,12 @@ public class index_io_operations {
 		persist_postings();
 		persist_lastPostUnitId();
 		persist_docMap();
-		
-		// persist max tf infomation
-		infoManager.persist_info(term_max_tf.class);
+		persist_info();
 	}
+	
+	
+	
+	
 	
 	
 	// different from add_posting_unit
@@ -257,6 +266,8 @@ public class index_io_operations {
 					}
 				} while (termString != null);
 				
+				System.out.println("lexicon loaded");
+				
 			} catch(Exception e) {
 				e.printStackTrace();
 			} finally {
@@ -287,6 +298,9 @@ public class index_io_operations {
 					idx.lastPostUnitId = Long.parseLong(idString);
 					idx.pc.postingId = idx.lastPostUnitId + 10; // set the pc so that will not overwrite the old units
 				}
+				
+				System.out.println("lastId loaded");
+				
 			} catch(Exception e) {
 				e.printStackTrace();
 			} finally {
@@ -459,6 +473,8 @@ public class index_io_operations {
 					}
 				} while (docString != null);
 				
+				System.out.println("doc map loaded");
+				
 			} catch(Exception e) {
 				e.printStackTrace();
 			} finally {
@@ -476,6 +492,18 @@ public class index_io_operations {
 	
 	public void load_info() {
 		infoManager.load_info(term_max_tf.class);
+		infoManager.load_info(term_df.class);
+		infoManager.load_info(term_idf.class);
+		
+		System.out.println("info loaded");
+	}
+	
+	
+	public void load_index() {
+		load_lexicon();
+		load_lastId();
+		load_docMap();
+		load_info();
 	}
 	
 }

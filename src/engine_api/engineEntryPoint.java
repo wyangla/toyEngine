@@ -29,36 +29,20 @@ public class engineEntryPoint {
 	
 	
 	// start serving
-	private void load_lexicon() {
-		ioOps.load_lexicon();
-		System.out.println("Lexicon loaded");
-	}
-	
-	private void load_lastId() {
-		ioOps.load_lastId();
-		System.out.println("lastId loaded");
-	}
-	
-	private void load_docMap() {
-		ioOps.load_docMap();
-		System.out.println("doc map loaded");
-	}
-	
-	private void load_info() {
-		ioOps.load_info();
-		System.out.println("info loaded");
+	private void load_index() {
+		ioOps.load_index();
 	}
 	
 	// main objects 
-	public index get_index() {
+	public index _get_index() {
 		return idx;
 	}
 	
-	public keeper get_keeper() {
+	public keeper _get_keeper() {
 		return kpr;
 	}
 	
-	public cleaner get_cleaner() {
+	public cleaner _get_cleaner() {
 		return clr;
 	}
 	
@@ -283,13 +267,15 @@ public class engineEntryPoint {
 	}
 	
 	
+	private void start_serving() {
+		load_index();
+		start_monitoring();
+	}
+	
+	
 	public static void main(String[] args) {
 		engineEntryPoint ep = new engineEntryPoint();
-		ep.load_lexicon();
-		ep.load_lastId();
-		ep.load_docMap();
-		ep.load_info();
-		ep.start_monitoring();
+		ep.start_serving();
 		
 		GatewayServer gServer = new GatewayServer(ep); 
 		gServer.start();
