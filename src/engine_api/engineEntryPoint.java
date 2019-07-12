@@ -90,24 +90,37 @@ public class engineEntryPoint {
 		return docInfoMap;
 	}
 	
-	public HashMap<String, HashMap<String, Long>> get_lexiconLockInfoMap() {
+	public HashMap<String, HashMap<String, Long>> _get_lexiconLockInfoMap() {
 		return kpr.get_lockInfoMap(lexicon_locker.class);
 	}
 	
-	public HashMap<String, ReentrantLock> get_lexiconLockMap() {
+	public HashMap<String, ReentrantLock> _get_lexiconLockMap() {
 		return kpr.get_lockMap(lexicon_locker.class);
 	}
 	
 	// the postUnitMap will be dump to local after not being accessed for a while
-	public Set<Long> get_pUnitList (){
+	public Set<Long> _get_pUnitList() {
 		return idx.postUnitMap.keySet();
 	}
 	
-	public int check_pUnitStatus(Long pUnitId) {
+	public int _check_pUnitStatus(Long pUnitId) {
 		return idx.postUnitMap.get(pUnitId).status;
 	}
 	
+	// TODO: just for test
+	public HashMap<String, Double> _get_termDf() {
+		return term_df.infoMap;
+	}
 	
+	// TODO: just for test
+	public HashMap<String, Double> _get_termIdf() {
+		return term_idf.infoMap;
+	}
+	
+	
+	
+	
+
 	// basic operations defined in the index
 	public long add_term(String term) {
 		long firstUnitId = idx.add_term(term);
@@ -117,6 +130,11 @@ public class engineEntryPoint {
 	public void del_term(String term) {
 		idx.del_term(term);
 	}
+	
+	public int cal_termIdf() {
+		return idx.cal_termIdf();
+	}
+	
 	
 	// persistedUnit: [term<String>] currentId<Long> nextId<Long> previousId<Long> {uProp}<String, Long> docId<String> status<Integer>
 	public long add_posting_unit(String persistedUnit) {

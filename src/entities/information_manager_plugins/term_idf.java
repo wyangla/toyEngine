@@ -38,7 +38,7 @@ public class term_idf{
 	
 	// TODO: add get_map in info_magr_plugins and info_mgr, so that all the information access go through info_mgr
 	public static int set_info(posting_unit fakePostUnit) {
-		int addedFlag = -1;
+		int calDoneFlag = -1;
 		try {
 			String[] targetTerms = term_df.infoMap.keySet().toArray(new String[0]);
 			ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, targetTerms);
@@ -54,10 +54,14 @@ public class term_idf{
 				it.join();
 			}
 			
+			calDoneFlag = 1;
+			
 		}catch(Exception e) {
 			e.printStackTrace();
+			
+			calDoneFlag = 0;
 		}
-		return addedFlag;
+		return calDoneFlag;
 	}
 	
 	

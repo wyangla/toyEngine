@@ -114,6 +114,14 @@ public class index {
 	}
 	
 	
+	// invoked by operator, each time after the newly added files are scanned
+	public int cal_termIdf() {
+		int calDoneFlag = infoManager.set_info(term_idf.class, new posting_unit());
+		return calDoneFlag;
+	}
+
+	
+	
 	// the analysing of doc and find the term:postUnit pair is handled by a higher level
 	// used as the sequentially add, the posting list and lexicon growing at the same time
 	private posting_unit _add_posting_unit(String term, posting_unit postUnit) {
@@ -148,6 +156,7 @@ public class index {
 					// but for the potential single usage, here still use the status setting
 					infoManager.set_info(term_max_tf.class, postUnit);
 					infoManager.set_info(posting_loaded_status.class, postUnit);
+					infoManager.set_info(term_df.class, postUnit);
 					
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -255,6 +264,7 @@ public class index {
 		// clear high level information
 		infoManager.clear_info(posting_loaded_status.class);
 		infoManager.clear_info(term_max_tf.class);
+		infoManager.clear_info(term_df.class);
 	}
 
 	
