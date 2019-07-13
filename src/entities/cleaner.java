@@ -64,10 +64,10 @@ public class cleaner {
 						posting_unit nextTermUnit = (curUnit.nextTermId != -1) ? idx.postUnitMap.get(curUnit.nextTermId) : null; // skip the last unit of term posting chain
 
 						if (prevTermUnit != null) { // when current unit is not the first term unit
-							prevTermUnit.link_to_next(nextTermUnit);	
+							prevTermUnit.link_to_next_term(nextTermUnit);	
 						}
 						if (nextTermUnit != null) { // when current unit is not the last term unit
-							nextTermUnit.link_to_previous(prevTermUnit);	
+							nextTermUnit.link_to_previous_term(prevTermUnit);	
 						}
 						
 						delPostUnitList.add(pUnitId);

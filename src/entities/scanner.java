@@ -171,4 +171,21 @@ public class scanner {
 	}
 	
 	
+	
+	// scan through the term units chain
+	public void visit_next_term_unit (posting_unit curTermUnit, Class operationOnTermChain, ArrayList<Long> affectedTermUnits) throws Exception {
+		
+		if(curTermUnit != null) {
+
+			Method conduct = operationOnTermChain.getMethod("conduct", posting_unit.class);
+			long affectedUnitId = (long)conduct.invoke(operationOnTermChain, curTermUnit);
+			if(affectedUnitId != -1) { // -1 denotes the processed unit was not affected
+				affectedTermUnits.add(affectedUnitId); 
+			}
+			visit_next_unit(curTermUnit.nextTermUnit, operationOnTermChain, affectedTermUnits);
+		}
+	}
+	
+	
+	
 }
