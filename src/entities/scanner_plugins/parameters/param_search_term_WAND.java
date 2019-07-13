@@ -14,17 +14,17 @@ public class param_search_term_WAND {
 	// use this class to pass multiple data structures into the scanner
 	scorer scr;										// scorer
 	Iterator<Map.Entry<String, Double>> tMaxSI;		// term - upper bound entry iterator
-	HashSet<String> vDocSet;						// the intersection set
+	HashSet<Long> vDocSet;						// the intersection set
 	counter curUB;									// current upper bound of the vDocSet - i.e. the sum the scores of necessary terms
-	HashMap<String, HashSet<String>> tDocSetMap;	// term - docId set map
+	HashMap<String, HashSet<Long>> tDocSetMap;	// term - docId set map
 	counter docSC;									// doc score counter, the rank counter
 	int tpK;										// top K
 
 	public param_search_term_WAND(scorer scorer, 
 									Iterator<Map.Entry<String, Double>> termMaxScoresIterator, 
-									HashSet<String> validDocSet, 
+									HashSet<Long> validDocSet, 
 									counter currentUpperBound,
-									HashMap<String, HashSet<String>> termDocIdSetMap, 
+									HashMap<String, HashSet<Long>> termDocIdSetMap, 
 									counter documentScoreCounter, 
 									int topK){
 		scr = scorer;
@@ -74,7 +74,7 @@ public class param_search_term_WAND {
 						Map.Entry<String, Double> necessaryTermScore = tMaxSI.next();
 						curUB.increase("currentUpperBound", necessaryTermScore.getValue());
 						
-						HashSet<String> termDocSet = tDocSetMap.get(necessaryTermScore.getKey());
+						HashSet<Long> termDocSet = tDocSetMap.get(necessaryTermScore.getKey());
 						if(termDocSet != null) {	// prevent new terms are added during the searching, e.g. sdadsasas which initially not existing and currently added
 							if(vDocSet.isEmpty()) {
 								vDocSet.addAll(termDocSet);
@@ -96,7 +96,7 @@ public class param_search_term_WAND {
 		// as topKthScore could be already raised again, and set already be smaller
 		if(doCalculation) {
 			Double subScore = scr.cal_score(pUnit);		// score contribute by one term to the doc
-			docSC.increase(pUnit.docId, subScore);		// could increase more than K
+			docSC.increase("" + pUnit.docId, subScore);		// could increase more than K
 			newlyAddedUnitId = pUnit.currentId;
 		}
 

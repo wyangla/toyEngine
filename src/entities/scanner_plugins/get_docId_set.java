@@ -4,9 +4,9 @@ import data_structures.posting_unit;
 import java.util.*;
 
 public class get_docId_set {
-	public static HashSet<String> docIdSet;
+	public static HashSet<Long> docIdSet;    // String -> Long, for inner consistency
 	
-	public static void set_parameters (HashSet<String> documentIdSet) {
+	public static void set_parameters (HashSet<Long> documentIdSet) {
 		docIdSet = documentIdSet;
 	}
 	

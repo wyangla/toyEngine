@@ -239,12 +239,12 @@ public class index_advanced_operations {
 	 * */
 	
 	// return the sets filled by the docIds of terms
-	public HashMap<String, HashSet<String>> get_term_docId_set(String[] targetTerms) {
-		HashMap<String, HashSet<String>> termDocIdSetMap = new HashMap<String, HashSet<String>>();
+	public HashMap<String, HashSet<Long>> get_term_docId_set(String[] targetTerms) {
+		HashMap<String, HashSet<Long>> termDocIdSetMap = new HashMap<String, HashSet<Long>>();
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		for(String term : targetTerms) {
-			HashSet<String> docIdSet = new HashSet<String>();
+			HashSet<Long> docIdSet = new HashSet<Long>();
 			scanner.scan_term_thread st = new scanner.scan_term_thread(
 					snr, 
 					get_docId_set.class, 
@@ -270,11 +270,11 @@ public class index_advanced_operations {
 	// totalDocumentScoreCounter is shared here, so that need synchronisation
 	public counter search_WAND(String[] targetTerms, int topK) {
 		Iterator<Map.Entry<String, Double>> termMaxScoresIterator = get_term_upper_bounds(targetTerms).sort().iterator(); // pass
-		HashSet<String> validDocSet = new HashSet<String>(); // pass, intersections of docId sets of terms
+		HashSet<Long> validDocSet = new HashSet<Long>(); // pass, intersections of docId sets of terms
 		counter currentUpperBound = new counter(); // pass, current upper bound
 		currentUpperBound.put("currentUpperBound", 0.0);
 		
-		HashMap<String, HashSet<String>> termDocIdSetMap = get_term_docId_set(targetTerms); // pass, map from term to docId set
+		HashMap<String, HashSet<Long>> termDocIdSetMap = get_term_docId_set(targetTerms); // pass, map from term to docId set
 		counter totalDocumentScoreCounter = new counter();	// pass
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
