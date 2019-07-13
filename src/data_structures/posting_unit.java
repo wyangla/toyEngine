@@ -21,6 +21,11 @@ public class posting_unit {
 	public String docId = "--"; // the unique id (path) of doc in the file system
 	public String term = "--";
 	
+	// TODO: need to be flattened
+	public posting_unit nextTermUnit = null;    // link to the next term in doc
+	public posting_unit prevTermUnit = null;    // link to the prvious term in doc
+	public ArrayList<Integer> positions = null;     // this information needs to be generated from the operator, with this information, the units does not need to be linked in order
+	
 	
 	// link to the previous posting list unit
 	public long link_to_previous(posting_unit previous_unit_ins) {

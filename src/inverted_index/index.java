@@ -43,6 +43,18 @@ public class index {
 	
 	public long lastPostUnitId = 0; // static -> public
 	
+	// for generating the unique posting unit id s
+	public class docCounters {
+		long docId = 0L;
+	}
+	
+	public docCounters dc = new docCounters();
+	public long get_dc() {
+		return dc.docId;
+	}
+	
+	public long lastDocId = 0; // static -> public
+	
 
 	// initialise the posting list for one term
 	private long ini_posting_list(String term) {

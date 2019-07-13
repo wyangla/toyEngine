@@ -6,7 +6,8 @@ import org.json.JSONObject;
 
 // no specific references to the post units, as the post unit ids are not fixed, reload operation could change them all
 public class doc {
-	public String docId = " ";
+	public long docId = -1L;
+	public String docName = " ";
 	public int docLength = 0;
 	public HashMap<String, Double> docProp = new HashMap<String, Double>();
 	
@@ -14,10 +15,13 @@ public class doc {
 		// will be dynamically refilled when reload the postings
 		// depreciated, it will consume too much memory
 	
+	// TODO: needs to be flattened
+	public posting_unit firstTermUnit = null;    // point to the posting unit of first term in the document
+	
 	
 	public String flatten() {
 		JSONObject docPropJson = new JSONObject(docProp);
-		return String.format("%s %s %s", docId, "" + docLength, docPropJson);
+		return String.format("%s %s %s %s", docId, docName, "" + docLength, docPropJson);
 	}
 	
 	
@@ -25,7 +29,8 @@ public class doc {
 		doc docIns = new doc();
 		String[] docFields = persistedDoc.split(" ");
 		
-		docIns.docId = docFields[0];
+		docIns.docId = Long.parseLong(docFields[0]);
+		docIns.docName = docFields[1];
 		docIns.docLength = Integer.parseInt(docFields[1]);
 		
 		JSONObject docPropJson = new JSONObject(docFields[2]);
