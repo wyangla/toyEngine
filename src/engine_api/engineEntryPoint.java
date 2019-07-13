@@ -54,22 +54,24 @@ public class engineEntryPoint {
 		return idx.postUnitMap;
 	}
 	
-	public HashMap<String, HashMap<String, String>> get_docMap() {
-		HashMap<String, HashMap<String, String>> docInfoMap = new HashMap<String, HashMap<String, String>> ();
+	public HashMap<Long, HashMap<String, String>> get_docMap() {
+		HashMap<Long, HashMap<String, String>> docInfoMap = new HashMap<Long, HashMap<String, String>> ();
 		
-		for (String docName : idx.docMap.keySet()) {
+		for (long docId : idx.docMap.keySet()) {
 			HashMap<String, String> infoMap = new HashMap<String, String> ();
-			doc docIns = idx.docMap.get(docName);
+			doc docIns = idx.docMap.get(docId);
 			
+			String docName = "" + docIns.docName;
 			String docLengthStr = "" + docIns.docLength;
 			String docPropStr = "" + docIns.docProp.toString();
 			// String pUnitIdListStr = "" + docIns.pUnitIdList.toString();
 			
+			infoMap.put("docName", docName);
 			infoMap.put("docLength", docLengthStr);
 			infoMap.put("docProp", docPropStr);
 			// infoMap.put("pUnitIdList", pUnitIdListStr);
 			
-			docInfoMap.put(docName, infoMap);
+			docInfoMap.put(docId, infoMap);
 		}
 		return docInfoMap;
 	}
