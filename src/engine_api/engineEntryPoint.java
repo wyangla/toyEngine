@@ -57,7 +57,7 @@ public class engineEntryPoint {
 	public HashMap<Long, HashMap<String, String>> get_docMap() {
 		HashMap<Long, HashMap<String, String>> docInfoMap = new HashMap<Long, HashMap<String, String>> ();
 		
-		for (long docId : idx.docMap.keySet()) {
+		for (long docId : idx.docIdMap.keySet()) {
 			HashMap<String, String> infoMap = new HashMap<String, String> ();
 			doc docIns = idx.docMap.get(docId);
 			

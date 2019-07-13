@@ -70,7 +70,7 @@ public class class_loader {
 				
 				Method conduct = operationClass.getMethod("conduct", posting_unit.class, String.class);
 				posting_unit pUnit = new posting_unit();
-				pUnit.docId = "test";
+				pUnit.docId = 1L;
 				conduct.invoke(operationClass, pUnit, "test");
 				System.out.println(pUnit.status); // using DELUNIT operation here, so status should be 0
 				

@@ -14,7 +14,7 @@ public class scanner_plugin_test {
 		delete_doc.set_parameters("test");
 		
 		posting_unit pUnit = new posting_unit();
-		pUnit.docId = "test";
+		pUnit.docId = 1L;
 		System.out.println(pUnit.status);
 		
 		delete_doc.conduct(pUnit);

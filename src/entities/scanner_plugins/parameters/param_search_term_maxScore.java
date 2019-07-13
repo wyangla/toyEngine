@@ -41,7 +41,7 @@ public class param_search_term_maxScore {
 		// not using remove, as could loose sub score
 		if(docUpperBound != null && docUpperBound > topKthScore) {
 			Double subScore = scr.cal_score(pUnit);		// score contribute by one term to the doc
-			docSC.increase(pUnit.docId, subScore);	// could increase more than K
+			docSC.increase("" + pUnit.docId, subScore);	// could increase more than K
 			newlyAddedUnitId = pUnit.currentId;
 		}
 		
