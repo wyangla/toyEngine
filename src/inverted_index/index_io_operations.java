@@ -2,6 +2,7 @@ package inverted_index;
 
 import java.io.*;
 import java.util.*;
+
 import data_structures.*;
 import entities.*;
 import entities.information_manager_plugins.*;
@@ -497,7 +498,7 @@ public class index_io_operations {
 		}		
 		return loaded_units;
 	}
-	
+		
 	
 	// load all the postings into memory, 
 	// used before the persistence, and reload
