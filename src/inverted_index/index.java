@@ -255,6 +255,8 @@ public class index {
 		doc addedDoc = new doc();
 		addedDoc.docName = targetDocName;
 		addedDoc.docId = dc.docId;
+		
+		lastDocId = addedDoc.docId;
 		dc.docId ++;
 		
 		docMap.put(addedDoc.docId, addedDoc);

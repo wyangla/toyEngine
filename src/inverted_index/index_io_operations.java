@@ -151,13 +151,32 @@ public class index_io_operations {
 		}
 	}
 	
+
+	private void persist_lastDocId() {
+		try {
+			// persist last doc id
+			FileWriter idf = new FileWriter(configs.index_config.lastDocIdPath);
+			try {
+				idf.write("" + idx.lastDocId);
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				idf.flush();
+				idf.close();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	private void persist_docMap() {
 		try {
 			// persist docMap
 			FileWriter dm = new FileWriter(configs.index_config.docsPath);
 			try {
 				dm.write(""); // when the docMap is empty, make sure that the docInfo file is emptied
-				for(String docId : idx.docMap.keySet()) {
+				for(long docId : idx.docMap.keySet()) {
 					dm.write(idx.docMap.get(docId).flatten() + "\r\n");
 				}
 			} catch(Exception e) {
@@ -193,6 +212,7 @@ public class index_io_operations {
 		persist_lexicon();
 		persist_postings();
 		persist_lastPostUnitId();
+		persist_lastDocId();
 		persist_docMap();
 		persist_info();
 	}
@@ -285,7 +305,7 @@ public class index_io_operations {
 		
 	
 	// each time the engine is restart, the lastId is added with 10, for safety
-	public void load_lastId() {
+	public void load_lastPostUnitId() {
 		try {
 			// load last post unit id
 			FileReader idf = new FileReader(configs.index_config.lastPostUnitIdPath);
@@ -311,6 +331,37 @@ public class index_io_operations {
 			e.printStackTrace();
 			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
 				file_creater.create_file(configs.index_config.lastPostUnitIdPath);
+			};
+		}
+	}
+	
+	// each time the engine is restart, the lastDocId is added with 10
+	public void load_lastDocId() {
+		try {
+			// load last post unit id
+			FileReader idf = new FileReader(configs.index_config.lastDocIdPath);
+			BufferedReader idfb = new BufferedReader(idf);
+			try {
+				String idString = idfb.readLine();
+					
+				if (idString != null) {
+					idString = idString.trim();
+					idx.lastDocId = Long.parseLong(idString);
+					idx.dc.docId = idx.lastDocId + 10;
+				}
+				
+				System.out.println("lastDocId loaded");
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				idf.close();
+				idfb.close();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+				file_creater.create_file(configs.index_config.lastDocIdPath);
 			};
 		}
 	}
@@ -501,7 +552,8 @@ public class index_io_operations {
 	
 	public void load_index() {
 		load_lexicon();
-		load_lastId();
+		load_lastPostUnitId();
+		load_lastDocId();
 		load_docMap();
 		load_info();
 	}
