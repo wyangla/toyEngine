@@ -47,15 +47,27 @@ public class cleaner {
 					posting_unit curUnit = idx.postUnitMap.get(pUnitId);
 					int pStatus = curUnit.status;
 					if(pStatus == 0) {
+						
+						// relink the posting chain
 						posting_unit prevUnit = (pUnitIndex != 0) ? idx.postUnitMap.get(postingUnitIds.get(pUnitIndex - 1)) : null; // skip the first unit of posting list
 						posting_unit nextUnit = (pUnitIndex != postingUnitIds.size() - 1) ? idx.postUnitMap.get(postingUnitIds.get(pUnitIndex + 1)) : null; // skip the last unit of posting list
 						
-						// relink
 						if (prevUnit != null) { // when current unit is not the starter
 							prevUnit.link_to_next(nextUnit);	
 						}
 						if (nextUnit != null) { // when current unit is not the ender
 							nextUnit.link_to_previous(prevUnit);	
+						}
+						
+						// relink the term posting chain
+						posting_unit prevTermUnit = (curUnit.previousTermId != -1) ? idx.postUnitMap.get(curUnit.previousTermId) : null; // skip the first unit of term posting chain
+						posting_unit nextTermUnit = (curUnit.nextTermId != -1) ? idx.postUnitMap.get(curUnit.nextTermId) : null; // skip the last unit of term posting chain
+
+						if (prevTermUnit != null) { // when current unit is not the first term unit
+							prevTermUnit.link_to_next(nextTermUnit);	
+						}
+						if (nextTermUnit != null) { // when current unit is not the last term unit
+							nextTermUnit.link_to_previous(prevTermUnit);	
 						}
 						
 						delPostUnitList.add(pUnitId);

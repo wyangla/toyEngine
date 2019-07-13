@@ -54,12 +54,34 @@ public class engineEntryPoint {
 		return idx.postUnitMap;
 	}
 	
-	public HashMap<Long, HashMap<String, String>> get_docMap() {
+	public HashMap<String, HashMap<String, String>> _get_docMap() {
+		HashMap<String, HashMap<String, String>> docInfoMap = new HashMap<String, HashMap<String, String>> ();
+		
+		for (String docName : idx.docMap.keySet()) {
+			HashMap<String, String> infoMap = new HashMap<String, String> ();
+			doc docIns = idx.docMap.get(docName);
+			
+			String docId = "" + docIns.docId;
+			String docLengthStr = "" + docIns.docLength;
+			String docPropStr = "" + docIns.docProp.toString();
+			// String pUnitIdListStr = "" + docIns.pUnitIdList.toString();
+			
+			infoMap.put("docId", docId);
+			infoMap.put("docLength", docLengthStr);
+			infoMap.put("docProp", docPropStr);
+			// infoMap.put("pUnitIdList", pUnitIdListStr);
+			
+			docInfoMap.put(docName, infoMap);
+		}
+		return docInfoMap;
+	}
+	
+	public HashMap<Long, HashMap<String, String>> _get_docIdMap() {
 		HashMap<Long, HashMap<String, String>> docInfoMap = new HashMap<Long, HashMap<String, String>> ();
 		
 		for (long docId : idx.docIdMap.keySet()) {
 			HashMap<String, String> infoMap = new HashMap<String, String> ();
-			doc docIns = idx.docMap.get(docId);
+			doc docIns = idx.docIdMap.get(docId);
 			
 			String docName = "" + docIns.docName;
 			String docLengthStr = "" + docIns.docLength;
