@@ -176,8 +176,8 @@ public class index_io_operations {
 			FileWriter dm = new FileWriter(configs.index_config.docsPath);
 			try {
 				dm.write(""); // when the docMap is empty, make sure that the docInfo file is emptied
-				for(long docId : idx.docMap.keySet()) {
-					dm.write(idx.docMap.get(docId).flatten() + "\r\n");
+				for(String docName : idx.docMap.keySet()) {
+					dm.write(idx.docMap.get(docName).flatten() + "\r\n");
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
@@ -520,7 +520,7 @@ public class index_io_operations {
 					if (docString != null) {
 						docString = docString.trim();
 						doc docIns = doc.deflatten(docString);
-						idx.docMap.put(docIns.docId, docIns);
+						idx.docMap.put(docIns.docName, docIns);
 					}
 				} while (docString != null);
 				

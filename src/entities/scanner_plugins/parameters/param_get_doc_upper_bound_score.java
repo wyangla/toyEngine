@@ -21,7 +21,7 @@ public class param_get_doc_upper_bound_score {
 		if(score == null) {
 			score = 0.0;
 		}
-		docUpperBounds.put(pUnit.docId, score);
+		docUpperBounds.put("" + pUnit.docId, score);
 		processedUnitId = pUnit.currentId;
 	return processedUnitId;
 	}

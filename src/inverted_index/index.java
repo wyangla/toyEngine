@@ -28,7 +28,7 @@ public class index {
 	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
 	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
-	public HashMap<Long, doc> docMap = new HashMap<Long, doc>();
+	public HashMap<String, doc> docMap = new HashMap<String, doc>();
 	private information_manager infoManager = information_manager.get_instance();	// only used when adding/removing new posting unit into/from index
 	
 	// for generating the unique posting unit id s
@@ -259,7 +259,7 @@ public class index {
 		lastDocId = addedDoc.docId;
 		dc.docId ++;
 		
-		docMap.put(addedDoc.docId, addedDoc);
+		docMap.put(addedDoc.docName, addedDoc);
 		
 		// return the failed units
 		int retryTime = 1;
