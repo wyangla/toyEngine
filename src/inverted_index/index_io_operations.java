@@ -541,6 +541,16 @@ public class index_io_operations {
 	}
 	
 	
+	public void reconstruct_docIdMap() {
+		for (String docName : idx.docMap.keySet()) {
+			doc docIns = idx.docMap.get(docName);
+			idx.docIdMap.put(docIns.docId, docIns);
+		}
+		
+		System.out.println("docIdMap reconstructed");
+	}
+	
+	
 	public void load_info() {
 		infoManager.load_info(term_max_tf.class);
 		infoManager.load_info(term_df.class);
