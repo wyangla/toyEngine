@@ -18,12 +18,17 @@ public class posting_unit {
 	public HashMap<String, Double> uProp = new HashMap<String, Double>(); // for storing properties like tfidf, etc.
 	
 	public int status = 1; // 1 linked, 0 disconnected
-	public String docId = "--"; // the unique id (path) of doc in the file system
+	public long docId = -1L; // the unique id (path) of doc in the file system
 	public String term = "--";
 	
+	
 	// TODO: need to be flattened
+	public long nextTermId = -1L;
+	public long previousTermId = -1L;
+	
 	public posting_unit nextTermUnit = null;    // link to the next term in doc
 	public posting_unit prevTermUnit = null;    // link to the prvious term in doc
+	
 	public ArrayList<Integer> positions = null;     // this information needs to be generated from the operator, with this information, the units does not need to be linked in order
 	
 	
@@ -38,7 +43,6 @@ public class posting_unit {
 		return previousId;
 	}
 	
-	
 	// link to the following posting list unit
 	public long link_to_next(posting_unit next_unit_ins) {
 		nextUnit = next_unit_ins;
@@ -51,6 +55,29 @@ public class posting_unit {
 	}
 	
 	
+	// link to the previous posting list unit
+	public long link_to_previous_term(posting_unit previous_term_ins) {
+		prevTermUnit = previous_term_ins;
+		if (previous_term_ins != null) {
+			previousTermId = prevTermUnit.currentId;
+		}else { // when links to nothing previous, means the current is the starter
+			previousTermId = -1;
+		}
+		return previousTermId;
+	}
+	
+	// link to the following posting list unit
+	public long link_to_next_term(posting_unit next_term_ins) {
+		nextTermUnit = next_term_ins;
+		if(next_term_ins != null) {
+			nextTermId = nextTermUnit.currentId;
+		}else {  // when links to nothing following, means the current is the ender
+			nextTermId = -1;
+		}
+		return nextTermId;
+	}
+
+	
 	
 	// serialisation of the unit
 	// does not care about the linking, which is handled within the index
@@ -58,7 +85,7 @@ public class posting_unit {
 	// [term] is added in index
 	public String flatten() {
 		JSONObject uPropJson = new JSONObject(uProp);
-		return String.format("%s %s %s %s %s %s %s", term, currentId, nextId, previousId, uPropJson, docId, status);
+		return String.format("%s %s %s %s %s %s %s %s %s", term, currentId, nextId, previousId, nextTermId, previousTermId, uPropJson, docId, status);
 	}
 	
 	
@@ -73,10 +100,12 @@ public class posting_unit {
 		pUnit.currentId = Long.parseLong(pUnitFields[1]);
 		pUnit.nextId = Long.parseLong(pUnitFields[2]);
 		pUnit.previousId = Long.parseLong(pUnitFields[3]);
-		pUnit.docId = pUnitFields[5];
-		pUnit.status = Integer.parseInt(pUnitFields[6]);
+		pUnit.nextTermId = Long.parseLong(pUnitFields[4]);
+		pUnit.previousTermId = Long.parseLong(pUnitFields[5]);
+		pUnit.docId = Long.parseLong(pUnitFields[7]);
+		pUnit.status = Integer.parseInt(pUnitFields[8]);
 		
-		JSONObject uPropJson = new JSONObject(pUnitFields[4]);
+		JSONObject uPropJson = new JSONObject(pUnitFields[6]);
 		Map<String, Object> uProp = uPropJson.toMap(); 
 		for(String p : uProp.keySet()) {
 			pUnit.uProp.put(p, Double.parseDouble("" + uProp.get(p)));
