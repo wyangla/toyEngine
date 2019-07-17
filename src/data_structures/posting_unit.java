@@ -18,7 +18,7 @@ public class posting_unit {
 	public HashMap<String, Double> uProp = new HashMap<String, Double>(); // for storing properties like tfidf, etc.
 	
 	public int status = 1; // 1 linked, 0 disconnected
-	public long docId = -1L; // the unique id (path) of doc in the file system
+	public long docId = -1L; // the unique id of doc in the file system, not using path here
 	public String term = "--";
 	
 	

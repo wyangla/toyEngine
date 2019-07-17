@@ -192,107 +192,196 @@ public class scanner {
 	
 	
 	
-	// TODO: move to?
-	// scan through the term units chain to collect all the related units
-	public void visit_next_term_unit (posting_unit curTermUnit, HashMap<String, posting_unit> docRelatedUnits) {
+//	// TODO: move to?
+//	// scan through the term units chain to collect all the related units
+//	public void visit_next_term_unit (posting_unit curTermUnit, HashMap<String, posting_unit> docRelatedUnits) {
+//		
+//		if(curTermUnit != null && curTermUnit.previousTermId != -1) {    // skip the first term unit
+//			docRelatedUnits.put("" + curTermUnit.currentId, curTermUnit);
+//			visit_next_term_unit(curTermUnit.nextTermUnit, docRelatedUnits);
+//		}
+//	}
+//	
+//	
+//	public void load_doc_related_postings(long docId) {
+//		doc docIns = idx.docIdMap.get(docId);
+//		String docPath = general_config.processedDocPath + docIns.docName;
+//		String processedDoc = "";
+//		
+//		try {
+//			FileReader lf = new FileReader(docPath);
+//			BufferedReader lb = new BufferedReader(lf);
+//			try {			
+//				processedDoc = lb.readLine();    // the processed document only contains one line
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				lb.close();
+//				lf.close();
+//			}
+//			
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//		
+//		String[] targetTerms = processedDoc.split(" ");
+//		long[] loaded_units = idxIOOps.load_posting(targetTerms);
+//		for(long unitId : loaded_units) {
+//			infoManager.set_info(posting_loaded_status.class, idx.postUnitMap.get(unitId));    // update the re-visit time, as load_posting only update the loading time
+//		}
+//	}
+//	
+//	
+//	public double cal_doc_length(long docId, Method cal_score){
+//		HashMap<String, posting_unit> docRelatedUnits = new HashMap<String, posting_unit> (); // for collect the related untis, for convenience of using task splitter
+//		
+//		load_doc_related_postings(docId);    // load the posting lists contain the document related terms
+//		doc docIns = idx.docIdMap.get(docId);
+//		visit_next_term_unit(docIns.firstTermUnit, docRelatedUnits);    // a little bit wasteful
+//		
+//		String[] docRelatedUnitIdStrings = docRelatedUnits.keySet().toArray(new String[0]);
+//		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, docRelatedUnitIdStrings);
+//		
+//		double docLength = 0.0;
+//		
+//		
+//		// use thread to calculate sub doc score 
+//		class opThread extends Thread{
+//			String[] drUnitIdStrings;
+//			ArrayList<Double> subScoreList = new ArrayList<Double> ();
+//			
+//			public opThread (String[] workLoad) {
+//				drUnitIdStrings = workLoad;
+//			}
+//			public void run() {
+//				try {
+//					for(String drUnitId: drUnitIdStrings) {
+//						posting_unit drUnitIns = docRelatedUnits.get(drUnitId);    // TODO: here use the cal_score to calculate sub document score on posting 
+//						double docSubScore = (double)cal_score.invoke(drUnitIns);
+//						subScoreList.add(docSubScore);
+//					}
+//				} catch(Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			public ArrayList<Double> get_subScoreList() {
+//				return subScoreList;
+//			}
+//		}
+//		
+//		
+//		// start the threads and collect the sub scores 
+//		ArrayList<opThread> threadList = new ArrayList<opThread>(); 
+//				
+//		for(String[] workload : workLoads) {
+//			opThread st = new opThread(workload);
+//			st.run();
+//			threadList.add(st);
+//		}
+//		
+//		for(opThread st : threadList) {
+//			try {
+//				st.join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//			for(double subscore : st.get_subScoreList()) {
+//				docLength += subscore * subscore;
+//			}
+//		}
+//		
+//		docLength = Math.sqrt(docLength);
+//		return docLength;
+//	}
+	
+	
+	
+	
+	/* make consistent between scan the posting list & term chain */
+	
+	
+	// here use the docId string, is for consistent with the output score counter
+	public String scan_term_chain(String docIdStr, Class operationOnPostingList, ArrayList<Long> affectedUnits) {
+		long processedDocId = Long.parseLong(docIdStr);
 		
-		if(curTermUnit != null && curTermUnit.previousTermId != -1) {    // skip the first term unit
-			docRelatedUnits.put("" + curTermUnit.currentId, curTermUnit);
-			visit_next_term_unit(curTermUnit.nextTermUnit, docRelatedUnits);
+		// get the starter post unit id
+		doc docIns = idx.docIdMap.get(processedDocId);
+		idxIOOps.load_doc_related_postings(processedDocId);    
+		// load the posting lists contain the document related terms, loading status are updated
+		// load the postings here instead of the scan_doc, is for saving the memory, prevent load too many units at once
+		
+		
+		if(docIns.firstTermUnit.nextTermUnit != null) {    // if does not skip the skip the fake first term, a fake term '--' will contribute to the length
+			
+			// load the unit operations
+			try {
+				visit_next_unit(docIns.firstTermUnit, operationOnPostingList, affectedUnits);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return docIdStr;
 	}
 	
 	
-	public void load_doc_related_postings(long docId) {
-		doc docIns = idx.docIdMap.get(docId);
-		String docPath = general_config.processedDocPath + docIns.docName;
-		String processedDoc = "";
+	// here use the docId string, is for consistent with the output score counter
+	public ArrayList<Long> scan_doc(String[] targetDocIdStrs, Class operationOnPostingList){
+		ArrayList<Long> affectedUnits = new ArrayList<Long> ();
 		
-		try {
-			FileReader lf = new FileReader(docPath);
-			BufferedReader lb = new BufferedReader(lf);
-			try {			
-				processedDoc = lb.readLine();    // the processed document only contains one line
+		for(String term : targetDocIdStrs) {
+			scan_posting_list(term, operationOnPostingList, affectedUnits);
+		}
+		return affectedUnits;
+	}
+	
+	
+	// TODO: method with multi-thread uses this class
+	// general purpose thread class
+	// each thread scanning the posting list of one term
+	public static class scan_doc_thread extends Thread {
+		private Class opCls;
+		private Object opClsParam;
+		private String[] tDocIdStrs;
+		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
+		private scanner snr;
+		
+		public scan_doc_thread(scanner scannerIns, Class operationClass, Object operationClassParameter, String[] targetDocIdStrs) {
+			opCls = operationClass;
+			opClsParam = operationClassParameter; 
+			tDocIdStrs = targetDocIdStrs;
+			snr = scannerIns;
+		}
+		
+		public void run() {
+			try {
+				opCls = set_param(opCls, opClsParam);
+				affectedUnitIds = snr.scan_doc(tDocIdStrs, opCls);
+				
 			} catch(Exception e) {
 				e.printStackTrace();
-			} finally {
-				lb.close();
-				lf.close();
 			}
-			
-		} catch(Exception e) {
-			e.printStackTrace();
 		}
 		
-		String[] targetTerms = processedDoc.split(" ");
-		long[] loaded_units = idxIOOps.load_posting(targetTerms);
-		for(long unitId : loaded_units) {
-			infoManager.set_info(posting_loaded_status.class, idx.postUnitMap.get(unitId));    // update the re-visit time, as load_posting only update the loading time
+		// invoke after the threads ends to collect the affected posting units' ids
+		public ArrayList<Long> get_affectedUnitIds(){
+			return affectedUnitIds;
 		}
 	}
 	
 	
-	public double cal_doc_length(long docId, Method cal_score){
-		HashMap<String, posting_unit> docRelatedUnits = new HashMap<String, posting_unit> (); // for collect the related untis, for convenience of using task splitter
-		
-		load_doc_related_postings(docId);    // load the posting lists contain the document related terms
-		doc docIns = idx.docIdMap.get(docId);
-		visit_next_term_unit(docIns.firstTermUnit, docRelatedUnits);    // a little bit wasteful
-		
-		String[] docRelatedUnitIdStrings = docRelatedUnits.keySet().toArray(new String[0]);
-		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, docRelatedUnitIdStrings);
-		
-		double docLength = 0.0;
-		
-		
-		// use thread to calculate sub doc score 
-		class opThread extends Thread{
-			String[] drUnitIdStrings;
-			ArrayList<Double> subScoreList = new ArrayList<Double> ();
-			
-			public opThread (String[] workLoad) {
-				drUnitIdStrings = workLoad;
-			}
-			public void run() {
-				try {
-					for(String drUnitId: drUnitIdStrings) {
-						posting_unit drUnitIns = docRelatedUnits.get(drUnitId);    // TODO: here use the cal_score to calculate sub document score on posting 
-						double docSubScore = (double)cal_score.invoke(drUnitIns);
-						subScoreList.add(docSubScore);
-					}
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-			public ArrayList<Double> get_subScoreList() {
-				return subScoreList;
-			}
-		}
-		
-		
-		// start the threads and collect the sub scores 
-		ArrayList<opThread> threadList = new ArrayList<opThread>(); 
-				
-		for(String[] workload : workLoads) {
-			opThread st = new opThread(workload);
-			st.run();
-			threadList.add(st);
-		}
-		
-		for(opThread st : threadList) {
-			try {
-				st.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			for(double subscore : st.get_subScoreList()) {
-				docLength += subscore * subscore;
-			}
-		}
-		
-		docLength = Math.sqrt(docLength);
-		return docLength;
-	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 }

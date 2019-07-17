@@ -238,6 +238,7 @@ public class index {
 				addedPostUnit.docId = targetDoc.docId;    // dynamically assign the docId
 				
 				// not need the lock here, as this link will only be created once when the doc is added
+				// TODO: use intermediate unit, so as to follow the last unit?
 				addedPostUnit.link_to_previous_term(targetDoc.firstTermUnit);
 				targetDoc.firstTermUnit.link_to_next_term(addedPostUnit);
 				

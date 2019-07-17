@@ -3,6 +3,7 @@ package inverted_index;
 import java.io.*;
 import java.util.*;
 
+import configs.general_config;
 import data_structures.*;
 import entities.*;
 import entities.information_manager_plugins.*;
@@ -498,7 +499,36 @@ public class index_io_operations {
 		}		
 		return loaded_units;
 	}
+	
+
+	public void load_doc_related_postings(long docId) {
+		doc docIns = idx.docIdMap.get(docId);
+		String docPath = general_config.processedDocPath + docIns.docName;
+		String processedDoc = "";
 		
+		try {
+			FileReader lf = new FileReader(docPath);
+			BufferedReader lb = new BufferedReader(lf);
+			try {			
+				processedDoc = lb.readLine();    // the processed document only contains one line
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				lb.close();
+				lf.close();
+			}
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		String[] targetTerms = processedDoc.split(" ");
+		long[] loaded_units = load_posting(targetTerms);
+		for(long unitId : loaded_units) {
+			infoManager.set_info(posting_loaded_status.class, idx.postUnitMap.get(unitId));    // update the re-visit time, as load_posting only update the loading time
+		}
+	}
+	
 	
 	// load all the postings into memory, 
 	// used before the persistence, and reload
