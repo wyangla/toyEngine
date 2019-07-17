@@ -357,7 +357,7 @@ public class scanner {
 			try {
 				opCls = set_param(opCls, opClsParam);
 				affectedUnitIds = snr.scan_doc(tDocIdStrs, opCls);
-				
+				// TODO: set cal length
 			} catch(Exception e) {
 				e.printStackTrace();
 			}

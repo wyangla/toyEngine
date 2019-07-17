@@ -105,6 +105,50 @@ public class index_advanced_operations {
 //	}
 	
 	
+	
+	// this is a common methods, as the score calculating method is set by config.scorer_config
+	// all fast scoring method are try to calculating fewer documents
+	// but when the calculation process is done, the normalisation procedure are the same
+	public counter normalise_doc_scores(counter docScoreCounter) {
+		counter docNormScoreCounter = new counter();
+		// TODO: snr
+		ArrayList<scanner.scan_doc_thread> threadList = new ArrayList<scanner.scan_doc_thread> ();
+		counter docLenCounter = new counter();
+		
+		// calculate the document length 
+		for(String docIdStr : docScoreCounter.keySet()) {
+			// TODO: update condition
+			if ("docLenCalTime < termIdfCalTime".isEmpty()) {
+				scanner.scan_doc_thread st = new scanner.scan_doc_thread(
+						snr, 
+						get_doc_length.class, 
+						docLenCounter, 
+						new String[] {docIdStr});
+				
+				st.run();
+				threadList.add(st); 
+			}
+
+		}
+		for(scanner.scan_doc_thread st : threadList) {
+			try {
+				st.join();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// normalization
+		for(String docIdStr : docScoreCounter.keySet()) {
+			double docNormScore = docScoreCounter.get(docIdStr) / docLenCounter.get(docIdStr);
+			docNormScoreCounter.put(docIdStr, docNormScore);
+		}
+			
+		
+		return docNormScoreCounter;
+	}
+	
+	
 	public counter search(String[] targetTerms) {
 		counter totalDocumentScoreCounter = new counter(); // used for merging all the result of searching each term
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
