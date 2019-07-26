@@ -140,11 +140,10 @@ public class index_advanced_operations {
 		
 		// normalization
 		for(String docIdStr : docScoreCounter.keySet()) {
-			double docNormScore = docScoreCounter.get(docIdStr) / docLenCounter.get(docIdStr);
+			double docNormScore = docScoreCounter.get(docIdStr) / Math.sqrt(docLenCounter.get(docIdStr));
 			docNormScoreCounter.put(docIdStr, docNormScore);
 		}
 			
-		
 		return docNormScoreCounter;
 	}
 	
