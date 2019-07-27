@@ -118,7 +118,10 @@ public class index_advanced_operations {
 		// calculate the document length 
 		for(String docIdStr : docScoreCounter.keySet()) {
 			// TODO: update condition
-			if ("docLenCalTime < termIdfCalTime".isEmpty()) {
+			Double term_idf_cal_time = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
+			Double doc_len_cal_time = idx.docIdMap.get(Long.parseLong(docIdStr)).docProp.get("doc_len_cal_time");
+			
+			if (doc_len_cal_time != null && doc_len_cal_time < term_idf_cal_time) {    // check if the doc_len has already been calculated or expired
 				scanner.scan_doc_thread st = new scanner.scan_doc_thread(
 						snr, 
 						get_doc_length.class, 
@@ -130,6 +133,7 @@ public class index_advanced_operations {
 			}
 
 		}
+		
 		for(scanner.scan_doc_thread st : threadList) {
 			try {
 				st.join();
@@ -138,11 +142,19 @@ public class index_advanced_operations {
 			}
 		}
 		
-		// normalization
+		// update the docIns.docProp.doc_len
+		for(String docIdStr : docLenCounter.keySet()) {
+			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
+			docIns.docProp.put("doc_len", Math.sqrt(docLenCounter.get(docIdStr)));
+		}
+		
+		// normalisation
 		for(String docIdStr : docScoreCounter.keySet()) {
-			double docNormScore = docScoreCounter.get(docIdStr) / Math.sqrt(docLenCounter.get(docIdStr));
+			double docLen = idx.docIdMap.get(Long.parseLong(docIdStr)).docProp.get("doc_len");
+			double docNormScore = docScoreCounter.get(docIdStr) / docLen;
 			docNormScoreCounter.put(docIdStr, docNormScore);
 		}
+		
 			
 		return docNormScoreCounter;
 	}
