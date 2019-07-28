@@ -249,6 +249,16 @@ public class engineEntryPoint {
 		return relatedDocumentScores;
 	}
 	
+	public counter search_normalized(ArrayList<String> queryTerms) {
+		counter relatedDocumentScoresNormalized = new counter();
+		try {
+			relatedDocumentScoresNormalized = advOps.search_normalized(queryTerms.toArray(new String[0]));
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return relatedDocumentScoresNormalized;
+	}
+	
 	
 	// maxScore
 	public counter search_maxScore(ArrayList<String> queryTerms, int topK) {

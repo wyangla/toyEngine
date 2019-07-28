@@ -42,68 +42,6 @@ public class index_advanced_operations {
 		return totalAffectedUnitIds;
 	}
 	
-	// delete a specific document from the inverted-index -- using doc.pUnitIdList
-//	public ArrayList<Long> delete_doc(String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
-//		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
-//		
-//		doc docIns = idx.docMap.get(targetDocName);
-//		ArrayList<Long> pUnitIdList = docIns.pUnitIdList;
-//		for (Long pUnitId : pUnitIdList) {
-//			idx.postUnitMap.get(pUnitId).status = 0;
-//			totalAffectedUnitIds.add(pUnitId);
-//		}
-//		idx.docMap.remove(targetDocName); // remove from the doc map
-//		
-//		return totalAffectedUnitIds;
-//	}
-	
-	
-//	// single thread method, fast when the posting list is short?
-//	// delete a specific document from the inverted-index
-//	public ArrayList<Long> delete_doc(String[] containedTerms, String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
-//		ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
-//		
-//		// here not using the path to find the plugins, as the design for scanner is not for command input 
-//		delete_doc.set_parameters(targetDocName);
-//		affectedUnitIds = snr.scan(containedTerms, delete_doc.class); // input the class which contains the parameters
-//		
-//		return affectedUnitIds;
-//	}
-
-	
-//	public counter search(String[] targetTerms) {
-//		counter totalDocumentScoreCounter = new counter(); // used for merging all the result of searching each term
-//		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
-//		ArrayList<counter> counterList = new ArrayList<counter>();
-//		
-//		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, targetTerms);
-//		
-//		for(String[] workLoad : workLoads) {
-//			counter documentScoreCounter = new counter();
-//			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, search_term.class, documentScoreCounter, workLoad);
-//			st.run();
-//			threadList.add(st); 
-//			counterList.add(documentScoreCounter);
-//		}
-//		
-//		for(scanner.scan_term_thread st : threadList) {
-//			try {
-//				st.join();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		
-//		// merging all the searching result
-//		for(counter c : counterList) {
-//			System.out.println(c);
-//			totalDocumentScoreCounter = totalDocumentScoreCounter.update(c);
-//		}
-//		System.out.println("--");
-//		System.out.println(totalDocumentScoreCounter);
-//		return totalDocumentScoreCounter;
-//	}
-	
 	
 	
 	// this is a common methods, as the score calculating method is set by config.scorer_config
@@ -111,33 +49,39 @@ public class index_advanced_operations {
 	// but when the calculation process is done, the normalisation procedure are the same
 	public counter normalise_doc_scores(counter docScoreCounter) {
 		counter docNormScoreCounter = new counter();
-		// TODO: snr
 		ArrayList<scanner.scan_doc_thread> threadList = new ArrayList<scanner.scan_doc_thread> ();
+		ArrayList<counter> counterList = new ArrayList<counter>();
 		counter docLenCounter = new counter();
+		
+		// term_idf_cal should be calculated before the doc len is calcualted
+		Double term_idf_cal_time = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
+		if(term_idf_cal_time == null) {
+			idx.cal_termIdf();
+		}
 		
 		// calculate the document length 
 		for(String docIdStr : docScoreCounter.keySet()) {
-			Double term_idf_cal_time = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
-			Double doc_len_cal_time = idx.docIdMap.get(Long.parseLong(docIdStr)).docProp.get("doc_len_cal_time");
+			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
 			
-			// term_idf_cal should be calculated before the doc len is calcualted
-			if(term_idf_cal_time != null) {
+			if(docIns != null) {				
+								
+				Double doc_len_cal_time = docIns.docProp.get("doc_len_cal_time");
+				
 				// check if the doc_len is not calculated or expired
-				if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {    
+				if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {   
+					
+					counter subDocLenCounter = new counter();
 					scanner.scan_doc_thread st = new scanner.scan_doc_thread(
 							snr, 
 							get_doc_length.class, 
-							docLenCounter, 
+							subDocLenCounter, 
 							new String[] {docIdStr});
 					
 					st.run();
 					threadList.add(st); 
+					counterList.add(subDocLenCounter);
 				}
-			}else {
-				idx.cal_termIdf();
-			}
-
-
+			}	
 		}
 		
 		for(scanner.scan_doc_thread st : threadList) {
@@ -148,6 +92,14 @@ public class index_advanced_operations {
 			}
 		}
 		
+		
+		for(counter subDocLenCounter : counterList) {
+			docLenCounter = docLenCounter.update(subDocLenCounter);
+		}
+		System.out.println(docLenCounter);
+		
+		
+		
 		// update the docIns.docProp.doc_len
 		for(String docIdStr : docLenCounter.keySet()) {
 			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
@@ -156,9 +108,12 @@ public class index_advanced_operations {
 		
 		// normalisation
 		for(String docIdStr : docScoreCounter.keySet()) {
-			double docLen = idx.docIdMap.get(Long.parseLong(docIdStr)).docProp.get("doc_len");
-			double docNormScore = docScoreCounter.get(docIdStr) / docLen;
-			docNormScoreCounter.put(docIdStr, docNormScore);
+			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));			
+			if (docIns != null) {
+				Double docLen = docIns.docProp.get("doc_len");
+				Double docNormScore = docScoreCounter.get(docIdStr) / docLen;
+				docNormScoreCounter.put(docIdStr, docNormScore);
+			}
 		}
 		
 		return docNormScoreCounter;
@@ -198,6 +153,11 @@ public class index_advanced_operations {
 		return totalDocumentScoreCounter;
 	}
 	
+	
+	public counter search_normalized(String[] targetTerms) {
+		counter docNormScoreCounter = normalise_doc_scores(search(targetTerms));
+		return docNormScoreCounter;
+	}
 	
 	
 	/*

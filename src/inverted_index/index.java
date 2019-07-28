@@ -233,20 +233,26 @@ public class index {
 	public ArrayList<String> _add_doc(ArrayList<String> persistedUnits, doc targetDoc, int retryTime) {
 		ArrayList<String> failedPersistedUnits = new ArrayList<String>();
 		
-		posting_unit curTermUnit = targetDoc.firstTermUnit;
-		
 		// try to add unit
 		for(String persistedUnit : persistedUnits) {
 			posting_unit addedPostUnit = add_posting_unit(persistedUnit);
+			
 			if(addedPostUnit != null) {
+				
 				targetDoc.docLength ++;
 				addedPostUnit.docId = targetDoc.docId;    // dynamically assign the docId
 				
-				// not need the lock here, as this link will only be created once when the doc is added
-				// TODO: use intermediate unit, so as to follow the last unit?
-				addedPostUnit.link_to_previous_term(curTermUnit);
-				curTermUnit.link_to_next_term(addedPostUnit);
-				curTermUnit = addedPostUnit;
+				if(targetDoc.firstTermUnit == null) {
+					targetDoc.firstTermUnit = addedPostUnit;
+				}else {
+					// not need the lock here, as this link will only be created once when the doc is added
+					posting_unit curTermUnit = targetDoc.firstTermUnit;
+					addedPostUnit.link_to_previous_term(curTermUnit);
+					curTermUnit.link_to_next_term(addedPostUnit);
+					curTermUnit = addedPostUnit;
+				}
+				
+
 				
 			}else {
 				failedPersistedUnits.add(persistedUnit);
@@ -264,25 +270,24 @@ public class index {
 	}
 	
 	
-	// initialise the firtTermUnit for each addedDoc
-	public void ini_firstTermUnit(doc addedDoc) {
-		posting_unit postUnit= new posting_unit(); 
-		
-		postUnit.docId = addedDoc.docId;
-		postUnit.currentId = pc.postingId;
-		postUnitMap.put(postUnit.currentId, postUnit);
-		lastPostUnitId = postUnit.currentId;
-		pc.postingId ++;
-		
-		addedDoc.firstTermUnit = postUnit;
-	}
-	
+//	// initialise the firtTermUnit for each addedDoc
+//	public void ini_firstTermUnit(doc addedDoc) {
+//		posting_unit postUnit= new posting_unit(); 
+//		
+//		postUnit.docId = addedDoc.docId;
+//		postUnit.currentId = pc.postingId;
+//		postUnitMap.put(postUnit.currentId, postUnit);
+//		lastPostUnitId = postUnit.currentId;
+//		pc.postingId ++;
+//		
+//		addedDoc.firstTermUnit = postUnit;
+//	}
+//	
 	
 	public ArrayList<String> add_doc(String[] persistedUnits, String targetDocName) {
 		doc addedDoc = new doc();
 		addedDoc.docName = targetDocName;
 		addedDoc.docId = dc.docId;   
-		ini_firstTermUnit(addedDoc);    // add first term posting unit
 		
 		lastDocId = addedDoc.docId;
 		dc.docId ++;
