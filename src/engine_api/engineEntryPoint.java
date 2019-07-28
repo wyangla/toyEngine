@@ -76,8 +76,8 @@ public class engineEntryPoint {
 		return docInfoMap;
 	}
 	
-	public HashMap<Long, HashMap<String, String>> _get_docIdMap() {
-		HashMap<Long, HashMap<String, String>> docInfoMap = new HashMap<Long, HashMap<String, String>> ();
+	public HashMap<String, HashMap<String, String>> _get_docIdMap() {
+		HashMap<String, HashMap<String, String>> docInfoMap = new HashMap<String, HashMap<String, String>> ();
 		
 		for (long docId : idx.docIdMap.keySet()) {
 			HashMap<String, String> infoMap = new HashMap<String, String> ();
@@ -93,7 +93,7 @@ public class engineEntryPoint {
 			infoMap.put("docProp", docPropStr);
 			// infoMap.put("pUnitIdList", pUnitIdListStr);
 			
-			docInfoMap.put(docId, infoMap);
+			docInfoMap.put("" + docId, infoMap);
 		}
 		return docInfoMap;
 	}

@@ -400,7 +400,7 @@ public class index_io_operations {
 
 	public void load_doc_related_postings(long docId) {
 		doc docIns = idx.docIdMap.get(docId);
-		String docPath = general_config.processedDocPath + docIns.docName;
+		String docPath = general_config.cachedDocPath + '/' + docIns.docName;
 		String processedDoc = "";
 		
 		try {
@@ -494,6 +494,7 @@ public class index_io_operations {
 		load_lastPostUnitId();
 		load_lastDocId();
 		load_docMap();
+		reconstruct_docIdMap();
 		load_info();
 	}
 	
