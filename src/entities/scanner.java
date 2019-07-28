@@ -60,7 +60,7 @@ public class scanner {
 	}
 	
 	
-	// TODO: method with single thread uses this method 
+	// method with single thread uses this method 
 	// not using the multi-threading here, instead, use the multi-threading outside to invoke this method
 	// this is for the convenience of collecting different types of running result
 	public ArrayList<Long> scan(String[] targetTerms, Class operationOnPostingList){ // input parameter better be not dynamic
@@ -89,7 +89,7 @@ public class scanner {
 	
 	
 	
-	// TODO: method with multi-thread uses this class
+	// method with multi-thread uses this class
 	// general purpose thread class
 	// each thread scanning the posting list of one term
 	public static class scan_term_thread extends Thread {
@@ -219,12 +219,12 @@ public class scanner {
 		// load the posting lists contain the document related terms, loading status are updated
 		// load the postings here instead of the scan_doc, is for saving the memory, prevent load too many units at once
 		
-		if(docIns.firstTermUnit != null) {    // here does not exist the fake start term unit, so does not need to skip
-			System.out.println("" + docIns.docId); // TODO:TEST
+		if(docIns.firstTermUnitId != -1) {    // here does not exist the fake start term unit, so does not need to skip
+			posting_unit firstTermUnit = idx.postUnitMap.get(docIns.firstTermUnitId);
 			
 			// load the unit operations
 			try {
-				visit_next_term_unit(docIns.firstTermUnit, operationOnPostingList, affectedUnits);
+				visit_next_term_unit(firstTermUnit, operationOnPostingList, affectedUnits);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -245,7 +245,7 @@ public class scanner {
 	}
 	
 	
-	// TODO: method with multi-thread uses this class
+	// method with multi-thread uses this class
 	// general purpose thread class
 	// each thread scanning the posting list of one term
 	public static class scan_doc_thread extends Thread {

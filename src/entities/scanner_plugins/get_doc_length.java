@@ -20,8 +20,6 @@ public class get_doc_length {
 	}
 	
 	public static long conduct(posting_unit pUnit) {
-		System.out.println(docLenCounter); // TODO: TEST
-		
 		long relatedUnitId = -1L; 
 		double score = scorer.getInstance().cal_score(pUnit);
 		docLenCounter.increase("" + pUnit.docId, score * score);    // each socre corresponding to one unique term in document

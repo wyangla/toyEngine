@@ -49,6 +49,8 @@ public class index_advanced_operations {
 	// but when the calculation process is done, the normalisation procedure are the same
 	public counter normalise_doc_scores(counter docScoreCounter) {
 		counter docNormScoreCounter = new counter();
+		counter docNameNormScoreCounter = new counter();
+		
 		ArrayList<scanner.scan_doc_thread> threadList = new ArrayList<scanner.scan_doc_thread> ();
 		ArrayList<counter> counterList = new ArrayList<counter>();
 		counter docLenCounter = new counter();
@@ -96,7 +98,7 @@ public class index_advanced_operations {
 		for(counter subDocLenCounter : counterList) {
 			docLenCounter = docLenCounter.update(subDocLenCounter);
 		}
-		System.out.println(docLenCounter);
+		System.out.println(docLenCounter);  // TODO: test
 		
 		
 		
@@ -113,10 +115,12 @@ public class index_advanced_operations {
 				Double docLen = docIns.docProp.get("doc_len");
 				Double docNormScore = docScoreCounter.get(docIdStr) / docLen;
 				docNormScoreCounter.put(docIdStr, docNormScore);
+				docNameNormScoreCounter.put(docIns.docName, docNormScore);
 			}
 		}
 		
-		return docNormScoreCounter;
+		docNameNormScoreCounter.sort();
+		return docNameNormScoreCounter;
 	}
 	
 	
