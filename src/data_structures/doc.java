@@ -21,7 +21,7 @@ public class doc {
 	
 	public String flatten() {
 		JSONObject docPropJson = new JSONObject(docProp);
-		return String.format("%s %s %s %s", docId, docName, "" + docLength, docPropJson);
+		return String.format("%s %s %s %s % s", docId, docName, "" + docLength, firstTermUnit.currentId, docPropJson);
 	}
 	
 	

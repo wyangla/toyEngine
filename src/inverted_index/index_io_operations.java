@@ -403,6 +403,8 @@ public class index_io_operations {
 		String docPath = general_config.cachedDocPath + '/' + docIns.docName;
 		String processedDoc = "";
 		
+		System.out.println(docIns.flatten());  // TODO: test
+		
 		try {
 			FileReader lf = new FileReader(docPath);
 			BufferedReader lb = new BufferedReader(lf);

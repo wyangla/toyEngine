@@ -219,8 +219,8 @@ public class scanner {
 		// load the posting lists contain the document related terms, loading status are updated
 		// load the postings here instead of the scan_doc, is for saving the memory, prevent load too many units at once
 		
-		
 		if(docIns.firstTermUnit != null) {    // here does not exist the fake start term unit, so does not need to skip
+			System.out.println("" + docIns.docId); // TODO:TEST
 			
 			// load the unit operations
 			try {
@@ -266,7 +266,6 @@ public class scanner {
 			try {
 				opCls = set_param(opCls, opClsParam);
 				affectedUnitIds = snr.scan_doc(tDocIdStrs, opCls);
-				// TODO: set cal length
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
