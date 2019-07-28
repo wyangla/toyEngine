@@ -128,8 +128,10 @@ public class index {
 	
 	
 	// invoked by operator, each time after the newly added files are scanned
+	// record the idf calculated time
 	public int cal_termIdf() {
 		int calDoneFlag = infoManager.set_info(term_idf.class, new posting_unit());
+		infoManager.set_info(term_idf_cal_time.class, new posting_unit());
 		return calDoneFlag;
 	}
 

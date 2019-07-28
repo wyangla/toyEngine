@@ -19,7 +19,7 @@ public class term_idf_cal_time{
 	
 	
 	
-	public static int set_info() {
+	public static int set_info(posting_unit fakePostUnit) {
 		int calDoneFlag = -1;
 		infoMap.put("term_idf_cal_time", (double)System.currentTimeMillis());    // for consistence
 		return calDoneFlag;

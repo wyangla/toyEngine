@@ -117,11 +117,10 @@ public class index_advanced_operations {
 		
 		// calculate the document length 
 		for(String docIdStr : docScoreCounter.keySet()) {
-			// TODO: update condition
 			Double term_idf_cal_time = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
 			Double doc_len_cal_time = idx.docIdMap.get(Long.parseLong(docIdStr)).docProp.get("doc_len_cal_time");
 			
-			if (doc_len_cal_time != null && doc_len_cal_time < term_idf_cal_time) {    // check if the doc_len has already been calculated or expired
+			if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {    // check if the doc_len is not calculated or expired
 				scanner.scan_doc_thread st = new scanner.scan_doc_thread(
 						snr, 
 						get_doc_length.class, 
@@ -155,7 +154,6 @@ public class index_advanced_operations {
 			docNormScoreCounter.put(docIdStr, docNormScore);
 		}
 		
-			
 		return docNormScoreCounter;
 	}
 	
