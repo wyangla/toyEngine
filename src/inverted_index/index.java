@@ -242,11 +242,11 @@ public class index {
 				targetDoc.docLength ++;
 				addedPostUnit.docId = targetDoc.docId;    // dynamically assign the docId
 				
-				if(targetDoc.firstTermUnit == null) {
-					targetDoc.firstTermUnit = addedPostUnit;
+				if(targetDoc.firstTermUnitId == -1) {
+					targetDoc.firstTermUnitId = addedPostUnit.currentId;
 				}else {
 					// not need the lock here, as this link will only be created once when the doc is added
-					posting_unit curTermUnit = targetDoc.firstTermUnit;
+					posting_unit curTermUnit = postUnitMap.get(targetDoc.firstTermUnitId);
 					addedPostUnit.link_to_previous_term(curTermUnit);
 					curTermUnit.link_to_next_term(addedPostUnit);
 					curTermUnit = addedPostUnit;

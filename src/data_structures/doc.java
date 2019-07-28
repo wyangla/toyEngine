@@ -16,12 +16,12 @@ public class doc {
 		// depreciated, it will consume too much memory
 	
 	// TODO: needs to be flattened
-	public posting_unit firstTermUnit = null;    // point to the posting unit of first term in the document
+	public long firstTermUnitId = -1;    // point to the posting unit of first term in the document
 	
 	
 	public String flatten() {
 		JSONObject docPropJson = new JSONObject(docProp);
-		return String.format("%s %s %s %s % s", docId, docName, "" + docLength, firstTermUnit.currentId, docPropJson);
+		return String.format("%s %s %s %s % s", docId, docName, "" + docLength, firstTermUnitId, docPropJson);    //
 	}
 	
 	
@@ -32,8 +32,9 @@ public class doc {
 		docIns.docId = Long.parseLong(docFields[0]);
 		docIns.docName = docFields[1];
 		docIns.docLength = Integer.parseInt(docFields[2]);
+		docIns.firstTermUnitId = Integer.parseInt(docFields[3]);
 		
-		JSONObject docPropJson = new JSONObject(docFields[3]);
+		JSONObject docPropJson = new JSONObject(docFields[4]);
 		Map<String, Object> docProp = docPropJson.toMap(); 
 		for(String p : docProp.keySet()) {
 			docIns.docProp.put(p, Double.parseDouble("" + docProp.get(p)));
