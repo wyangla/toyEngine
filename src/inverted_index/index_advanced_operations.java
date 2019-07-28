@@ -98,14 +98,15 @@ public class index_advanced_operations {
 		for(counter subDocLenCounter : counterList) {
 			docLenCounter = docLenCounter.update(subDocLenCounter);
 		}
-		System.out.println(docLenCounter);  // TODO: test
-		
 		
 		
 		// update the docIns.docProp.doc_len
 		for(String docIdStr : docLenCounter.keySet()) {
 			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
+			
+			// not using the info manager here, as its directly set info to object
 			docIns.docProp.put("doc_len", Math.sqrt(docLenCounter.get(docIdStr)));
+			docIns.docProp.put("doc_len_cal_time", (double)System.currentTimeMillis());
 		}
 		
 		// normalisation
