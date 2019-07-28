@@ -64,36 +64,6 @@ public class index_io_operations {
 	}
 	
 	
-//	private void persist_postings() {
-//		try {
-//			// persist posting list
-//			long curPUnitId = 0L; // TODO: for testing
-//			FileWriter pf = new FileWriter(configs.index_config.postingPersistancePath);
-//			try {
-//				for(String term : idx.lexicon.keySet()) {
-//					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
-//					ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
-//					for(Long pUnitId : postingUnitIds) {
-//						String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
-//						pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
-//						curPUnitId = pUnitId;
-//					}
-//					for(String uS : pUnitStrings) {
-//						pf.write(uS); // write posting units into file, each line per unit
-//					}	
-//				}
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//				System.out.println("--> error pUnitId: " + curPUnitId);
-//			} finally {
-//				pf.flush();
-//				pf.close();
-//			}
-//		} catch(Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
-	
 	private void persist_postings() {
 		try {
 			for(String term : idx.lexicon.keySet()) {
@@ -172,7 +142,7 @@ public class index_io_operations {
 	}
 	
 	
-	private void persist_docMap() {
+	private void persist_docMap() {    // the doc_len_cal_time is stored here
 		try {
 			// persist docMap
 			FileWriter dm = new FileWriter(configs.index_config.docsPath);
@@ -197,6 +167,7 @@ public class index_io_operations {
 		infoManager.persist_info(term_max_tf.class);
 		infoManager.persist_info(term_df.class);
 		infoManager.persist_info(term_idf.class);
+		infoManager.persist_info(term_idf_cal_time.class);
 	}
 	
 
@@ -210,7 +181,6 @@ public class index_io_operations {
 		// 1. generate, 2. persist, 3. lazily load and serve
 		// such that the generation process will consume the biggest amount of memory
 		
-		// TODO: use separated sub directories to store posting list of each term
 		persist_lexicon();
 		persist_postings();
 		persist_lastPostUnitId();
@@ -218,6 +188,11 @@ public class index_io_operations {
 		persist_docMap();
 		persist_info();
 	}
+	
+	
+	
+	
+	
 	
 	
 	
@@ -368,26 +343,7 @@ public class index_io_operations {
 		}
 	}
 	
-//	 // check if the last posting unit is existing in the posting list of term, to check if the term is loaded 
-//	private boolean check_term_loaded(String term) {
-//		boolean loadedFlag = false;
-//		ArrayList<Long> pUnitIds = idx.lexicon.get(term);
-//		if(pUnitIds == null) {
-//			loadedFlag = true; // here use loaded signal to ignore the not existing term
-//		} else {
-//			if(pUnitIds.size() > 0) { 
-//				// 1 -> 0, should only be used as prevent the .get(0) throwing error
-//				// and if use 1, after delete all docs, all the postings are only with length 1, all will be reloaded no matter if they are in memory already.
-//				
-//				// cannot use the last UnitId to check if the term is loaded, as if persist after a new adding, this will checking the newly added unit
-//				// cannot use the second, as if the idx is cleaned to empty, only starters left, the [1] will always be newly added ones, thus starters will never be loaded
-//				// TODO: use [0], as one generated, it will always in the local file?
-//				long pUnitStarterId = pUnitIds.get(0);  
-//				loadedFlag = idx.postUnitMap.containsKey(pUnitStarterId);
-//			}
-//		}
-//		return loadedFlag;
-//	}
+
 	
 	// check if the last posting unit is existing in the posting list of term, to check if the term is loaded
 	private boolean check_term_loaded(String term) {
@@ -398,65 +354,6 @@ public class index_io_operations {
 		}
 		return loadedFlag;
 	}
-	
-	
-//	// lazily load the posting list of target terms
-//	public long[] load_posting(String[] targetTerms) {
-//		long[] loaded_units = new long[] {};
-//		HashSet<String> targetTermsSet = new HashSet<String>(Arrays.asList(targetTerms));
-//
-//		// check if a term is loaded, if it is, remove from the targetTermsSet
-//		for(String term : targetTerms) {
-//			if(check_term_loaded(term)) { // if loaded
-//				targetTermsSet.remove(term);
-//			}
-//		}
-//		if(targetTermsSet.size() != 0) {
-//			try {
-//				FileReader pf = new FileReader(configs.index_config.postingPersistancePath);
-//				BufferedReader pb = new BufferedReader(pf);
-//				try {
-//					// calculate how many units need to be loaded in total
-//					long totalUnits = 0L;
-//					for (String term : targetTermsSet) {
-//						totalUnits += idx.lexicon.get(term).size();
-//					}
-//					// load the posting lists of targetTerms
-//					long addedUnits = 0L; // counting how many units have already been added, if > the totalUnits, stop scanning
-//					String pUnitString;
-//					do {
-//						pUnitString = pb.readLine();
-//						if (pUnitString != null) {
-//							pUnitString = pUnitString.trim();
-//							String term = pUnitString.split(" ")[0];
-//							if (targetTermsSet.contains(term)) { // check if the term is in one of the targets					
-//								load_posting_unit(posting_unit.deflatten(pUnitString)); 
-//								addedUnits ++;
-//							}
-//							// early stop
-//							// so that do not scan the whole posting list each time load the posting list into memory
-//							// TODO: this in fact is not a very efficient early stopping strategy, use offset?
-//							if (addedUnits >= totalUnits) {
-//								break;
-//							}	
-//						}
-//					} while(pUnitString != null);
-//
-//				} catch(Exception e) {
-//					e.printStackTrace();
-//				} finally {
-//					pf.close();
-//					pb.close();
-//				}
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//				if(e.getClass().equals(java.io.FileNotFoundException.class)) {
-//					file_creater.create_file(configs.index_config.postingPersistancePath);
-//				};
-//			}
-//		}
-//		return loaded_units;
-//	}
 	
 
 	// lazily load the posting list of target terms
@@ -586,6 +483,7 @@ public class index_io_operations {
 		infoManager.load_info(term_max_tf.class);
 		infoManager.load_info(term_df.class);
 		infoManager.load_info(term_idf.class);
+		infoManager.load_info(term_idf_cal_time.class);
 		
 		System.out.println("info loaded");
 	}

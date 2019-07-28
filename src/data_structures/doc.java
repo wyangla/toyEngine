@@ -31,9 +31,9 @@ public class doc {
 		
 		docIns.docId = Long.parseLong(docFields[0]);
 		docIns.docName = docFields[1];
-		docIns.docLength = Integer.parseInt(docFields[1]);
+		docIns.docLength = Integer.parseInt(docFields[2]);
 		
-		JSONObject docPropJson = new JSONObject(docFields[2]);
+		JSONObject docPropJson = new JSONObject(docFields[3]);
 		Map<String, Object> docProp = docPropJson.toMap(); 
 		for(String p : docProp.keySet()) {
 			docIns.docProp.put(p, Double.parseDouble("" + docProp.get(p)));

@@ -120,16 +120,23 @@ public class index_advanced_operations {
 			Double term_idf_cal_time = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
 			Double doc_len_cal_time = idx.docIdMap.get(Long.parseLong(docIdStr)).docProp.get("doc_len_cal_time");
 			
-			if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {    // check if the doc_len is not calculated or expired
-				scanner.scan_doc_thread st = new scanner.scan_doc_thread(
-						snr, 
-						get_doc_length.class, 
-						docLenCounter, 
-						new String[] {docIdStr});
-				
-				st.run();
-				threadList.add(st); 
+			// term_idf_cal should be calculated before the doc len is calcualted
+			if(term_idf_cal_time != null) {
+				// check if the doc_len is not calculated or expired
+				if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {    
+					scanner.scan_doc_thread st = new scanner.scan_doc_thread(
+							snr, 
+							get_doc_length.class, 
+							docLenCounter, 
+							new String[] {docIdStr});
+					
+					st.run();
+					threadList.add(st); 
+				}
+			}else {
+				idx.cal_termIdf();
 			}
+
 
 		}
 		

@@ -46,11 +46,11 @@ public class engineEntryPoint {
 		return clr;
 	}
 	
-	public HashMap<String, ArrayList<Long>> get_lexicon() {
+	public HashMap<String, ArrayList<Long>> _get_lexicon() {
 		return idx.lexicon;
 	}	
 	
-	public HashMap<Long, posting_unit> get_postUnitMap() {
+	public HashMap<Long, posting_unit> _get_postUnitMap() {
 		return idx.postUnitMap;
 	}
 	
@@ -169,6 +169,10 @@ public class engineEntryPoint {
 		String[] targetTerms = targetTermsAL.toArray(new String[0]); // (String[]) 
 		long[] loaded_units = ioOps.load_posting(targetTerms);
 		return loaded_units;
+	}
+	
+	public void _load_doc_related_postings(long docId) {
+		ioOps.load_doc_related_postings(docId);
 	}
 	
 	// load all the postings into memory
