@@ -226,7 +226,7 @@ public class index_io_operations {
 			posting_unit prevTermUnit = idx.postUnitMap.get(previousTermId);
 			postUnit.link_to_previous_term(prevTermUnit);
 			if (prevTermUnit != null) {
-				prevTermUnit.link_to_next(postUnit);
+				prevTermUnit.link_to_next_term(postUnit);
 			}
 			
 			addedUnitId = postUnit.currentId;
