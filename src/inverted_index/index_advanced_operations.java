@@ -48,6 +48,8 @@ public class index_advanced_operations {
 	// all fast scoring method are try to calculating fewer documents
 	// but when the calculation process is done, the normalisation procedure are the same
 	public counter normalise_doc_scores(counter docScoreCounter) {
+		System.out.println(docScoreCounter);    // TODO: test
+		System.out.println("---");    // TODO: test
 		counter docNormScoreCounter = new counter();
 		counter docNameNormScoreCounter = new counter();
 		
@@ -71,7 +73,6 @@ public class index_advanced_operations {
 				
 				// check if the doc_len is not calculated or expired
 				if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {   
-					
 					counter subDocLenCounter = new counter();
 					scanner.scan_doc_thread st = new scanner.scan_doc_thread(
 							snr, 
@@ -96,9 +97,10 @@ public class index_advanced_operations {
 		
 		
 		for(counter subDocLenCounter : counterList) {
+			System.out.println(subDocLenCounter);    // TODO: test
 			docLenCounter = docLenCounter.update(subDocLenCounter);
 		}
-		
+		System.out.println();    // TODO: test
 		
 		// update the docIns.docProp.doc_len
 		for(String docIdStr : docLenCounter.keySet()) {

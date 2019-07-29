@@ -198,13 +198,18 @@ public class scanner {
 	
 	public void visit_next_term_unit (posting_unit termUnitCurrent, Class operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception {
 		if(termUnitCurrent != null) {
+			
+			// TODO: test
+			if(termUnitCurrent.docId == 3) {
+				System.out.println("--> " + termUnitCurrent.term);
+			}
 
 			Method conduct = operationOnPostingList.getMethod("conduct", posting_unit.class);
 			long affectedUnitId = (long)conduct.invoke(operationOnPostingList, termUnitCurrent);
 			if(affectedUnitId != -1) { // -1 denotes the processed unit was not affected
 				affectedUnits.add(affectedUnitId); 
 			}
-			visit_next_unit(termUnitCurrent.nextTermUnit, operationOnPostingList, affectedUnits);
+			visit_next_term_unit(termUnitCurrent.nextTermUnit, operationOnPostingList, affectedUnits);
 		}
 	}
 	

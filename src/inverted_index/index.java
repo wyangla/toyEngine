@@ -232,6 +232,7 @@ public class index {
 	// TODO: adding doc is a transaction, atomic, short time operation, thus does not need to consider reload back the term chain?
 	public ArrayList<String> _add_doc(ArrayList<String> persistedUnits, doc targetDoc, int retryTime) {
 		ArrayList<String> failedPersistedUnits = new ArrayList<String>();
+		posting_unit curTermUnit = null;
 		
 		// try to add unit
 		for(String persistedUnit : persistedUnits) {
@@ -244,9 +245,9 @@ public class index {
 				
 				if(targetDoc.firstTermUnitId == -1) {
 					targetDoc.firstTermUnitId = addedPostUnit.currentId;
+					curTermUnit = postUnitMap.get(targetDoc.firstTermUnitId);
 				}else {
 					// not need the lock here, as this link will only be created once when the doc is added
-					posting_unit curTermUnit = postUnitMap.get(targetDoc.firstTermUnitId);
 					addedPostUnit.link_to_previous_term(curTermUnit);
 					curTermUnit.link_to_next_term(addedPostUnit);
 					curTermUnit = addedPostUnit;
