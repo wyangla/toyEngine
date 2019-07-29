@@ -220,7 +220,17 @@ public class index_io_operations {
 			if (prevUnit != null) {
 				prevUnit.link_to_next(postUnit);
 			}
+			
+			// link term units
+			long previousTermId = postUnit.previousTermId;
+			posting_unit prevTermUnit = idx.postUnitMap.get(previousTermId);
+			postUnit.link_to_previous_term(prevTermUnit);
+			if (prevTermUnit != null) {
+				prevTermUnit.link_to_next(postUnit);
+			}
+			
 			addedUnitId = postUnit.currentId;
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
