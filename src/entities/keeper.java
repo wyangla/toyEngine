@@ -90,7 +90,7 @@ public class keeper {
 	 * */	
 	
 	// require the lock for specific thread
-	public int require_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
+	private int require_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int required;  // 0 not required, 1 required
 		
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
@@ -114,7 +114,7 @@ public class keeper {
 	
 	
 	// release the lock
-	public int release_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
+	private int release_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int released = 0; // 0 not released, 1 released
 		
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
@@ -161,7 +161,7 @@ public class keeper {
 	
 	
 	// must be conducted
-	interface callback{
+	public interface callback{
 		public int conduct();
 	}
 	

@@ -6,6 +6,7 @@ import data_structures.posting_unit;
 import entities.keeper_plugins.lexicon_locker;
 import utils.*;
 import inverted_index.index;
+import entities.keeper.callback;
 import entities.keeper_plugins.*;
 
 
@@ -93,6 +94,8 @@ public class cleaner {
 		private ArrayList<String> availableTargetTerms_temp = new ArrayList<String>();
 		private String[] availableTargetTerms; // which are not being accessing
 		
+		private ArrayList<callback> callbacks = new ArrayList<callback> ();    // for holding the release lock callbacks from keeper
+		
 		public thread_clean(String[] targetTerms4Clean, String threadNum) { // parameters for assign tasks
 			targetTerms = targetTerms4Clean;
 			this.setName(threadNum);
@@ -102,8 +105,12 @@ public class cleaner {
 		public void run() {		
 			// require locks firstly
 			for (String term : targetTerms) {
-				if(kpr.require_lock(lexicon_locker.class, term, this.getName()) == 1) {
-					availableTargetTerms_temp.add(term);	
+				
+				callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, this.getName());
+				
+				if(release_lock != null) {
+					availableTargetTerms_temp.add(term);
+					callbacks.add(release_lock);
 				}
 			}
 			
@@ -118,8 +125,8 @@ public class cleaner {
 				e.printStackTrace();
 				
 			} finally {
-				for (String term : availableTargetTerms) { // release the locks that successfully required
-					kpr.release_lock(lexicon_locker.class, term, this.getName());	
+				for (callback release_lock : callbacks) { // release the locks that successfully required
+					release_lock.conduct();	
 				}
 			}
 		}

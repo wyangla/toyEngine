@@ -7,6 +7,7 @@ import java.util.stream.*;
 
 import data_structures.*;
 import entities.*;
+import entities.keeper.callback;
 import entities.keeper_plugins.*;
 import entities.information_manager_plugins.*;
 import utils.name_generator;
@@ -143,7 +144,8 @@ public class index {
 		String threadNum = "" + name_generator.thread_name_gen();
 		posting_unit addedPostUnit = null;
 		
-		if (kpr.require_lock(lexicon_locker.class, term, threadNum) == 1) { // if could not require the lock, will not try to execute and release the lock
+		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadNum);
+		if (release_lock != null) { // if could not require the lock, will not try to execute and release the lock
 			try {				
 				// eliminating the retrying logic here, just block
 				  // successfully required the lock
@@ -177,7 +179,7 @@ public class index {
 				e.printStackTrace();
 			} 
 			finally {
-				kpr.release_lock(lexicon_locker.class, term, threadNum);
+				release_lock.conduct();
 			}
 		}
 
