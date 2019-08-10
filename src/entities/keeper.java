@@ -3,6 +3,8 @@ package entities;
 import java.util.ArrayList;
 import java.util.HashMap;
 import configs.keeper_config;
+import entities.keeper_plugins.*;
+
 import java.lang.reflect.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -81,6 +83,12 @@ public class keeper {
 	}
 	
 	
+	
+	
+	/*
+	 * naive mutual exclusive
+	 * */	
+	
 	// require the lock for specific thread
 	public int require_lock(Class lockerClass, String targetName, String threadNum) {
 		int required;  // 0 not required, 1 required
@@ -144,6 +152,158 @@ public class keeper {
 	}
 
 	
-
+	
+	/*
+	 * 1:m mutual exclusive:
+	 * 1 * deactivate||adding_unit : m * scanning
+	 * */
+	
+	
+	
+	// must be conducted
+	interface callback{
+		public int conduct();
+	}
+	
+	// for recording the visiting thread names, {name:1}
+	private static HashMap<String, HashMap<String, Integer>> notebooks = new HashMap<String, HashMap<String, Integer>> ();
+	
+	
+	
+	// for scanner usage
+	class eliminate_name_callback implements callback{
+		String thName;
+		String tarName;
 		
+		public eliminate_name_callback(String targetName, String threadName) {
+			tarName = targetName;
+			thName = threadName;
+		}
+		public int conduct() {
+			HashMap<String, Integer> notebook = notebooks.get(tarName);
+			Integer nameRemoved = notebook.remove(thName);
+			if(nameRemoved == null) {
+				nameRemoved = 0;    // thread name is not existing, could means the name is not successfully added
+			}
+			return nameRemoved;
+		}
+	}
+	
+	public callback add_note(Class lockerClass, String targetName, String threadNum) throws NoSuchMethodException, SecurityException {
+		
+		eliminate_name_callback eliminate_name = new eliminate_name_callback(targetName, threadNum);
+		
+		try {
+			int required = 0;
+			while(required != 1) {    // keep trying until get the lock
+				required = require_lock(lexicon_locker.class, targetName, threadNum);
+			}
+			
+			HashMap<String, Integer> notebook = notebooks.get(targetName);
+			if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
+				notebook = new HashMap<String, Integer>();
+				notebooks.put(targetName, notebook);
+			}else {
+				notebook.put(threadNum, 1); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
+			}
+			
+		}catch(Exception e) {
+			System.out.print(e);
+		}finally {
+			release_lock(lexicon_locker.class, targetName, threadNum);
+		}
+		
+		return eliminate_name;		
+	}
+	
+	
+	
+	
+	class release_lock_call_back implements callback{
+		Class lClass;
+		String tarName;
+		String thName;
+		
+		public release_lock_call_back(Class lockerClass, String targetName, String threadNum) {
+			lClass = lockerClass;
+			tarName = targetName;
+			thName = threadNum;
+		}
+		
+		public int conduct() {
+			int released = release_lock(lClass, tarName, thName);
+			return released;
+		}
+		
+	}
+	
+	
+	// for deactivator usage	
+	public callback require_lock_check_notebook(Class lockerClass, String targetName, String threadNum) {
+		release_lock_call_back release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
+		
+		try {
+			// only try once
+			int required = require_lock(lexicon_locker.class, targetName, threadNum);
+			
+			if(required == 1) {
+				HashMap<String, Integer> notebook = notebooks.get(targetName);
+				
+				if (notebook == null) {
+					notebook = new HashMap<String, Integer>();
+					notebooks.put(targetName, notebook);
+				}
+				
+				// check if the notebook is empty
+				// empty, could be 1. newly created notebook; 2. all visiting threads are gone
+				// if empty, directly return the release_lock
+				// if not empty, release the required lock immediately
+				if(!notebook.isEmpty()) {
+					release_lock(lexicon_locker.class, targetName, threadNum);    // if release here, the returned callback still needs to be invoked
+				}
+			}
+			
+		}catch(Exception e) {
+			System.out.print(e);
+		}
+		
+		return release_lock;
+	}
+	
+
+
+	// for add_posting_unit usage
+	public callback require_lock_check_notebook_wait(Class lockerClass, String targetName, String threadNum) {
+		release_lock_call_back release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
+		
+		try {
+			// only try once
+			int required = 0;
+			
+			// wait to get the lock
+			while(required != 1) {
+				require_lock(lexicon_locker.class, targetName, threadNum);    // keep trying until get the lock
+			}
+			
+			if(required == 1) {
+				HashMap<String, Integer> notebook = notebooks.get(targetName);
+				
+				if (notebook == null) {
+					notebook = new HashMap<String, Integer>();
+					notebooks.put(targetName, notebook);
+				}
+				
+				// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
+				while(!notebook.isEmpty()) {}
+			}
+			
+		}catch(Exception e) {
+			System.out.print(e);
+		}
+		
+		return release_lock;
+	}
+	
+	
+	
 }

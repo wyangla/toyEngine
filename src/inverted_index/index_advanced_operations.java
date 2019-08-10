@@ -73,9 +73,9 @@ public class index_advanced_operations {
 				
 				// check if the doc_len is not calculated or expired
 				if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {  
-					System.out.println("" + doc_len_cal_time);    // TODO: test
-					System.out.println("" + term_idf_cal_time);    // TODO: test
-					System.out.println("");    // TODO: test
+//					System.out.println("doc_len_cal_time -> " + doc_len_cal_time);    // TODO: test
+//					System.out.println("term_idf_cal_time -> " + term_idf_cal_time);    // TODO: test
+//					System.out.println();    // TODO: test
 					
 					counter subDocLenCounter = new counter();
 					scanner.scan_doc_thread st = new scanner.scan_doc_thread(
