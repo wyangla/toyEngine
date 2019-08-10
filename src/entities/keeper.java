@@ -25,7 +25,7 @@ public class keeper {
 	
 	
 	// get the lockInfoMap from locker
-	public HashMap<String, HashMap<String, Long>> get_lockInfoMap(Class lockerClass) {
+	public HashMap<String, HashMap<String, Long>> get_lockInfoMap(Class<lexicon_locker> lockerClass) {
 		HashMap<String, HashMap<String, Long>> lockInfoMap = new HashMap<String, HashMap<String, Long>>();
 		try {
 			Method get_lockInfoMapMethod = lockerClass.getMethod("get_lockInfoMap");
@@ -38,7 +38,7 @@ public class keeper {
 	
 	
 	// get the lockMap from locker 
-	public HashMap<String, ReentrantLock> get_lockMap(Class lockerClass) {
+	public HashMap<String, ReentrantLock> get_lockMap(Class<lexicon_locker> lockerClass) {
 		HashMap<String, ReentrantLock> lockMap = new HashMap<String, ReentrantLock>();
 		try {
 			Method get_lockMapMethod = lockerClass.getMethod("get_lockMap");
@@ -51,7 +51,7 @@ public class keeper {
 	
 	
 	// clear lockInfoMap and lockMap
-	public void clear_maps(Class lockerClass) {
+	public void clear_maps(Class<?> lockerClass) {
 		try {
 			Method clear_maps = lockerClass.getMethod("clear_maps");
 			clear_maps.invoke(null);
@@ -62,7 +62,7 @@ public class keeper {
 	
 	
 	// initialize the lock for term in lexicon
-	public void add_target(Class lockerClass, String targetName) {
+	public void add_target(Class<lexicon_locker> lockerClass, String targetName) {
 		HashMap<String, Long> infoMap = new HashMap<String, Long>();
 		infoMap.put("lockStatus", 0L); // 0 not locked; timeStampe locked
 		infoMap.put("threadNum", -1L); // the default thread name
@@ -77,7 +77,7 @@ public class keeper {
 	
 	
 	// delete the lock of term
-	public void del_target(Class lockerClass, String targetName) {
+	public void del_target(Class<lexicon_locker> lockerClass, String targetName) {
 		get_lockInfoMap(lockerClass).remove(targetName);
 		get_lockMap(lockerClass).remove(targetName);
 	}
@@ -90,7 +90,7 @@ public class keeper {
 	 * */	
 	
 	// require the lock for specific thread
-	public int require_lock(Class lockerClass, String targetName, String threadNum) {
+	public int require_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int required;  // 0 not required, 1 required
 		
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
@@ -114,7 +114,7 @@ public class keeper {
 	
 	
 	// release the lock
-	public int release_lock(Class lockerClass, String targetName, String threadNum) {
+	public int release_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int released = 0; // 0 not released, 1 released
 		
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
@@ -138,7 +138,7 @@ public class keeper {
 	
 	
 	// aims at being used in the scenario of waiting for web response
-	public int check_lock_expiration(Class lockerClass, String targetName, String threadNum) {
+	public int check_lock_expiration(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int expired = 1;
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
@@ -189,9 +189,9 @@ public class keeper {
 		}
 	}
 	
-	public callback add_note(Class lockerClass, String targetName, String threadNum) throws NoSuchMethodException, SecurityException {
+	public callback add_note(Class<?> lockerClass, String targetName, String threadNum) throws NoSuchMethodException, SecurityException {
 		
-		eliminate_name_callback eliminate_name = new eliminate_name_callback(targetName, threadNum);
+		eliminate_name_callback eliminate_name = null;
 		
 		try {
 			int required = 0;
@@ -206,6 +206,7 @@ public class keeper {
 			}else {
 				notebook.put(threadNum, 1); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
 			}
+			eliminate_name = new eliminate_name_callback(targetName, threadNum);
 			
 		}catch(Exception e) {
 			System.out.print(e);
@@ -220,11 +221,11 @@ public class keeper {
 	
 	
 	class release_lock_call_back implements callback{
-		Class lClass;
+		Class<lexicon_locker> lClass;
 		String tarName;
 		String thName;
 		
-		public release_lock_call_back(Class lockerClass, String targetName, String threadNum) {
+		public release_lock_call_back(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 			lClass = lockerClass;
 			tarName = targetName;
 			thName = threadNum;
@@ -239,8 +240,8 @@ public class keeper {
 	
 	
 	// for deactivator usage	
-	public callback require_lock_check_notebook(Class lockerClass, String targetName, String threadNum) {
-		release_lock_call_back release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
+	public callback require_lock_check_notebook(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
+		release_lock_call_back release_lock = null;
 		
 		try {
 			// only try once
@@ -263,6 +264,8 @@ public class keeper {
 				}
 			}
 			
+			release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
+			
 		}catch(Exception e) {
 			System.out.print(e);
 		}
@@ -273,8 +276,8 @@ public class keeper {
 
 
 	// for add_posting_unit usage
-	public callback require_lock_check_notebook_wait(Class lockerClass, String targetName, String threadNum) {
-		release_lock_call_back release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
+	public callback require_lock_check_notebook_wait(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
+		release_lock_call_back release_lock = null;
 		
 		try {
 			// only try once
@@ -296,6 +299,8 @@ public class keeper {
 				// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
 				while(!notebook.isEmpty()) {}
 			}
+			
+			release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			
 		}catch(Exception e) {
 			System.out.print(e);
