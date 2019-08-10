@@ -221,14 +221,6 @@ public class index_io_operations {
 				prevUnit.link_to_next(postUnit);
 			}
 			
-			// link term units
-			long previousTermId = postUnit.previousTermId;
-			posting_unit prevTermUnit = idx.postUnitMap.get(previousTermId);
-			postUnit.link_to_previous_term(prevTermUnit);
-			if (prevTermUnit != null) {
-				prevTermUnit.link_to_next_term(postUnit);
-			}
-			
 			addedUnitId = postUnit.currentId;
 			
 			
@@ -242,7 +234,7 @@ public class index_io_operations {
 		
 		return addedUnitId;
 	}
-	
+		
 	
 	public void load_lexicon() {
 		try {
@@ -365,6 +357,36 @@ public class index_io_operations {
 		return loadedFlag;
 	}
 	
+	
+	// link term units after all related units are loaded
+	// append to the load_posting_unit, instead of written inside of it,
+	// as when load_doc_related_posting, the order of posting units loaded will different from how they are generated, 
+	// i.e. the order of the cached doc terms, is different form the feed in pUnits order, 
+	// so potentially previous units could not been loaded yet
+	// then the chain will be broken
+	public void link_term_chain() {
+		for(long postUnitId : idx.postUnitMap.keySet()) {
+			posting_unit postUnit = idx.postUnitMap.get(postUnitId);
+			
+			long previousTermId = postUnit.previousTermId;
+			posting_unit prevTermUnit = idx.postUnitMap.get(previousTermId);
+			
+			postUnit.link_to_previous_term(prevTermUnit);
+			if (prevTermUnit != null) {
+				prevTermUnit.link_to_next_term(postUnit);
+			}
+			
+			// TODO: test
+			if(postUnit.docId == 3) {
+				if (prevTermUnit != null) {
+					System.out.println( prevTermUnit.term + "--> " + postUnit.term);
+				}else {
+					System.out.println( previousTermId + " : null --> " + postUnit.term);
+				}
+			}
+		}
+	}
+	
 
 	// lazily load the posting list of target terms
 	public long[] load_posting(String[] targetTerms) {
@@ -403,11 +425,13 @@ public class index_io_operations {
 				}
 				
 			}
-		}		
+		}
+		
 		return loaded_units;
 	}
 	
 
+	// status among [load_doc_related_postings -> scan_doc_thread finished] needs to be consistent
 	public void load_doc_related_postings(long docId) {
 		doc docIns = idx.docIdMap.get(docId);
 		String docPath = general_config.cachedDocPath + '/' + docIns.docName;
@@ -430,10 +454,9 @@ public class index_io_operations {
 		}
 		
 		String[] targetTerms = processedDoc.split(" ");
-		long[] loaded_units = load_posting(targetTerms);
-		for(long unitId : loaded_units) {
-			infoManager.set_info(posting_loaded_status.class, idx.postUnitMap.get(unitId));    // update the re-visit time, as load_posting only update the loading time
-		}
+		
+		load_posting(targetTerms);
+		link_term_chain();
 	}
 	
 	

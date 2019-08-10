@@ -141,9 +141,9 @@ public class scanner {
 		
 		public void run() {
 			try {
+				String threadName = "" + name_generator.thread_name_gen();
 				
 				for(String term : tTerms) {
-					String threadName = "" + name_generator.thread_name_gen();
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
 					
 					if(eliminate_name != null) {
@@ -193,9 +193,9 @@ public class scanner {
 		
 		public void run() {
 			try {
+				String threadName = "" + name_generator.thread_name_gen();
 				
 				for(String term : tTerms) {
-					String threadName = "" + name_generator.thread_name_gen();
 					callback release_lock = kpr.require_lock_check_notebook(lexicon_locker.class, term, threadName);
 					
 					if(release_lock != null) {
@@ -313,6 +313,8 @@ public class scanner {
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
 		private scanner snr;
 		
+		private ArrayList<callback> callbacks = new ArrayList<callback>();
+		
 		public scan_doc_thread(scanner scannerIns, Class<?> operationClass, Object operationClassParameter, String[] targetDocIdStrs) {
 			opCls = operationClass;
 			opClsParam = operationClassParameter; 
@@ -322,8 +324,22 @@ public class scanner {
 		
 		public void run() {
 			try {
+				String threadName = "" + name_generator.thread_name_gen();
+				
+				// in order to pause the deactivtor during scanning the doc term chain, use the add_note on all terms
+				for(String term : idx.lexicon.keySet()) {
+					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
+					if(eliminate_name != null) {
+						callbacks.add(eliminate_name);
+					}
+				}
+				
 				opCls = set_param(opCls, opClsParam);
 				affectedUnitIds = snr.scan_doc(tDocIdStrs, opCls);
+				
+				for(callback eliminate_name : callbacks) {
+					eliminate_name.conduct();
+				}
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
