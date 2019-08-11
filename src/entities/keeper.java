@@ -262,10 +262,10 @@ public class keeper {
 				// if empty, directly return the release_lock
 				// if not empty, release the required lock immediately
 				if(!notebook.isEmpty()) {
-					release_lock(lexicon_locker.class, targetName, threadNum);    // if release here, the returned callback still needs to be invoked
+					release_lock(lexicon_locker.class, targetName, threadNum);
+				}else {
+					release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 				}
-				
-				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}
 			
 		}catch(Exception e) {

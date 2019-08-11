@@ -72,7 +72,7 @@ class keeper_test_2{
 		public void run() {
 			try {
 				while(true) {
-					callback eliminate_name = kpr.add_note(lexicon_locker.class, "a", "001");
+					callback eliminate_name = kpr.add_note(lexicon_locker.class, "b", "001");
 					if(eliminate_name != null) {
 						System.out.print("__t1__>>>");
 						t2.print_notebook();
@@ -164,7 +164,7 @@ class keeper_test_2{
 		thread_2 th2 = new thread_2();
 		thread_3 th3 = new thread_3();
 		
-//		th1.start();
+		th1.start();
 		th2.start();
 		th3.start();
 		
