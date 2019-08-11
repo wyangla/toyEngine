@@ -89,48 +89,17 @@ public class scanner {
 	
 	
 	
-//	// method with multi-thread uses this class
-//	// general purpose thread class
-//	// each thread scanning the posting list of one term
-//	public static class scan_term_thread extends Thread {
-//		private Class<?> opCls;
-//		private Object opClsParam;
-//		private String[] tTerms;
-//		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
-//		private scanner snr;
-//		
-//		public scan_term_thread(scanner scannerIns, Class<?> operationClass, Object operationClassParameter, String[] targetTerms) {
-//			opCls = operationClass;
-//			opClsParam = operationClassParameter; // in order to collect all the 
-//			tTerms = targetTerms;
-//			snr = scannerIns;
-//		}
-//		
-//		public void run() {
-//			try {
-//				Method setParamMethod = opCls.getMethod("set_parameters", opClsParam.getClass()); // get the set_parameter from the operation class
-//				setParamMethod.invoke(opCls, opClsParam); // use this method to set parameter to the class
-//				affectedUnitIds = snr.scan(tTerms, opCls); // pass the class to scanner
-//				
-//			} catch(Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		
-//		// invoke after the threads ends to collect the affected posting units' ids
-//		public ArrayList<Long> get_affectedUnitIds(){
-//			return affectedUnitIds;
-//		}
-//	}
-	
-	
+	// method with multi-thread uses this class
+	// general purpose thread class
+	// each thread scanning the posting list of one term
 	public static class scan_term_thread extends Thread {
 		private Class<?> opCls;
 		private Object opClsParam;
 		private String[] tTerms;
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
-		private ArrayList<String> scannedTerms = new ArrayList<String>();
 		private scanner snr;
+		
+		private ArrayList<callback> callbacks = new ArrayList<callback>();
 		
 		public scan_term_thread(scanner scannerIns, Class<?> operationClass, Object operationClassParameter, String[] targetTerms) {
 			opCls = operationClass;
@@ -145,34 +114,82 @@ public class scanner {
 				
 				for(String term : tTerms) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
-					
-					if(eliminate_name != null) {
-						scannedTerms.add(term);
-						try {
-							opCls = set_param(opCls, opClsParam);
-							snr.scan_posting_list(term, opCls, affectedUnitIds);
-						}catch(Exception e) {
-							e.printStackTrace();
-						}finally {
-							eliminate_name.conduct();
-						}
+					callbacks.add(eliminate_name);    // does not need the condition check here, as while loop ensured the lock is required before return, then, the callback is initialised
+				}
+				
+				try {
+					opCls = set_param(opCls, opClsParam);
+					affectedUnitIds = snr.scan(tTerms, opCls); // pass the class to scanner
+				}catch(Exception e) {
+					System.out.println(e);
+				}finally {
+					for(callback eliminate_name: callbacks) {
+						eliminate_name.conduct();
 					}
 				}
+
 				
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
 		}
 		
+		// invoke after the threads ends to collect the affected posting units' ids
 		public ArrayList<Long> get_affectedUnitIds(){
 			return affectedUnitIds;
 		}
-		
-		public ArrayList<String> get_scannedTerms(){
-			return scannedTerms;
-		}
-		
 	}
+	
+	
+//	public static class scan_term_thread extends Thread {
+//		private Class<?> opCls;
+//		private Object opClsParam;
+//		private String[] tTerms;
+//		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
+//		private ArrayList<String> scannedTerms = new ArrayList<String>();
+//		private scanner snr;
+//		
+//		public scan_term_thread(scanner scannerIns, Class<?> operationClass, Object operationClassParameter, String[] targetTerms) {
+//			opCls = operationClass;
+//			opClsParam = operationClassParameter; // in order to collect all the 
+//			tTerms = targetTerms;
+//			snr = scannerIns;
+//		}
+//		
+//		public void run() {
+//			try {
+//				String threadName = "" + name_generator.thread_name_gen();
+//				
+//				for(String term : tTerms) {
+//					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
+//					
+//					if(eliminate_name != null) {
+//						scannedTerms.add(term);
+//						try {
+//							opCls = set_param(opCls, opClsParam);
+//							snr.scan_posting_list(term, opCls, affectedUnitIds);
+//						}catch(Exception e) {
+//							e.printStackTrace();
+//						}finally {
+//							eliminate_name.conduct();
+//						}
+//					}
+//				}
+//				
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		public ArrayList<Long> get_affectedUnitIds(){
+//			return affectedUnitIds;
+//		}
+//		
+//		public ArrayList<String> get_scannedTerms(){
+//			return scannedTerms;
+//		}
+//		
+//	}
 	
 	
 	// used in deactivator
@@ -202,7 +219,7 @@ public class scanner {
 						scannedTerms.add(term);		// even if the term is not not totally processed and scanning terminated, it will be regarded as being processed, aggressive
 						try {
 							opCls = set_param(opCls, opClsParam);
-							snr.scan_posting_list(term, opCls, affectedUnitIds);
+							snr.scan_posting_list(term, opCls, affectedUnitIds);    // will only pass in loaded terms, so does not need the loading step
 						}catch(Exception e) {
 							e.printStackTrace();
 						}finally {
@@ -340,6 +357,7 @@ public class scanner {
 				for(callback eliminate_name : callbacks) {
 					eliminate_name.conduct();
 				}
+				
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
