@@ -99,4 +99,11 @@ public class counter extends LinkedHashMap<String, Double> {
 		return this.get(key);
 	}
 	
+	public synchronized Double safe_remove(String key) {
+		return this.remove(key);
+	}
+	
+	public synchronized Boolean safe_isEmpty() {
+		return this.isEmpty();
+	}
 }
