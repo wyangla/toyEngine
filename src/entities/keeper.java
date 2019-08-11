@@ -166,7 +166,7 @@ public class keeper {
 	}
 	
 	// for recording the visiting thread names, {name:1}
-	private static HashMap<String, HashMap<String, Integer>> notebooks = new HashMap<String, HashMap<String, Integer>> ();
+	public static HashMap<String, HashMap<String, Integer>> notebooks = new HashMap<String, HashMap<String, Integer>> ();
 	
 	
 	
@@ -196,18 +196,19 @@ public class keeper {
 		try {
 			int required = 0;
 			while(required != 1) {    // keep trying until get the lock
+				
 				required = require_lock(lexicon_locker.class, targetName, threadNum);
+				HashMap<String, Integer> notebook = notebooks.get(targetName);
+				if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
+					notebook = new HashMap<String, Integer>();
+					notebooks.put(targetName, notebook);
+				}else {
+					notebook.put(threadNum, 1); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
+				}
+				eliminate_name = new eliminate_name_callback(targetName, threadNum);
+				
 			}
-			
-			HashMap<String, Integer> notebook = notebooks.get(targetName);
-			if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
-				notebook = new HashMap<String, Integer>();
-				notebooks.put(targetName, notebook);
-			}else {
-				notebook.put(threadNum, 1); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
-			}
-			eliminate_name = new eliminate_name_callback(targetName, threadNum);
-			
+						
 		}catch(Exception e) {
 			System.out.print(e);
 		}finally {
@@ -262,9 +263,10 @@ public class keeper {
 				if(!notebook.isEmpty()) {
 					release_lock(lexicon_locker.class, targetName, threadNum);    // if release here, the returned callback still needs to be invoked
 				}
+				
+				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}
 			
-			release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			
 		}catch(Exception e) {
 			System.out.print(e);
@@ -285,7 +287,7 @@ public class keeper {
 			
 			// wait to get the lock
 			while(required != 1) {
-				require_lock(lexicon_locker.class, targetName, threadNum);    // keep trying until get the lock
+				required = require_lock(lexicon_locker.class, targetName, threadNum);    // keep trying until get the lock
 			}
 			
 			if(required == 1) {
@@ -298,9 +300,10 @@ public class keeper {
 				
 				// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
 				while(!notebook.isEmpty()) {}
+				
+				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}
 			
-			release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			
 		}catch(Exception e) {
 			System.out.print(e);
