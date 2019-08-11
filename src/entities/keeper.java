@@ -196,8 +196,10 @@ public class keeper {
 		try {
 			int required = 0;
 			while(required != 1) {    // keep trying until get the lock
-				
 				required = require_lock(lexicon_locker.class, targetName, threadNum);
+			}
+			
+			if(required == 1) {
 				HashMap<String, Integer> notebook = notebooks.get(targetName);
 				if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
 					notebook = new HashMap<String, Integer>();
@@ -205,10 +207,9 @@ public class keeper {
 				}else {
 					notebook.put(threadNum, 1); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
 				}
-				eliminate_name = new eliminate_name_callback(targetName, threadNum);
-				
+				eliminate_name = new eliminate_name_callback(targetName, threadNum);	
 			}
-						
+
 		}catch(Exception e) {
 			System.out.print(e);
 		}finally {
@@ -267,7 +268,6 @@ public class keeper {
 				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}
 			
-			
 		}catch(Exception e) {
 			System.out.print(e);
 		}
@@ -303,7 +303,6 @@ public class keeper {
 				
 				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}
-			
 			
 		}catch(Exception e) {
 			System.out.print(e);
