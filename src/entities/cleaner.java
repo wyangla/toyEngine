@@ -108,7 +108,7 @@ public class cleaner {
 				
 				callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, this.getName());
 				
-				if(release_lock != null) {
+				if(release_lock != null) {    // TODO: does not need the check here
 					availableTargetTerms_temp.add(term);
 					callbacks.add(release_lock);
 				}
