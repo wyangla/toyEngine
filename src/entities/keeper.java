@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import configs.keeper_config;
 import entities.keeper_plugins.*;
+import utils.counter;
 
 import java.lang.reflect.*;
 import java.util.concurrent.locks.ReentrantLock;
@@ -96,8 +97,7 @@ public class keeper {
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
 		
-		// TODO: test
-		// System.out.println(term + "!");
+		// System.out.println(term + "!");    // TODO: test
 		if (infoMap.get("lockStatus") == 0) { // if one target is not being modifying, e.g. term with adding / deleting units
 			
 			targetLock.lock(); // add the lock, here not using try.. as there will be a try.. logic in the application
@@ -162,11 +162,12 @@ public class keeper {
 	
 	// must be conducted
 	public interface callback{
-		public int conduct();
+		public double conduct();
 	}
 	
 	// for recording the visiting thread names, {name:1}
-	public static HashMap<String, HashMap<String, Integer>> notebooks = new HashMap<String, HashMap<String, Integer>> ();
+	// use the counter here, so that thread safe
+	public static HashMap<String, counter> notebooks = new HashMap<String, counter> ();
 	
 	
 	
@@ -179,15 +180,17 @@ public class keeper {
 			tarName = targetName;
 			thName = threadName;
 		}
-		public int conduct() {
-			HashMap<String, Integer> notebook = notebooks.get(tarName);
-			Integer nameRemoved = notebook.remove(thName);
+		public double conduct() {
+			counter notebook = notebooks.get(tarName);
+			Double nameRemoved = notebook.safe_remove(thName);
 			if(nameRemoved == null) {
-				nameRemoved = 0;    // thread name is not existing, could means the name is not successfully added
+				nameRemoved = 0.0;    // thread name is not existing, could means the name is not successfully added
 			}
 			return nameRemoved;
 		}
 	}
+	
+	
 	
 	public callback add_note(Class<?> lockerClass, String targetName, String threadNum) throws NoSuchMethodException, SecurityException {
 		
@@ -200,12 +203,12 @@ public class keeper {
 			}
 			
 			if(required == 1) {
-				HashMap<String, Integer> notebook = notebooks.get(targetName);
+				counter notebook = notebooks.get(targetName);
 				if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
-					notebook = new HashMap<String, Integer>();
+					notebook = new counter();
 					notebooks.put(targetName, notebook);
 				}else {
-					notebook.put(threadNum, 1); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
+					notebook.put(threadNum, 1.0); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
 				}
 				eliminate_name = new eliminate_name_callback(targetName, threadNum);	
 			}
@@ -213,7 +216,8 @@ public class keeper {
 		}catch(Exception e) {
 			System.out.print(e);
 		}finally {
-			release_lock(lexicon_locker.class, targetName, threadNum);
+			int released = release_lock(lexicon_locker.class, targetName, threadNum);
+			System.out.println("|add_note, released|" + released); // TODO: test
 		}
 		
 		return eliminate_name;		
@@ -233,7 +237,7 @@ public class keeper {
 			thName = threadNum;
 		}
 		
-		public int conduct() {
+		public double conduct() {
 			int released = release_lock(lClass, tarName, thName);
 			return released;
 		}
@@ -250,10 +254,10 @@ public class keeper {
 			int required = require_lock(lexicon_locker.class, targetName, threadNum);
 			
 			if(required == 1) {
-				HashMap<String, Integer> notebook = notebooks.get(targetName);
+				counter notebook = notebooks.get(targetName);
 				
 				if (notebook == null) {
-					notebook = new HashMap<String, Integer>();
+					notebook = new counter();
 					notebooks.put(targetName, notebook);
 				}
 				
@@ -261,8 +265,9 @@ public class keeper {
 				// empty, could be 1. newly created notebook; 2. all visiting threads are gone
 				// if empty, directly return the release_lock
 				// if not empty, release the required lock immediately
-				if(!notebook.isEmpty()) {
-					release_lock(lexicon_locker.class, targetName, threadNum);
+				if(!notebook.safe_isEmpty()) {
+					int released = release_lock(lexicon_locker.class, targetName, threadNum);
+					System.out.println("|require_lock_check_notebook, released|" + released); // TODO: test
 				}else {
 					release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 				}
@@ -291,15 +296,25 @@ public class keeper {
 			}
 			
 			if(required == 1) {
-				HashMap<String, Integer> notebook = notebooks.get(targetName);
+				counter notebook = notebooks.get(targetName);
 				
 				if (notebook == null) {
-					notebook = new HashMap<String, Integer>();
+					notebook = new counter();
 					notebooks.put(targetName, notebook);
 				}
 				
 				// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
-				while(!notebook.isEmpty()) {}
+				boolean isEmpty = notebook.safe_isEmpty();
+				while(!isEmpty) {
+					isEmpty = notebook.safe_isEmpty();
+//					// TODO: test
+//					try {
+//						System.out.println("notebook: " + notebook.keySet());
+//						Thread.sleep(1000);
+//					}catch(Exception e) {
+//						System.out.println(e);
+//					}
+				}
 				
 				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}

@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import entities.keeper;
 import entities.keeper.callback;
 import entities.keeper_plugins.lexicon_locker;
+import utils.counter;
 import utils.name_generator;
 
 
@@ -18,7 +19,7 @@ class keeper_test_2{
 	public void print_notebook() {
 		System.out.println("\n--notebook");
 		for(String term : kpr.notebooks.keySet()) {
-			HashMap<String, Integer> notebook = kpr.notebooks.get(term);
+			counter notebook = kpr.notebooks.get(term);
 			System.out.println(term + " -- " + notebook.toString());
 		}
 //		System.out.println();
@@ -72,17 +73,21 @@ class keeper_test_2{
 		public void run() {
 			try {
 				while(true) {
+					System.out.println("---t1---\n\n\n");
+					
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, "b", "001");
 					if(eliminate_name != null) {
 						System.out.print("__t1__>>>");
 						t2.print_notebook();
 						
-						Thread.sleep(2000);
+						Thread.sleep(6000);
 						eliminate_name.conduct();
 						
 						t2.print_notebook();
 						System.out.print("<<<__t1__\n\n\n");
 					}
+					
+					Thread.sleep(1000);
 				}
 
 			} catch (Exception e) {
@@ -102,6 +107,8 @@ class keeper_test_2{
 		public void run() {
 			try {
 				while(true) {
+					System.out.print("---t2---\n\n\n");
+					
 					callback release_lock = kpr.require_lock_check_notebook(lexicon_locker.class, "b", "002");
 					
 					if(release_lock != null) {
@@ -115,6 +122,8 @@ class keeper_test_2{
 						
 						release_lock.conduct();	
 					}
+					
+					Thread.sleep(1000);
 				}
 
 			}catch(Exception e) {
@@ -133,6 +142,8 @@ class keeper_test_2{
 		public void run() {
 			try {
 				while(true) {
+					System.out.print("---t3---\n\n\n");
+					
 					callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, "b", "003");
 					
 					if(release_lock != null) {
@@ -140,12 +151,14 @@ class keeper_test_2{
 						
 						t2.print_notebook();
 						t2.print_lockMaps();    // the lock map can only hold 3 or 2 or 1, 3 should be more frequent than 2, as wait
-						Thread.sleep(4000);
+						Thread.sleep(6000);
 						
 						System.out.print("<<<__t3__\n\n\n");
 						
 						release_lock.conduct();
 					}
+					
+					Thread.sleep(1000);
 				}
 
 			}catch(Exception e) {
