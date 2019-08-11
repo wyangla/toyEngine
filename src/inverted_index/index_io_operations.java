@@ -364,26 +364,33 @@ public class index_io_operations {
 	// i.e. the order of the cached doc terms, is different form the feed in pUnits order, 
 	// so potentially previous units could not been loaded yet
 	// then the chain will be broken
-	public void link_term_chain() {
+	
+	public void link_term_chain(long docId) {
 		for(long postUnitId : idx.postUnitMap.keySet()) {
 			posting_unit postUnit = idx.postUnitMap.get(postUnitId);
 			
-			long previousTermId = postUnit.previousTermId;
-			posting_unit prevTermUnit = idx.postUnitMap.get(previousTermId);
-			
-			postUnit.link_to_previous_term(prevTermUnit);
-			if (prevTermUnit != null) {
-				prevTermUnit.link_to_next_term(postUnit);
-			}
-			
-			// TODO: test
-			if(postUnit.docId == 3) {
+			// only care about the doc related units, otherwise when try to chain other documents, can not be sure all the necessary units are loaded
+			if(postUnit.docId == docId) {
+				long previousTermId = postUnit.previousTermId;
+				posting_unit prevTermUnit = idx.postUnitMap.get(previousTermId);
+				
+				postUnit.link_to_previous_term(prevTermUnit);
 				if (prevTermUnit != null) {
-					System.out.println( prevTermUnit.term + "--> " + postUnit.term);
-				}else {
-					System.out.println( previousTermId + " : null --> " + postUnit.term);
+					prevTermUnit.link_to_next_term(postUnit);
+				}
+				
+				// TODO: test
+				if(postUnit.docId == 0) {
+					if (prevTermUnit != null) {
+						System.out.println( previousTermId + " : " + prevTermUnit.term + "--> " + postUnit.term);
+					}else {
+						System.out.println( previousTermId + " : null --> " + postUnit.term);
+						System.out.println(posting_loaded_status.infoMap.toString());
+						System.out.println(idx.postUnitMap.toString());
+					}
 				}
 			}
+
 		}
 	}
 	
@@ -456,7 +463,7 @@ public class index_io_operations {
 		String[] targetTerms = processedDoc.split(" ");
 		
 		load_posting(targetTerms);
-		link_term_chain();
+		link_term_chain(docId);
 	}
 	
 	
