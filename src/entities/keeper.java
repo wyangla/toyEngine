@@ -202,22 +202,21 @@ public class keeper {
 				required = require_lock(lexicon_locker.class, targetName, threadNum);
 			}
 			
-			if(required == 1) {
-				counter notebook = notebooks.get(targetName);
-				if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
-					notebook = new counter();
-					notebooks.put(targetName, notebook);
-				}else {
-					notebook.put(threadNum, 1.0); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
-				}
-				eliminate_name = new eliminate_name_callback(targetName, threadNum);	
+			// does not need the condition check "if(required == 1)" here, as if not satisfied, the following will be blocked
+			counter notebook = notebooks.get(targetName);
+			if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
+				notebook = new counter();
+				notebooks.put(targetName, notebook);
+			}else {
+				notebook.put(threadNum, 1.0); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
 			}
+			eliminate_name = new eliminate_name_callback(targetName, threadNum);	
 
 		}catch(Exception e) {
 			System.out.print(e);
 		}finally {
 			int released = release_lock(lexicon_locker.class, targetName, threadNum);
-			System.out.println("|add_note, released|" + released); // TODO: test
+			// System.out.println("|add_note, released|" + released); // TODO: test
 		}
 		
 		return eliminate_name;		
@@ -267,7 +266,7 @@ public class keeper {
 				// if not empty, release the required lock immediately
 				if(!notebook.safe_isEmpty()) {
 					int released = release_lock(lexicon_locker.class, targetName, threadNum);
-					System.out.println("|require_lock_check_notebook, released|" + released); // TODO: test
+					// System.out.println("|require_lock_check_notebook, released|" + released); // TODO: test
 				}else {
 					release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 				}
@@ -295,18 +294,18 @@ public class keeper {
 				required = require_lock(lexicon_locker.class, targetName, threadNum);    // keep trying until get the lock
 			}
 			
-			if(required == 1) {
-				counter notebook = notebooks.get(targetName);
-				
-				if (notebook == null) {
-					notebook = new counter();
-					notebooks.put(targetName, notebook);
-				}
-				
-				// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
-				boolean isEmpty = notebook.safe_isEmpty();
-				while(!isEmpty) {
-					isEmpty = notebook.safe_isEmpty();
+			// not need "if(required == 1)" here, as while ensured it.
+			counter notebook = notebooks.get(targetName);
+			
+			if (notebook == null) {
+				notebook = new counter();
+				notebooks.put(targetName, notebook);
+			}
+			
+			// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
+			boolean isEmpty = notebook.safe_isEmpty();
+			while(!isEmpty) {
+				isEmpty = notebook.safe_isEmpty();
 //					// TODO: test
 //					try {
 //						System.out.println("notebook: " + notebook.keySet());
@@ -314,10 +313,9 @@ public class keeper {
 //					}catch(Exception e) {
 //						System.out.println(e);
 //					}
-				}
-				
-				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}
+			
+			release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			
 		}catch(Exception e) {
 			System.out.print(e);
