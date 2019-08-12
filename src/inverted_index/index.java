@@ -79,7 +79,7 @@ public class index {
 		kpr.add_target(lexicon_locker.class, term);
 		
 		// record the current max tf and posting list loaded status
-		infoManager.set_info(term_max_tf.class, postUnit);
+		// infoManager.set_info(term_max_tf.class, postUnit);
 		infoManager.set_info(posting_loaded_status.class, postUnit);
 		
 		return postUnit.currentId;
