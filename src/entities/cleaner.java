@@ -108,7 +108,7 @@ public class cleaner {
 				
 				callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, this.getName());
 				
-				if(release_lock != null) {    // TODO: does not need the check here
+				if(release_lock != null) {    // if null, means the target term is not existing, indeed not needed here, as the target terms come from lexicon, should always exists in lock maps
 					availableTargetTerms_temp.add(term);
 					callbacks.add(release_lock);
 				}

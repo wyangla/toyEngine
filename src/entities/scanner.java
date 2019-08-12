@@ -114,7 +114,9 @@ public class scanner {
 				
 				for(String term : tTerms) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
-					callbacks.add(eliminate_name);    // does not need the condition check here, as while loop ensured the lock is required before return, then, the callback is initialised
+					if(eliminate_name != null) {    // when target term is not existing in the lock map, eliminate_name will be null
+						callbacks.add(eliminate_name);
+					}
 				}
 				
 				try {
@@ -346,7 +348,7 @@ public class scanner {
 				// in order to pause the deactivtor during scanning the doc term chain, use the add_note on all terms
 				for(String term : idx.lexicon.keySet()) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
-					if(eliminate_name != null) {
+					if(eliminate_name != null) {    // here indeed does not need to check the condition, as all terms from lexicon should existing in the lock maps
 						callbacks.add(eliminate_name);
 					}
 				}

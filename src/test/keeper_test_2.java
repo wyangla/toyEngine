@@ -75,7 +75,7 @@ class keeper_test_2{
 				while(true) {
 					System.out.println("---t1---\n\n\n");
 					
-					callback eliminate_name = kpr.add_note(lexicon_locker.class, "b", "001");
+					callback eliminate_name = kpr.add_note(lexicon_locker.class, "e", "001");
 					if(eliminate_name != null) {
 						System.out.print("__t1__>>>");
 						t2.print_notebook();
@@ -85,6 +85,8 @@ class keeper_test_2{
 						
 						t2.print_notebook();
 						System.out.print("<<<__t1__\n\n\n");
+					}else {    // term not existing
+						System.out.println("term not existing in __t1__ thread related lockMap");
 					}
 					
 					Thread.sleep(1000);
