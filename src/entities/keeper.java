@@ -92,47 +92,58 @@ public class keeper {
 	
 	// require the lock for specific thread
 	private int require_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
-		int required;  // 0 not required, 1 required
+		int required;  // 0 not required, 1 required, -1 not existing
 		
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
 		
-		// System.out.println(term + "!");    // TODO: test
-		if (infoMap.get("lockStatus") == 0) { // if one target is not being modifying, e.g. term with adding / deleting units
+		if(infoMap == null || targetLock == null) {    // check the lock existence, in order to hide details for the higher levels
+			required = -1;
 			
-			targetLock.lock(); // add the lock, here not using try.. as there will be a try.. logic in the application
-			infoMap.put("lockStatus", System.currentTimeMillis()); // change lock status, record locking time
-			infoMap.put("threadNum", Long.parseLong(threadNum)); // record the thread that required the lock, for update and automatically release
-			required = 1;
-
 		}else {
-			// does not consider the lock expiration here, the infoMap is used by the operation methods which will use finally{release...}
-			required = 0;
+			// System.out.println(term + "!");    // TODO: test
+			if (infoMap.get("lockStatus") == 0) { // if one target is not being modifying, e.g. term with adding / deleting units
+				
+				targetLock.lock(); // add the lock, here not using try.. as there will be a try.. logic in the application
+				infoMap.put("lockStatus", System.currentTimeMillis()); // change lock status, record locking time
+				infoMap.put("threadNum", Long.parseLong(threadNum)); // record the thread that required the lock, for update and automatically release
+				required = 1;
+
+			}else {
+				// does not consider the lock expiration here, the infoMap is used by the operation methods which will use finally{release...}
+				required = 0;
+			}
 		}
+		
 		return required;		
 	}
 	
 	
 	// release the lock
 	private int release_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
-		int released = 0; // 0 not released, 1 released
+		int released = 0; // 0 not released, 1 released, -1 not existing
 		
 		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
 		
-		// does not need to check the thread here, 
-		// as the lock and unlock are paired,
-		// so that the lock will always be the one hold by the current thread
-		try {
-			targetLock.unlock();    // here may raise exception when try to unlock the unacquired lock, TODO: add try catch?
-			infoMap.put("lockStatus", 0L);
-			infoMap.put("threadNum", -1L);
-			released = 1;
+		if(infoMap == null || targetLock == null) {
+			released = -1;
 			
-		}catch(IllegalMonitorStateException e) {
-			e.printStackTrace();    // if the lock is not successfully acquired by the thread in the first place
+		}else {
+			// does not need to check the thread here, 
+			// as the lock and unlock are paired,
+			// so that the lock will always be the one hold by the current thread
+			try {
+				targetLock.unlock();    // here may raise exception when try to unlock the unacquired lock, TODO: add try catch?
+				infoMap.put("lockStatus", 0L);
+				infoMap.put("threadNum", -1L);
+				released = 1;
+				
+			}catch(IllegalMonitorStateException e) {
+				e.printStackTrace();    // if the lock is not successfully acquired by the thread in the first place
+			}
 		}
-
+		
 		return released;
 	}
 	
@@ -198,19 +209,23 @@ public class keeper {
 		
 		try {
 			int required = 0;
-			while(required != 1) {    // keep trying until get the lock
+			
+			// keep trying until get the lock or realise the target term is not existing
+			while(required == 0) {
 				required = require_lock(lexicon_locker.class, targetName, threadNum);
 			}
 			
-			// does not need the condition check "if(required == 1)" here, as if not satisfied, the following will be blocked
-			counter notebook = notebooks.get(targetName);
-			if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
-				notebook = new counter();
-				notebooks.put(targetName, notebook);
-			}else {
-				notebook.put(threadNum, 1.0); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
+			// successfully get the lock
+			if(required == 1) {
+				counter notebook = notebooks.get(targetName);
+				if (notebook == null) {    // if the notebook for a term is not existing, create it dynamically, so does not require a explicit initialisation
+					notebook = new counter();
+					notebooks.put(targetName, notebook);
+				}else {
+					notebook.put(threadNum, 1.0); // add thread name to the notebook, stands for visiting the term corresponding to the lock	
+				}
+				eliminate_name = new eliminate_name_callback(targetName, threadNum);
 			}
-			eliminate_name = new eliminate_name_callback(targetName, threadNum);	
 
 		}catch(Exception e) {
 			System.out.print(e);
@@ -219,7 +234,7 @@ public class keeper {
 			// System.out.println("|add_note, released|" + released); // TODO: test
 		}
 		
-		return eliminate_name;		
+		return eliminate_name;    // could return null now, TODO: add logic to capture null in lock using places
 	}
 	
 	
@@ -252,6 +267,7 @@ public class keeper {
 			// only try once
 			int required = require_lock(lexicon_locker.class, targetName, threadNum);
 			
+			// successfully get the lock
 			if(required == 1) {
 				counter notebook = notebooks.get(targetName);
 				
@@ -289,39 +305,42 @@ public class keeper {
 			// only try once
 			int required = 0;
 			
-			// wait to get the lock
-			while(required != 1) {
+			// wait to get the lock, pass when == 1 or == -1
+			while(required == 0) {
 				required = require_lock(lexicon_locker.class, targetName, threadNum);    // keep trying until get the lock
 			}
 			
-			// not need "if(required == 1)" here, as while ensured it.
-			counter notebook = notebooks.get(targetName);
-			
-			if (notebook == null) {
-				notebook = new counter();
-				notebooks.put(targetName, notebook);
+			 // successfully get the lock
+			if(required == 1) {
+				counter notebook = notebooks.get(targetName);
+				
+				if (notebook == null) {
+					notebook = new counter();
+					notebooks.put(targetName, notebook);
+				}
+				
+				// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
+				boolean isEmpty = notebook.safe_isEmpty();
+				while(!isEmpty) {
+					isEmpty = notebook.safe_isEmpty();
+//						// TODO: test
+//						try {
+//							System.out.println("notebook: " + notebook.keySet());
+//							Thread.sleep(1000);
+//						}catch(Exception e) {
+//							System.out.println(e);
+//						}
+				}
+				
+				release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
 			}
-			
-			// wait the notebook to be empty, then return to the invoker to conduct the adding operations, etc.
-			boolean isEmpty = notebook.safe_isEmpty();
-			while(!isEmpty) {
-				isEmpty = notebook.safe_isEmpty();
-//					// TODO: test
-//					try {
-//						System.out.println("notebook: " + notebook.keySet());
-//						Thread.sleep(1000);
-//					}catch(Exception e) {
-//						System.out.println(e);
-//					}
-			}
-			
-			release_lock = new release_lock_call_back(lockerClass, targetName, threadNum);
+
 			
 		}catch(Exception e) {
 			System.out.print(e);
 		}
 		
-		return release_lock;
+		return release_lock;    // could return null now, when no target term found in lock maps
 	}
 	
 	
