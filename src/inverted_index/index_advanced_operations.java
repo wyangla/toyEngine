@@ -28,7 +28,7 @@ public class index_advanced_operations {
 		
 		for(String[] workLoad : workLoads ) {
 			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, delete_doc.class, targetDocName, workLoad);
-			st.run();
+			st.start();
 			threadList.add(st);
 		}
 		
@@ -48,8 +48,8 @@ public class index_advanced_operations {
 	// all fast scoring method are try to calculating fewer documents
 	// but when the calculation process is done, the normalisation procedure are the same
 	public counter normalise_doc_scores(counter docScoreCounter) {
-		System.out.println(docScoreCounter);    // TODO: test
-		System.out.println("---");    // TODO: test
+		// System.out.println(docScoreCounter);    // TODO: test
+		// System.out.println("---");    // TODO: test
 		counter docNormScoreCounter = new counter();
 		counter docNameNormScoreCounter = new counter();
 		
@@ -84,7 +84,7 @@ public class index_advanced_operations {
 							subDocLenCounter, 
 							new String[] {docIdStr});
 					
-					st.run();
+					st.start();
 					threadList.add(st); 
 					counterList.add(subDocLenCounter);
 				}
@@ -140,7 +140,7 @@ public class index_advanced_operations {
 		for(String term : targetTerms) {
 			counter documentScoreCounter = new counter();
 			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, search_term.class, documentScoreCounter, new String[] {term});
-			st.run();
+			st.start();
 			threadList.add(st); 
 			counterList.add(documentScoreCounter);
 		}
@@ -216,7 +216,7 @@ public class index_advanced_operations {
 					new param_get_doc_upper_bound_score(termMaxScores, documentUpperBoundScores), 
 					new String[] {term});
 			
-			st.run();
+			st.start();
 			threadList.add(st); 
 			counterList.add(documentUpperBoundScores);
 		}
@@ -248,7 +248,7 @@ public class index_advanced_operations {
 					search_term_maxScore.class, 
 					new param_search_term_maxScore(scorer.getInstance(), docUpperBounds, totalDocumentScoreCounter, topK),
 					new String[] {term});
-			st.run();
+			st.start();
 			threadList.add(st); 
 		}
 		for(scanner.scan_term_thread st : threadList) {
@@ -282,7 +282,7 @@ public class index_advanced_operations {
 					docIdSet, 
 					new String[] {term});
 			
-			st.run();
+			st.start();
 			threadList.add(st); 
 			termDocIdSetMap.put(term, docIdSet);	// put all docId set into the map
 		}
@@ -316,7 +316,7 @@ public class index_advanced_operations {
 					search_term_WAND.class, 
 					new param_search_term_WAND(scorer.getInstance(), termMaxScoresIterator, validDocSet, currentUpperBound, termDocIdSetMap, totalDocumentScoreCounter, topK),
 					new String[] {term});
-			st.run();
+			st.start();
 			threadList.add(st); 
 		}
 		for(scanner.scan_term_thread st : threadList) {

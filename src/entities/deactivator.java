@@ -62,7 +62,7 @@ public class deactivator {
 
 		for(String[] workLoad : workLoads ) {
 			scanner.scan_term_thread_deactivator st = new scanner.scan_term_thread_deactivator(snr, delete_posting.class, "", workLoad);
-			st.run();
+			st.start();
 			threadList.add(st);
 		}
 		
