@@ -23,7 +23,8 @@ public class scanner {
 	
 	
 	
-	public void visit_next_unit (posting_unit pUnitCurrent, Class<?> operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception { // use the reference to visit the unit directly instead of searching in the HashMap
+	// use the reference to visit the unit directly instead of searching in the ConcurrentHashMap
+	public void visit_next_unit (posting_unit pUnitCurrent, Class<?> operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception { 
 		
 		if(pUnitCurrent != null) {    // TODO: skip the starter unit?
 

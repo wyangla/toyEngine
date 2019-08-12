@@ -4,6 +4,7 @@ import data_structures.posting_unit;
 import entities.scorer;
 import utils.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 // max length == top_min{topK, len(posting of maxScoreTerm)}
 // not using the pre-filling so as to prevent
@@ -16,7 +17,7 @@ public class param_search_term_WAND {
 	Iterator<Map.Entry<String, Double>> tMaxSI;		// term - upper bound entry iterator
 	HashSet<Long> vDocSet;						// the intersection set
 	counter curUB;									// current upper bound of the vDocSet - i.e. the sum the scores of necessary terms
-	HashMap<String, HashSet<Long>> tDocSetMap;	// term - docId set map
+	ConcurrentHashMap<String, HashSet<Long>> tDocSetMap;	// term - docId set map
 	counter docSC;									// doc score counter, the rank counter
 	int tpK;										// top K
 
@@ -24,7 +25,7 @@ public class param_search_term_WAND {
 									Iterator<Map.Entry<String, Double>> termMaxScoresIterator, 
 									HashSet<Long> validDocSet, 
 									counter currentUpperBound,
-									HashMap<String, HashSet<Long>> termDocIdSetMap, 
+									ConcurrentHashMap<String, HashSet<Long>> termDocIdSetMap, 
 									counter documentScoreCounter, 
 									int topK){
 		scr = scorer;

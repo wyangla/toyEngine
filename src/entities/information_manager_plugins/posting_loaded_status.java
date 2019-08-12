@@ -1,6 +1,7 @@
 package entities.information_manager_plugins;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import configs.information_manager_config;
 import data_structures.posting_unit;
@@ -8,7 +9,7 @@ import data_structures.posting_unit;
 
 
 public class posting_loaded_status {
-	public static HashMap<String, Double> infoMap = new HashMap<String, Double>();
+	public static ConcurrentHashMap<String, Double> infoMap = new ConcurrentHashMap<String, Double>();
 	public static String persistingPath = information_manager_config.persistingDir + "/posting_loaded_status";
 	
 	

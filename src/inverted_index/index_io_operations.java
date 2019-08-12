@@ -385,7 +385,7 @@ public class index_io_operations {
 						System.out.println( previousTermId + " : " + prevTermUnit.term + "--> " + postUnit.term);
 					}else {
 						System.out.println( previousTermId + " : null --> " + postUnit.term);
-						System.out.println(posting_loaded_status.infoMap.toString());
+						System.out.println(posting_loaded_status.infoMap.keySet());
 						System.out.println(idx.postUnitMap.toString());
 					}
 				}

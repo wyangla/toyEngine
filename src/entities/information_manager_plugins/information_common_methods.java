@@ -5,19 +5,20 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import utils.file_creater;
 
 public class information_common_methods {
 	
-	public static Double get_info(String targetName, HashMap<String, Double> infoMap) {
+	public static Double get_info(String targetName, ConcurrentHashMap<String, Double> infoMap) {
 		Double info = infoMap.get(targetName);
 		return info;	
 	}
 	
 	
 	
-	public static int del_info(String targetName, HashMap<String, Double> infoMap) {
+	public static int del_info(String targetName, ConcurrentHashMap<String, Double> infoMap) {
 		int deletedFlag = -1;
 		try {
 			infoMap.remove(targetName);
@@ -30,7 +31,7 @@ public class information_common_methods {
 	
 	
 	
-	public static int clear_info(HashMap<String, Double> infoMap) {
+	public static int clear_info(ConcurrentHashMap<String, Double> infoMap) {
 		int clearedFlag = -1;
 		try {
 			String[] targetNameList = infoMap.keySet().toArray(new String[0]);
@@ -46,7 +47,7 @@ public class information_common_methods {
 	
 	
 	
-	public static int load_info(String persistingPath, HashMap<String, Double> infoMap) {
+	public static int load_info(String persistingPath, ConcurrentHashMap<String, Double> infoMap) {
 		int loadedFlag = -1;
 		Double information;
 		try {
@@ -88,7 +89,7 @@ public class information_common_methods {
 	
 	
 	
-	public static int persist_info(String persistingPath, HashMap<String, Double> infoMap) {
+	public static int persist_info(String persistingPath, ConcurrentHashMap<String, Double> infoMap) {
 		int persistedFlag = -1;
 		
 		File infoFile = new File(persistingPath);

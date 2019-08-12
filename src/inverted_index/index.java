@@ -3,6 +3,7 @@ package inverted_index;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.*;
 
 import data_structures.*;
@@ -26,11 +27,11 @@ public class index {
 		return idx;
 	}
 	
-	public HashMap<Long, posting_unit> postUnitMap = new HashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
-	public HashMap<String, ArrayList<Long>> lexicon = new HashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
+	public ConcurrentHashMap<Long, posting_unit> postUnitMap = new ConcurrentHashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
+	public ConcurrentHashMap<String, ArrayList<Long>> lexicon = new ConcurrentHashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
-	public HashMap<String, doc> docMap = new HashMap<String, doc>();
-	public HashMap<Long, doc> docIdMap = new HashMap<Long, doc>();    // not persisted, generated from docMap when loading from local
+	public ConcurrentHashMap<String, doc> docMap = new ConcurrentHashMap<String, doc>();
+	public ConcurrentHashMap<Long, doc> docIdMap = new ConcurrentHashMap<Long, doc>();    // not persisted, generated from docMap when loading from local
 	private information_manager infoManager = information_manager.get_instance();	// only used when adding/removing new posting unit into/from index
 	
 	// for generating the unique posting unit id s
@@ -310,8 +311,8 @@ public class index {
 	// reset index
 	// TODO: when use this method need to be very careful, as it will lead to the pc -> 0
 	public void clear_index() {
-		postUnitMap = new HashMap<Long, posting_unit>();
-		lexicon = new HashMap<String, ArrayList<Long>>();
+		postUnitMap = new ConcurrentHashMap<Long, posting_unit>();
+		lexicon = new ConcurrentHashMap<String, ArrayList<Long>>();
 		kpr.clear_maps(lexicon_locker.class);
 		pc = new counters();
 		

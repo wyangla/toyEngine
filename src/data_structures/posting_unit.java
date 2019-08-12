@@ -1,5 +1,6 @@
 package data_structures;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.*;
 import org.json.*;
 
@@ -15,7 +16,7 @@ public class posting_unit {
 	public posting_unit nextUnit = null; // link to the next unit, if == null means is the last one
 	public posting_unit prevUnit = null; // link to the prvious unit, if == null means is the earliest one
 	
-	public HashMap<String, Double> uProp = new HashMap<String, Double>(); // for storing properties like tfidf, etc.
+	public ConcurrentHashMap<String, Double> uProp = new ConcurrentHashMap<String, Double>(); // for storing properties like tfidf, etc.
 	
 	public int status = 1; // 1 linked, 0 disconnected
 	public long docId = -1L; // the unique id of doc in the file system, not using path here

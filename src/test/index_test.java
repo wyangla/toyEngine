@@ -2,6 +2,7 @@ package test;
 import inverted_index.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import data_structures.posting_unit;
 import entities.keeper;
@@ -64,12 +65,12 @@ public class index_test {
 	
 	// test the retry mechanism of add_posting_unit
 	public void test_5() {
-		HashMap<String, Long> metaMap_1 = new HashMap<String, Long> ();
+		ConcurrentHashMap<String, Long> metaMap_1 = new ConcurrentHashMap<String, Long> ();
 		metaMap_1.put("lockStatus", 0L); // the lock can be required
 		metaMap_1.put("threadNum", -1L);
 		kpr.get_lockInfoMap(lexicon_locker.class).put("a", metaMap_1);
 		
-		HashMap<String, Long> metaMap_2 = new HashMap<String, Long> ();
+		ConcurrentHashMap<String, Long> metaMap_2 = new ConcurrentHashMap<String, Long> ();
 		metaMap_2.put("lockStatus", System.currentTimeMillis() - 5000); // the lock status here is not 0, so that the following add will failed
 		metaMap_2.put("threadNum", 2L);
 		kpr.get_lockInfoMap(lexicon_locker.class).put("c", metaMap_2);

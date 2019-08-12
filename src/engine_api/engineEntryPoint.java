@@ -7,6 +7,7 @@ import entities.information_manager_plugins.*;
 import probes.index_probe;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import data_structures.*;
@@ -46,11 +47,11 @@ public class engineEntryPoint {
 		return clr;
 	}
 	
-	public HashMap<String, ArrayList<Long>> _get_lexicon() {
+	public ConcurrentHashMap<String, ArrayList<Long>> _get_lexicon() {
 		return idx.lexicon;
 	}	
 	
-	public HashMap<Long, posting_unit> _get_postUnitMap() {
+	public ConcurrentHashMap<Long, posting_unit> _get_postUnitMap() {
 		return idx.postUnitMap;
 	}
 	
@@ -98,11 +99,11 @@ public class engineEntryPoint {
 		return docInfoMap;
 	}
 	
-	public HashMap<String, HashMap<String, Long>> _get_lexiconLockInfoMap() {
+	public ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> _get_lexiconLockInfoMap() {
 		return kpr.get_lockInfoMap(lexicon_locker.class);
 	}
 	
-	public HashMap<String, ReentrantLock> _get_lexiconLockMap() {
+	public ConcurrentHashMap<String, ReentrantLock> _get_lexiconLockMap() {
 		return kpr.get_lockMap(lexicon_locker.class);
 	}
 	
@@ -116,12 +117,12 @@ public class engineEntryPoint {
 	}
 	
 	// TODO: just for test
-	public HashMap<String, Double> _get_termDf() {
+	public ConcurrentHashMap<String, Double> _get_termDf() {
 		return term_df.infoMap;
 	}
 	
 	// TODO: just for test
-	public HashMap<String, Double> _get_termIdf() {
+	public ConcurrentHashMap<String, Double> _get_termIdf() {
 		return term_idf.infoMap;
 	}
 	
@@ -285,12 +286,12 @@ public class engineEntryPoint {
 	
 	
 	// high level information
-	public HashMap<String, Double> get_posting_loaded_status() {
+	public ConcurrentHashMap<String, Double> get_posting_loaded_status() {
 		return posting_loaded_status.infoMap;
 	}
 	
 	
-	public HashMap<String, Double> get_term_max_tf() {
+	public ConcurrentHashMap<String, Double> get_term_max_tf() {
 		return term_max_tf.infoMap;
 	}
 	

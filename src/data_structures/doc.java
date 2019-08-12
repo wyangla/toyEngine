@@ -1,5 +1,6 @@
 package data_structures;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
 
@@ -9,7 +10,7 @@ public class doc {
 	public long docId = -1L;
 	public String docName = " ";
 	public int docLength = 0;
-	public HashMap<String, Double> docProp = new HashMap<String, Double>();
+	public ConcurrentHashMap<String, Double> docProp = new ConcurrentHashMap<String, Double>();
 	
 	// public ArrayList<Long> pUnitIdList = new ArrayList<Long> ();   
 		// will be dynamically refilled when reload the postings

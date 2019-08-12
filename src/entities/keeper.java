@@ -7,6 +7,7 @@ import entities.keeper_plugins.*;
 import utils.counter;
 
 import java.lang.reflect.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -26,11 +27,11 @@ public class keeper {
 	
 	
 	// get the lockInfoMap from locker
-	public HashMap<String, HashMap<String, Long>> get_lockInfoMap(Class<lexicon_locker> lockerClass) {
-		HashMap<String, HashMap<String, Long>> lockInfoMap = new HashMap<String, HashMap<String, Long>>();
+	public ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> get_lockInfoMap(Class<lexicon_locker> lockerClass) {
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> lockInfoMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, Long>>();
 		try {
 			Method get_lockInfoMapMethod = lockerClass.getMethod("get_lockInfoMap");
-			lockInfoMap = (HashMap<String, HashMap<String, Long>>) get_lockInfoMapMethod.invoke(null);
+			lockInfoMap = (ConcurrentHashMap<String, ConcurrentHashMap<String, Long>>) get_lockInfoMapMethod.invoke(null);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -39,11 +40,11 @@ public class keeper {
 	
 	
 	// get the lockMap from locker 
-	public HashMap<String, ReentrantLock> get_lockMap(Class<lexicon_locker> lockerClass) {
-		HashMap<String, ReentrantLock> lockMap = new HashMap<String, ReentrantLock>();
+	public ConcurrentHashMap<String, ReentrantLock> get_lockMap(Class<lexicon_locker> lockerClass) {
+		ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<String, ReentrantLock>();
 		try {
 			Method get_lockMapMethod = lockerClass.getMethod("get_lockMap");
-			lockMap = (HashMap<String, ReentrantLock>) get_lockMapMethod.invoke(null);
+			lockMap = (ConcurrentHashMap<String, ReentrantLock>) get_lockMapMethod.invoke(null);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -64,7 +65,7 @@ public class keeper {
 	
 	// initialize the lock for term in lexicon
 	public void add_target(Class<lexicon_locker> lockerClass, String targetName) {
-		HashMap<String, Long> infoMap = new HashMap<String, Long>();
+		ConcurrentHashMap<String, Long> infoMap = new ConcurrentHashMap<String, Long>();
 		infoMap.put("lockStatus", 0L); // 0 not locked; timeStampe locked
 		infoMap.put("threadNum", -1L); // the default thread name
 		
@@ -94,7 +95,7 @@ public class keeper {
 	private int require_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int required;  // 0 not required, 1 required, -1 not existing
 		
-		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
+		ConcurrentHashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
 		
 		if(infoMap == null || targetLock == null) {    // check the lock existence, in order to hide details for the higher levels
@@ -123,7 +124,7 @@ public class keeper {
 	private int release_lock(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int released = 0; // 0 not released, 1 released, -1 not existing
 		
-		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
+		ConcurrentHashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
 		
 		if(infoMap == null || targetLock == null) {
@@ -151,7 +152,7 @@ public class keeper {
 	// aims at being used in the scenario of waiting for web response
 	public int check_lock_expiration(Class<lexicon_locker> lockerClass, String targetName, String threadNum) {
 		int expired = 1;
-		HashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
+		ConcurrentHashMap<String, Long> infoMap = get_lockInfoMap(lockerClass).get(targetName);
 		ReentrantLock targetLock = get_lockMap(lockerClass).get(targetName);
 		
 		if (infoMap.get("lockStatus") + keeper_config.lockExpireTime <= System.currentTimeMillis()) { // if the previous lock is expired
@@ -178,7 +179,7 @@ public class keeper {
 	
 	// for recording the visiting thread names, {name:1}
 	// use the counter here, so that thread safe
-	public static HashMap<String, counter> notebooks = new HashMap<String, counter> ();
+	public static ConcurrentHashMap<String, counter> notebooks = new ConcurrentHashMap<String, counter> ();
 	
 	
 	

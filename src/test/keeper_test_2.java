@@ -1,6 +1,7 @@
 package test;
 import java.sql.Time;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import entities.keeper;
@@ -28,8 +29,8 @@ class keeper_test_2{
 	// print the entries of lexicon lock map
 	public void print_lockMaps() {
 		System.out.println(("\n--lockMaps"));
-		HashMap<String, HashMap<String, Long>> LockInfoMap = kpr.get_lockInfoMap(lexicon_locker.class);
-		HashMap<String, ReentrantLock> lockMap = kpr.get_lockMap(lexicon_locker.class);
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> LockInfoMap = kpr.get_lockInfoMap(lexicon_locker.class);
+		ConcurrentHashMap<String, ReentrantLock> lockMap = kpr.get_lockMap(lexicon_locker.class);
 		
 		// print out the lexiconLockMap
 		for (String term : LockInfoMap.keySet()) {
@@ -44,14 +45,14 @@ class keeper_test_2{
 	// prepare the lexiconLockMap
 	public void fill_lexiconLockMap() {
 		
-		HashMap<String, HashMap<String, Long>> lockInfoMap = kpr.get_lockInfoMap(lexicon_locker.class);
-		HashMap<String, ReentrantLock> lockMap = kpr.get_lockMap(lexicon_locker.class);
+		ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> lockInfoMap = kpr.get_lockInfoMap(lexicon_locker.class);
+		ConcurrentHashMap<String, ReentrantLock> lockMap = kpr.get_lockMap(lexicon_locker.class);
 		
 		kpr.add_target(lexicon_locker.class, "a");
 		kpr.add_target(lexicon_locker.class, "b");
 		kpr.add_target(lexicon_locker.class, "c");
 		
-		HashMap<String, Long> infoMap = lockInfoMap.get("c");
+		ConcurrentHashMap<String, Long> infoMap = lockInfoMap.get("c");
 		infoMap.put("lockStatus", 0L); // expired
 		print_notebook();
 		print_lockMaps();

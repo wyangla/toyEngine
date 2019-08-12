@@ -6,6 +6,7 @@ import inverted_index.*;
 import utils.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import configs.general_config;
 import configs.information_manager_config;
@@ -14,7 +15,7 @@ import configs.information_manager_config;
 
 // each time the input documents are scanned, this info map is set once
 public class term_idf_cal_time{
-	public static HashMap<String, Double> infoMap = new HashMap<String, Double>();
+	public static ConcurrentHashMap<String, Double> infoMap = new ConcurrentHashMap<String, Double>();
 	public static String persistingPath = information_manager_config.persistingDir + "/term_idf_cal_time";
 	
 	

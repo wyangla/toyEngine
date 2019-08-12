@@ -2,12 +2,14 @@ package entities.information_manager_plugins;
 
 import data_structures.posting_unit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import configs.information_manager_config;
 
 
 
 public class term_df{
-	public static HashMap<String, Double> infoMap = new HashMap<String, Double>();
+	public static ConcurrentHashMap<String, Double> infoMap = new ConcurrentHashMap<String, Double>();
 	public static String persistingPath = information_manager_config.persistingDir + "/term_df";
 	
 	

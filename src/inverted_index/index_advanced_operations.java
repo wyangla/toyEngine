@@ -1,6 +1,8 @@
 package inverted_index;
 import entities.scanner_plugins.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import utils.*;
 import java.lang.reflect.*;
 import configs.*;
@@ -270,8 +272,8 @@ public class index_advanced_operations {
 	 * */
 	
 	// return the sets filled by the docIds of terms
-	public HashMap<String, HashSet<Long>> get_term_docId_set(String[] targetTerms) {
-		HashMap<String, HashSet<Long>> termDocIdSetMap = new HashMap<String, HashSet<Long>>();
+	public ConcurrentHashMap<String, HashSet<Long>> get_term_docId_set(String[] targetTerms) {
+		ConcurrentHashMap<String, HashSet<Long>> termDocIdSetMap = new ConcurrentHashMap<String, HashSet<Long>>();
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
 		for(String term : targetTerms) {
@@ -305,7 +307,7 @@ public class index_advanced_operations {
 		counter currentUpperBound = new counter(); // pass, current upper bound
 		currentUpperBound.put("currentUpperBound", 0.0);
 		
-		HashMap<String, HashSet<Long>> termDocIdSetMap = get_term_docId_set(targetTerms); // pass, map from term to docId set
+		ConcurrentHashMap<String, HashSet<Long>> termDocIdSetMap = get_term_docId_set(targetTerms); // pass, map from term to docId set
 		counter totalDocumentScoreCounter = new counter();	// pass
 		
 		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
