@@ -1,16 +1,17 @@
-package entities;
+package _bak;
 import java.util.*;
 import java.lang.reflect.*;
 import java.io.*;
 import configs.*;
 import entities.keeper_plugins.lexicon_locker;
-import entities.scanner_plugins.scanner_plugin_interface;
+import entities.scanner_plugins.delete_doc;
 import inverted_index.*;
 import utils.name_generator;
 import utils.task_spliter;
 import entities.keeper.callback;
 import entities.information_manager_plugins.*;
 import data_structures.*;
+import entities.*;
 
 
 // This class invokes corresponding plugins to conduct the operations on each unit on posting lists
@@ -24,11 +25,12 @@ public class scanner {
 	
 	
 	// use the reference to visit the unit directly instead of searching in the ConcurrentHashMap
-	public void visit_next_unit (posting_unit pUnitCurrent, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception { 
+	public void visit_next_unit (posting_unit pUnitCurrent, Class<?> operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception { 
 		
-		if(pUnitCurrent != null) {    // TODO: skip the starter unit, after modify the lexicon
+		if(pUnitCurrent != null) {    // TODO: skip the starter unit?
 
-			long affectedUnitId = operationOnPostingList.conduct(pUnitCurrent);
+			Method conduct = operationOnPostingList.getMethod("conduct", posting_unit.class); // the class object already provide the necessary parameters
+			long affectedUnitId = (long)conduct.invoke(operationOnPostingList, pUnitCurrent);// object -> long
 			if(affectedUnitId != -1) { // -1 denotes the processed unit was not affected
 				affectedUnits.add(affectedUnitId); 
 			}
@@ -37,7 +39,7 @@ public class scanner {
 	}
 	
 	
-	public String scan_posting_list(String term, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) {
+	public String scan_posting_list(String term, Class<?> operationOnPostingList, ArrayList<Long> affectedUnits) {
 		String processedTerm = term;
 		
 		// get the starter post unit id
@@ -63,7 +65,7 @@ public class scanner {
 	// method with single thread uses this method 
 	// not using the multi-threading here, instead, use the multi-threading outside to invoke this method
 	// this is for the convenience of collecting different types of running result
-	public ArrayList<Long> scan(String[] targetTerms, scanner_plugin_interface operationOnPostingList){ // input parameter better be not dynamic
+	public ArrayList<Long> scan(String[] targetTerms, Class<?> operationOnPostingList){ // input parameter better be not dynamic
 		ArrayList<Long> affectedUnits = new ArrayList<Long> (); // collect Ids of units which are affected
 		index_io_operations.get_instance().load_posting(targetTerms); // load the corresponding posting list into memory
 		
@@ -74,36 +76,36 @@ public class scanner {
 	}
 	
 	
-//	// set parameter to the plugin class
-//	public static Class<?> set_param(Class<?> operationClass, Object operationClassParameter) {
-//		Class<?> opCls = null;
-//		try {
-//			Method setParamMethod = operationClass.getMethod("set_parameters", operationClassParameter.getClass()); // get the set_parameter from the operation class
-//			setParamMethod.invoke(operationClass, operationClassParameter); // use this method to set parameter to the class
-//			opCls = operationClass;
-//		} catch(Exception e) {
-//			e.printStackTrace();
-//		}
-//		return opCls;
-//	}
-//	
+	// set parameter to the plugin class
+	public static Class<?> set_param(Class<?> operationClass, Object operationClassParameter) {
+		Class<?> opCls = null;
+		try {
+			Method setParamMethod = operationClass.getMethod("set_parameters", operationClassParameter.getClass()); // get the set_parameter from the operation class
+			setParamMethod.invoke(operationClass, operationClassParameter); // use this method to set parameter to the class
+			opCls = operationClass;
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return opCls;
+	}
+	
 	
 	
 	// method with multi-thread uses this class
 	// general purpose thread class
 	// each thread scanning the posting list of one term
 	public static class scan_term_thread extends Thread {
-		private scanner_plugin_interface opOnList;
-		private Object opOnListParam;
+		private Class<?> opCls;
+		private Object opClsParam;
 		private String[] tTerms;
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
 		private scanner snr;
 		
 		private ArrayList<callback> callbacks = new ArrayList<callback>();
 		
-		public scan_term_thread(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
-			opOnList = operationOnPostingList;
-			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
+		public scan_term_thread(scanner scannerIns, Class<?> operationClass, Object operationClassParameter, String[] targetTerms) {
+			opCls = operationClass;
+			opClsParam = operationClassParameter; // in order to collect all the 
 			tTerms = targetTerms;
 			snr = scannerIns;
 		}
@@ -120,9 +122,8 @@ public class scanner {
 				}
 				
 				try {
-					
-					opOnList.set_parameters(opOnListParam);
-					affectedUnitIds = snr.scan(tTerms, opOnList); // pass the instance to scanner
+					opCls = set_param(opCls, opClsParam);
+					affectedUnitIds = snr.scan(tTerms, opCls); // pass the class to scanner
 				}catch(Exception e) {
 					System.out.println(e);
 				}finally {
@@ -197,16 +198,16 @@ public class scanner {
 	
 	// used in deactivator
 	public static class scan_term_thread_deactivator extends Thread {
-		private scanner_plugin_interface opOnList;
-		private Object opOnListParam;
+		private Class<?> opCls;
+		private Object opClsParam;
 		private String[] tTerms;
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
 		private ArrayList<String> scannedTerms = new ArrayList<String>();
 		private scanner snr;
 		
-		public scan_term_thread_deactivator(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
-			opOnList = operationOnPostingList;
-			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
+		public scan_term_thread_deactivator(scanner scannerIns, Class<?> operationClass, Object operationClassParameter, String[] targetTerms) {
+			opCls = operationClass;
+			opClsParam = operationClassParameter; // in order to collect all the 
 			tTerms = targetTerms;
 			snr = scannerIns;
 		}
@@ -221,8 +222,8 @@ public class scanner {
 					if(release_lock != null) {
 						scannedTerms.add(term);		// even if the term is not not totally processed and scanning terminated, it will be regarded as being processed, aggressive
 						try {
-							opOnList.set_parameters(opOnListParam);
-							snr.scan_posting_list(term, opOnList, affectedUnitIds);    // will only pass in loaded terms, so does not need the loading step
+							opCls = set_param(opCls, opClsParam);
+							snr.scan_posting_list(term, opCls, affectedUnitIds);    // will only pass in loaded terms, so does not need the loading step
 						}catch(Exception e) {
 							e.printStackTrace();
 						}finally {
@@ -269,7 +270,7 @@ public class scanner {
 	 * make consistent between scan the posting list & term chain 
 	 * */
 	
-	public void visit_next_term_unit (posting_unit termUnitCurrent, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception {
+	public void visit_next_term_unit (posting_unit termUnitCurrent, Class<?> operationOnPostingList, ArrayList<Long> affectedUnits) throws Exception {
 		if(termUnitCurrent != null) {
 			
 			// TODO: test
@@ -277,7 +278,8 @@ public class scanner {
 				System.out.println("--> " + termUnitCurrent.term);
 			}
 
-			long affectedUnitId = operationOnPostingList.conduct(termUnitCurrent);
+			Method conduct = operationOnPostingList.getMethod("conduct", posting_unit.class);
+			long affectedUnitId = (long)conduct.invoke(operationOnPostingList, termUnitCurrent);
 			if(affectedUnitId != -1) { // -1 denotes the processed unit was not affected
 				affectedUnits.add(affectedUnitId); 
 			}
@@ -287,7 +289,7 @@ public class scanner {
 	
 	
 	// here use the docId string, is for consistent with the output score counter
-	public String scan_term_chain(String docIdStr, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) {
+	public String scan_term_chain(String docIdStr, Class<?> operationOnPostingList, ArrayList<Long> affectedUnits) {
 		long processedDocId = Long.parseLong(docIdStr);
 		
 		// get the starter post unit id
@@ -312,7 +314,7 @@ public class scanner {
 	
 	
 	// here use the docId string, is for consistent with the output score counter
-	public ArrayList<Long> scan_doc(String[] targetDocIdStrs, scanner_plugin_interface operationOnPostingList){
+	public ArrayList<Long> scan_doc(String[] targetDocIdStrs, Class<?> operationOnPostingList){
 		ArrayList<Long> affectedUnits = new ArrayList<Long> ();
 		
 		for(String docIdStr : targetDocIdStrs) {
@@ -326,17 +328,17 @@ public class scanner {
 	// general purpose thread class
 	// each thread scanning the posting list of one term
 	public static class scan_doc_thread extends Thread {
-		private scanner_plugin_interface opOnList;
-		private Object opOnListParam;
+		private Class<?> opCls;
+		private Object opClsParam;
 		private String[] tDocIdStrs;
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
 		private scanner snr;
 		
 		private ArrayList<callback> callbacks = new ArrayList<callback>();
 		
-		public scan_doc_thread(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetDocIdStrs) {
-			opOnList = operationOnPostingList;
-			opOnListParam = operationOnPostingListParameter; 
+		public scan_doc_thread(scanner scannerIns, Class<?> operationClass, Object operationClassParameter, String[] targetDocIdStrs) {
+			opCls = operationClass;
+			opClsParam = operationClassParameter; 
 			tDocIdStrs = targetDocIdStrs;
 			snr = scannerIns;
 		}
@@ -353,8 +355,8 @@ public class scanner {
 					}
 				}
 				
-				opOnList.set_parameters(opOnListParam);
-				affectedUnitIds = snr.scan_doc(tDocIdStrs, opOnList);
+				opCls = set_param(opCls, opClsParam);
+				affectedUnitIds = snr.scan_doc(tDocIdStrs, opCls);
 				
 				for(callback eliminate_name : callbacks) {
 					eliminate_name.conduct();

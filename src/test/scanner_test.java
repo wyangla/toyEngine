@@ -23,8 +23,9 @@ public class scanner_test {
 		index_io_operations.get_instance().load_posting(new String[] {"wanted"});
 		ArrayList<Long> affectedUnits = new ArrayList<Long> (); // collect Ids of units which are affected
 		
-		delete_doc.set_parameters("/test_1/EKAN4jw3LsE3631feSaA_g");
-		snr.scan_posting_list("wanted",delete_doc.class, affectedUnits);
+		delete_doc delDoc = new delete_doc();
+		delDoc.set_parameters("/test_1/EKAN4jw3LsE3631feSaA_g");
+		snr.scan_posting_list("wanted",delDoc, affectedUnits);
 		System.out.println(affectedUnits);
 		idx.clear_index();
 	}
@@ -41,8 +42,9 @@ public class scanner_test {
 //		setParameters.invoke(operationClass, "/test_1/EKAN4jw3LsE3631feSaA_g"); // set the parameter
 		
 		index_io_operations.get_instance().load_lexicon();
-		delete_doc.set_parameters("/test_1/EKAN4jw3LsE3631feSaA_g");
-		System.out.println(snr.scan(new String[] {"wanted", "tasty"}, delete_doc.class)); // input the class which contains the parameters
+		delete_doc delDoc = new delete_doc(); 
+		delDoc.set_parameters("/test_1/EKAN4jw3LsE3631feSaA_g");
+		System.out.println(snr.scan(new String[] {"wanted", "tasty"}, delDoc)); // input the class which contains the parameters
 	}
 
 	

@@ -7,14 +7,14 @@ import utils.*;
 import entities.*;
 
 
-public class search_term {
-	public static counter docScoreCounter; // passed from the outside method which makes use of the scanner
+public class search_term implements scanner_plugin_interface {
+	public counter docScoreCounter; // passed from the outside method which makes use of the scanner
 	
-	public static void set_parameters (counter documentScoreCounter) {
-		docScoreCounter = documentScoreCounter;
+	public void set_parameters (Object documentScoreCounter) {
+		docScoreCounter = (counter)documentScoreCounter;
 	}
 	
-	public static long conduct(posting_unit pUnit) { // conduct the operation on each post unit
+	public long conduct(posting_unit pUnit) { // conduct the operation on each post unit
 		long relatedUnitId = -1L; 
 		double score = scorer.getInstance().cal_score(pUnit);
 		docScoreCounter.increase("" + pUnit.docId, score);    // long -> string, docScoreCounter is the final step, not related to the inner consistency

@@ -5,15 +5,15 @@ import data_structures.*;
 
 
 
-public class delete_doc {
-	public static String docName;
-	public static index idx = index.get_instance();
+public class delete_doc implements scanner_plugin_interface{
+	public String docName;
+	public index idx = index.get_instance();
 	
-	public static void set_parameters (String targetDocName) { // each task is a copy of such class
-		docName = targetDocName;
+	public void set_parameters (Object targetDocName) { // each task is a copy of such class
+		docName = (String)targetDocName;
 	}
 	
-	public static long conduct(posting_unit pUnit) { // the input parameters can only be like this
+	public long conduct(posting_unit pUnit) { // the input parameters can only be like this
 		long affectedUnitId = -1L; 
 		doc docIns = idx.docMap.get(docName);
 		

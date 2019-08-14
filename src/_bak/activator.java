@@ -1,7 +1,6 @@
 package _bak;
 import entities.information_manager;
 import entities.keeper;
-import entities.scanner;
 import entities.information_manager_plugins.*;
 import entities.keeper_plugins.lexicon_locker;
 import entities.scanner.*;
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 
 import configs.*;
 import data_structures.*;
-
+import _bak.*;
 
 
 // controlling the activation and deactivation of posting list
