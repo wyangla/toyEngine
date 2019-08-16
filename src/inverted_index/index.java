@@ -212,7 +212,8 @@ public class index {
 	}
 	
 	
-	// delete the some posting units
+	// not for productive usage
+	// delete the posting units
 	// just set flags instead of directly remove, ref: SSTable
 	// need an independent process scanning and cleaning the postUnitMap & lexicon
 	// the starter unit should never be deleted
@@ -225,17 +226,46 @@ public class index {
 	// if manually used the cleaner.clean, the posting_loaded_status is not affected, as cleaner will not affect the starter unit
 	// the term_max_tf could be over estimated, but still have no big harm as the scoring will always care about the large tf more
 	public long del_posting_unit(long postingUnitId) {
-		// TODO: + require lock
 		posting_unit delUnit = postUnitMap.get(postingUnitId);
 		delUnit.status = 0;
 		return delUnit.currentId;
 	}
 
+	public posting_unit _add_term_unit(doc targetDoc, posting_unit postUnit) {
+		posting_unit addedPostUnit = null;
+		
+		try {
+			if(targetDoc.firstTermUnitId == -1) {
+				targetDoc.firstTermUnitId = postUnit.currentId;
+				targetDoc.lastTermUnitId = postUnit.currentId;    // when there is only one term in the doc
+			}else {
+				// not need the lock here, as this link will only be created once when the doc is added
+				posting_unit lastTermUnit = postUnitMap.get(targetDoc.lastTermUnitId);
+				postUnit.link_to_previous_term(lastTermUnit);
+				lastTermUnit.link_to_next_term(postUnit);
+				targetDoc.lastTermUnitId = postUnit.currentId;    // move the tail pointer
+			}
+			
+			addedPostUnit = postUnit;
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return addedPostUnit;
+	}
 	
-	// TODO: adding doc is a transaction, atomic, short time operation, thus does not need to consider reload back the term chain?
+	
+	public posting_unit add_term_unit(posting_unit postUnit) {
+		doc targetDoc = docIdMap.get(postUnit.docId);
+		posting_unit addedPostUnit = _add_term_unit(targetDoc, postUnit);
+		return addedPostUnit;
+	}
+	
+	
+	// adding doc is a transaction, atomic, short time operation, 
+	// thus do not consider the interleave with deactivator thread
 	public ArrayList<String> _add_doc(ArrayList<String> persistedUnits, doc targetDoc, int retryTime) {
 		ArrayList<String> failedPersistedUnits = new ArrayList<String>();
-		posting_unit curTermUnit = null;
 		
 		// try to add unit
 		for(String persistedUnit : persistedUnits) {
@@ -245,20 +275,7 @@ public class index {
 				
 				targetDoc.docLength ++;
 				addedPostUnit.docId = targetDoc.docId;    // dynamically assign the docId
-				
-				if(targetDoc.firstTermUnitId == -1) {
-					targetDoc.firstTermUnitId = addedPostUnit.currentId;
-					targetDoc.lastTermUnitId = addedPostUnit.currentId;    // when there is only one term in the doc
-					curTermUnit = postUnitMap.get(targetDoc.firstTermUnitId);
-				}else {
-					// not need the lock here, as this link will only be created once when the doc is added
-					addedPostUnit.link_to_previous_term(curTermUnit);
-					curTermUnit.link_to_next_term(addedPostUnit);
-					targetDoc.lastTermUnitId = addedPostUnit.currentId;    // move the tail pointer
-					curTermUnit = addedPostUnit;
-				}
-				
-
+				addedPostUnit = _add_term_unit(targetDoc, addedPostUnit);
 				
 			}else {
 				failedPersistedUnits.add(persistedUnit);
