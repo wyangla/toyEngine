@@ -122,21 +122,34 @@ public class index {
 	
 	
 	// delete a posting list
-	// TODO: firstly require the lock, after releasing the lock delete the lock
-	// TODO: load posting firstly
 	public void del_term(String term) {
-		ArrayList<Long> postUnitList = lexicon.get(term);
-		lexicon.remove(term); // delete from lexicon
+		String threadNum = "" + name_generator.thread_name_gen();
 		
-		kpr.del_target(lexicon_locker.class, term);
-		
-		for(long postUnitId : postUnitList) {
-			postUnitMap.remove(postUnitId); // delete specific posting unites
-		}
-		
-		infoManager.del_info(term_max_tf.class, term);
-		infoManager.del_info(posting_loaded_status.class, term);
-		
+		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadNum);
+		if (release_lock != null) {
+			try {
+				// load related posting units into memory
+				index_io_operations.get_instance().load_posting(new String[] {term});
+				
+				ArrayList<Long> postUnitList = lexicon.get(term);
+				lexicon.remove(term); // delete from lexicon
+				
+				kpr.del_target(lexicon_locker.class, term);
+				
+				for(long postUnitId : postUnitList) {
+					postUnitMap.remove(postUnitId); // delete specific posting unites
+				}
+				
+				infoManager.del_info(term_max_tf.class, term);
+				infoManager.del_info(posting_loaded_status.class, term);
+				kpr.del_target(lexicon_locker.class, term);    // remove the corresponding lock
+				
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally {
+				release_lock.conduct();
+			}
+		}		
 	}
 	
 	
