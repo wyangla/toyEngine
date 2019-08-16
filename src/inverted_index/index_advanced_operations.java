@@ -69,6 +69,9 @@ public class index_advanced_operations {
 			}
 
 			totalAffectedUnitIds.addAll(sd.get_affectedUnitIds());
+			
+			idx.docMap.remove(targetDocName);
+			idx.docIdMap.remove(docId);
 		}
 		
 		return totalAffectedUnitIds;

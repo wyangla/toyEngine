@@ -37,7 +37,7 @@ public class cleaner {
 		
 		// scanning through the assigned terms
 		for (String term : targetTerms) {
-			ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
+			ArrayList<Long> postingUnitIds = idx.lexicon.get(term);    // TODO: change to term object with pointer
 			
 			if(postingUnitIds != null) {
 				
