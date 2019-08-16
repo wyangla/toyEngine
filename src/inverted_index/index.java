@@ -248,11 +248,13 @@ public class index {
 				
 				if(targetDoc.firstTermUnitId == -1) {
 					targetDoc.firstTermUnitId = addedPostUnit.currentId;
+					targetDoc.lastTermUnitId = addedPostUnit.currentId;    // when there is only one term in the doc
 					curTermUnit = postUnitMap.get(targetDoc.firstTermUnitId);
 				}else {
 					// not need the lock here, as this link will only be created once when the doc is added
 					addedPostUnit.link_to_previous_term(curTermUnit);
 					curTermUnit.link_to_next_term(addedPostUnit);
+					targetDoc.lastTermUnitId = addedPostUnit.currentId;    // move the tail pointer
 					curTermUnit = addedPostUnit;
 				}
 				
