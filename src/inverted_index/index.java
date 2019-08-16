@@ -75,9 +75,6 @@ public class index {
 		postingUnitIds.add(postUnit.currentId);
 		lexicon.put(term, postingUnitIds);  
 		
-		// initialize the lock for each term in lexicon
-		kpr.add_target(lexicon_locker.class, term);
-		
 		// record the current max tf and posting list loaded status
 		// infoManager.set_info(term_max_tf.class, postUnit);
 		infoManager.set_info(posting_loaded_status.class, postUnit);
@@ -98,13 +95,27 @@ public class index {
 	
 	// add a new term to the inverted index, include add a new term to the lexicon and add add new 
 	// return -1 means the term is already existing in the inverted-index
+	// can be used by multi-threads
 	public long add_term(String term) {
-		long firstUnitId;
-		int notExistanceFlag = check_term_existance(term);
-		if(notExistanceFlag == 1) {
-			firstUnitId = ini_posting_list(term); // when the term is not existing, initialise the posting list for it
-		} else {
-			firstUnitId = -1; // when the term is existing
+		long firstUnitId = -1;
+		String threadNum = "" + name_generator.thread_name_gen();
+		
+		// initialise the lock for each term in lexicon
+		kpr.add_target(lexicon_locker.class, term);
+		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadNum);
+		if (release_lock != null) {
+			try {
+				
+				int notExistanceFlag = check_term_existance(term);
+				if(notExistanceFlag == 1) {
+					firstUnitId = ini_posting_list(term); // when the term is not existing, initialise the posting list for it
+				}
+				
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally {
+				release_lock.conduct();
+			}
 		}
 		return firstUnitId;
 	}
@@ -231,6 +242,7 @@ public class index {
 		return delUnit.currentId;
 	}
 
+	
 	public posting_unit _add_term_unit(doc targetDoc, posting_unit postUnit) {
 		posting_unit addedPostUnit = null;
 		
@@ -256,8 +268,22 @@ public class index {
 	
 	
 	public posting_unit add_term_unit(posting_unit postUnit) {
-		doc targetDoc = docIdMap.get(postUnit.docId);
-		posting_unit addedPostUnit = _add_term_unit(targetDoc, postUnit);
+		posting_unit addedPostUnit = null;
+		String threadNum = "" + name_generator.thread_name_gen();
+		
+		// use the wait lock, so that this one term chain can be handled by multi-threads
+		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, postUnit.term, threadNum);
+		if (release_lock != null) {
+			try {
+				doc targetDoc = docIdMap.get(postUnit.docId);
+				addedPostUnit = _add_term_unit(targetDoc, postUnit);
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally {
+				release_lock.conduct();
+			}
+		}
+		
 		return addedPostUnit;
 	}
 	
@@ -335,6 +361,13 @@ public class index {
 		kpr.clear_maps(lexicon_locker.class);
 		pc = new counters();
 		
+		// clear doc term chain points
+		for(Long docId: docIdMap.keySet()) {
+			doc docIns = docIdMap.get(docId);
+			docIns.firstTermUnitId = -1;
+			docIns.lastTermUnitId = -1;
+		}
+		
 		// clear high level information
 		infoManager.clear_info(posting_loaded_status.class);
 		infoManager.clear_info(term_max_tf.class);
@@ -396,8 +429,10 @@ public class index {
 							}
 							
 							posting_unit pUnit = posting_unit.deflatten(pUnitString);
+							
 							if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
-								_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated
+								_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated					
+								add_term_unit(pUnit);
 							}
 						}
 						
