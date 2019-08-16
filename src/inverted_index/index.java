@@ -34,28 +34,30 @@ public class index {
 	public ConcurrentHashMap<Long, doc> docIdMap = new ConcurrentHashMap<Long, doc>();    // not persisted, generated from docMap when loading from local
 	private information_manager infoManager = information_manager.get_instance();	// only used when adding/removing new posting unit into/from index
 	
-	// for generating the unique posting unit id s
+	// for generating the unique id s
 	public class counters {
-		long postingId = 0L;
+		long id = 0L;
+		public synchronized void inc() {
+			id ++;
+		}
+		public synchronized long val() {
+			return id;
+		}
+		public synchronized void set(long curId) {
+			id = curId;
+		}
 	}
 	
 	public counters pc = new counters();
 	public long get_pc() {
-		return pc.postingId;
+		return pc.val();
 	}
-	
 	public long lastPostUnitId = 0; // static -> public
 	
-	// for generating the unique posting unit id s
-	public class docCounters {
-		long docId = 0L;
-	}
-	
-	public docCounters dc = new docCounters();
+	public counters dc = new counters();
 	public long get_dc() {
-		return dc.docId;
+		return dc.val();
 	}
-	
 	public long lastDocId = 0; // static -> public
 	
 
@@ -65,10 +67,10 @@ public class index {
 		
 		// TODO: need a global id generator?
 		postUnit.term = term;
-		postUnit.currentId = pc.postingId;
+		postUnit.currentId = pc.val();
 		postUnitMap.put(postUnit.currentId, postUnit);
 		lastPostUnitId = postUnit.currentId;
-		pc.postingId ++;
+		pc.inc();
 
 		// initialize the posting list for one term
 		ArrayList<Long> postingUnitIds = new ArrayList<Long>();
@@ -134,7 +136,7 @@ public class index {
 				ArrayList<Long> postUnitList = lexicon.get(term);
 				lexicon.remove(term); // delete from lexicon
 				
-				kpr.del_target(lexicon_locker.class, term);
+				kpr.del_target(lexicon_locker.class, term);    // remove the lock's references in docMaps
 				
 				for(long postUnitId : postUnitList) {
 					postUnitMap.remove(postUnitId); // delete specific posting unites
@@ -142,19 +144,18 @@ public class index {
 				
 				infoManager.del_info(term_max_tf.class, term);
 				infoManager.del_info(posting_loaded_status.class, term);
-				kpr.del_target(lexicon_locker.class, term);    // remove the corresponding lock
 				
 			}catch(Exception e) {
 				e.printStackTrace();
 			}finally {
 				release_lock.conduct();
 			}
-		}		
+		}
 	}
 	
 	
 	// invoked by operator, each time after the newly added files are scanned
-	// record the idf calculated time
+	// record the IDF calculated time
 	public int cal_termIdf() {
 		int calDoneFlag = infoManager.set_info(term_idf.class, new posting_unit());
 		infoManager.set_info(term_idf_cal_time.class, new posting_unit());
@@ -175,9 +176,9 @@ public class index {
 				// eliminating the retrying logic here, just block
 				  // successfully required the lock
 					postUnit.term = term;
-					postUnit.currentId = pc.postingId; // even if the old unit has the id it will be reset
+					postUnit.currentId = pc.val(); // even if the old unit has the id it will be reset
 					postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
-					pc.postingId ++; // TODO: here the id is being updated, should I use a different method to only load the persisted ids?
+					pc.inc(); // TODO: here the id is being updated, should I use a different method to only load the persisted ids?
 					
 					ArrayList<Long> postingUnitIds = lexicon.get(term); // get the posting list
 					long previousUnitId = postingUnitIds.get(postingUnitIds.size() - 1);
@@ -237,6 +238,7 @@ public class index {
 	
 	
 	// not for productive usage
+	
 	// delete the posting units
 	// just set flags instead of directly remove, ref: SSTable
 	// need an independent process scanning and cleaning the postUnitMap & lexicon
@@ -349,10 +351,10 @@ public class index {
 	public ArrayList<String> add_doc(String[] persistedUnits, String targetDocName) {
 		doc addedDoc = new doc();
 		addedDoc.docName = targetDocName;
-		addedDoc.docId = dc.docId;   
+		addedDoc.docId = dc.val();   
 		
 		lastDocId = addedDoc.docId;
-		dc.docId ++;
+		dc.inc();
 		
 		docMap.put(addedDoc.docName, addedDoc);
 		docIdMap.put(addedDoc.docId, addedDoc);

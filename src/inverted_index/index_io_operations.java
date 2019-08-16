@@ -295,7 +295,7 @@ public class index_io_operations {
 				if (idString != null) {
 					idString = idString.trim();
 					idx.lastPostUnitId = Long.parseLong(idString);
-					idx.pc.postingId = idx.lastPostUnitId + 10; // set the pc so that will not overwrite the old units
+					idx.pc.set(idx.lastPostUnitId + 10); // set the pc so that will not overwrite the old units
 				}
 				
 				System.out.println("lastId loaded");
@@ -326,7 +326,7 @@ public class index_io_operations {
 				if (idString != null) {
 					idString = idString.trim();
 					idx.lastDocId = Long.parseLong(idString);
-					idx.dc.docId = idx.lastDocId + 10;
+					idx.dc.set(idx.lastDocId + 10);
 				}
 				
 				System.out.println("lastDocId loaded");
