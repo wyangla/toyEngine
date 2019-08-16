@@ -218,25 +218,27 @@ public class engineEntryPoint {
 	}
 	
 	
-	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
-		ArrayList<Long> affectedUnits = new ArrayList<Long>();
-		try {
-			affectedUnits = advOps.delete_doc(containedTerms.toArray(new String[0]), targetDocName);
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		return affectedUnits;
-	}
-	
-//	public ArrayList<Long> delete_doc(String targetDocName) {
+	/*use posting list*/
+//	public ArrayList<Long> delete_doc(ArrayList<String> containedTerms, String targetDocName) {
 //		ArrayList<Long> affectedUnits = new ArrayList<Long>();
 //		try {
-//			affectedUnits = advOps.delete_doc(targetDocName);
+//			affectedUnits = advOps.delete_doc(containedTerms.toArray(new String[0]), targetDocName);
 //		} catch(Exception e) {
 //			e.printStackTrace();
 //		}
 //		return affectedUnits;
 //	}
+	
+	/*use term chain*/
+	public ArrayList<Long> delete_doc(String targetDocName) {
+		ArrayList<Long> affectedUnits = new ArrayList<Long>();
+		try {
+			affectedUnits = advOps.delete_doc(targetDocName);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return affectedUnits;
+	}
 	
 	
 	// naive search
