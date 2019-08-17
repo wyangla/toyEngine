@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.*;
 
+import configs.index_config;
 import data_structures.*;
 import entities.*;
 import entities.keeper.callback;
@@ -298,7 +299,7 @@ public class index {
 				release_lock.conduct();
 			}
 		}
-		
+
 		return addedPostUnit;
 	}
 	
@@ -391,6 +392,71 @@ public class index {
 	}
 
 	
+	
+	public class reload_thread extends Thread{
+		index idx = index.get_instance();
+		String[] pPathes;
+		
+		public reload_thread(String[] postingPathes) {
+			pPathes = postingPathes;
+		}
+		
+		public void run() {
+			for (String postingPath : pPathes) {
+				try {
+					FileReader pf = new FileReader(postingPath);
+					BufferedReader pb = new BufferedReader(pf);
+					
+					try {
+						// load the posting lists of one term
+						String pUnitString;
+						long i = 0;
+						do {
+							pUnitString = pb.readLine();
+							
+							if (pUnitString != null) {
+								pUnitString = pUnitString.trim();
+								String term = pUnitString.split(" ")[0];
+								
+								// check loading status and adding the term into lexicon for the first time it was seen
+								if (i == 0 && lexicon.containsKey(term) == false) { 
+									add_term(term);
+								}
+								
+								posting_unit pUnit = posting_unit.deflatten(pUnitString);
+								
+								if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
+									_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated					
+									
+									// reset the term chain
+									pUnit.previousTermId = -1;
+									pUnit.nextTermId = -1;
+									add_term_unit(pUnit);
+								}
+								
+							}
+							
+							i++;
+						} while(pUnitString != null);
+						
+					} catch(Exception e) {
+						e.printStackTrace();
+					} finally {
+						pf.close();
+						pb.close();
+					}
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+	}
+	
+	
+	
 	// re-generate the posint unit ids
 	// fully scan the persisted posting
 	// single threading one, as only processing the persisted posting instead of the docs
@@ -421,45 +487,19 @@ public class index {
 					.filter(path -> path.endsWith("posting"))
 					.collect(Collectors.toList());
 			
-			System.out.println("--->" + postingPathes.size()); // TODO: for testing
+			System.out.println("posting amount --->" + postingPathes.size()); // TODO: for testing
 			
-			for (String postingPath : postingPathes) {
-				FileReader pf = new FileReader(postingPath);
-				BufferedReader pb = new BufferedReader(pf);
-				
-				try {
-					// load the posting lists of one term
-					String pUnitString;
-					long i = 0;
-					do {
-						pUnitString = pb.readLine();
-						
-						if (pUnitString != null) {
-							pUnitString = pUnitString.trim();
-							String term = pUnitString.split(" ")[0];
-							
-							// check loading status and adding the term into lexicon for the first time it was seen
-							if (i == 0 && lexicon.containsKey(term) == false) { 
-								add_term(term);
-							}
-							
-							posting_unit pUnit = posting_unit.deflatten(pUnitString);
-							
-							if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
-								_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated					
-								add_term_unit(pUnit);
-							}
-						}
-						
-						i++;
-					} while(pUnitString != null);
-					
-				} catch(Exception e) {
-					e.printStackTrace();
-				} finally {
-					pf.close();
-					pb.close();
-				}
+			ArrayList<String[]> workloads = utils.task_spliter.get_workLoads_terms(configs.index_config.reloadWorkNum, postingPathes.toArray(new String[0]));
+			ArrayList<reload_thread> threadList = new ArrayList<reload_thread>();
+			
+			for (String[] workload : workloads) {
+				reload_thread rt = new reload_thread(workload);
+				threadList.add(rt);
+			}
+			
+			for(reload_thread rt : threadList) {
+				rt.start();
+				rt.join();
 			}
 			
 		} catch(Exception e) {
