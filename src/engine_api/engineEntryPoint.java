@@ -307,11 +307,19 @@ public class engineEntryPoint {
 		}
 	}
 	
-	
 	private void start_serving() {
 		load_index();
 		start_monitoring();
 	}
+	
+	public void pause_deactivator() {
+		dac.pause_deactivator();
+	}
+	
+	public void resume_deactivator() {
+		dac.resume_deactivator();
+	}
+	
 	
 	
 	public static void main(String[] args) {

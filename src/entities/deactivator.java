@@ -7,7 +7,8 @@ import entities.information_manager_plugins.posting_loaded_status;
 import entities.scanner_plugins.delete_posting;
 import inverted_index.*;
 import utils.task_spliter;
-
+import utils.callback;
+import java.util.concurrent.locks.ReentrantLock;;
 
 
 public class deactivator {
@@ -15,7 +16,7 @@ public class deactivator {
 	private static index idx = index.get_instance();
 	private static index_io_operations idxIOOp = index_io_operations.get_instance();
 	private static scanner snr = new scanner();
-	
+	private static ReentrantLock pauseLock = new ReentrantLock();
 	
 	
 	private static deactivator dac;
@@ -91,9 +92,13 @@ public class deactivator {
 			try {
 				while(true) {
 					// TODO: testing
+					pauseLock.lock();
+					
 					System.out.println("-- monitoring --");
 					idxIOOp.persist_index();	// persist before deactivating, otherwise the newly added units will be lost
 					deactivate();
+					
+					pauseLock.unlock();
 					Thread.sleep(deactivator_config.monitoringInterval);
 				}
 			}catch(Exception e) {
@@ -101,6 +106,62 @@ public class deactivator {
 			}
 		}
 	}
+	
+
+	/* pause the deactivator, so that engine could be stoped safely */
+	// make use of the pause lock to block the deactivator thread
+	public callback resumeCallback = null;
+	
+	
+	public class resume_callback implements callback{
+		public double conduct() {
+			double resumed = 0;
+			try {
+				pauseLock.unlock();
+				resumed = 1;
+				
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			return resumed;
+		}
+	}
+	
+	// strong pause
+	public void pause_deactivator() {
+		if(resumeCallback == null) {
+			pauseLock.lock();
+			resumeCallback = new resume_callback();
+			System.out.println("---deactivator is paused---");
+			
+		}else {
+			System.out.println("---deactivator is already paused---");
+		}
+
+	}
+	
+	
+	public void resume_deactivator() {
+		if(resumeCallback != null) {
+			resumeCallback.conduct();
+			resumeCallback = null;
+			System.out.println("---deactivator is resumed---");
+			
+		}else {
+			System.out.println("---deactivator is not paused yet---");
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	public void start_monitoring() throws Exception{
