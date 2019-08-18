@@ -9,7 +9,7 @@ import java.util.stream.*;
 import configs.index_config;
 import data_structures.*;
 import entities.*;
-import entities.keeper.callback;
+import utils.callback;
 import entities.keeper_plugins.*;
 import entities.information_manager_plugins.*;
 import utils.name_generator;
@@ -355,8 +355,8 @@ public class index {
 	
 	public ArrayList<String> add_doc(String[] persistedUnits, String targetDocName) {
 		doc addedDoc = new doc();
-		addedDoc.docName = targetDocName;
-		addedDoc.docId = dc.val();   
+		addedDoc.docId = dc.val();
+		addedDoc.docName = targetDocName + String.format("__%s", addedDoc.docId);    // so that to ensure adding the safe document multiple times will not lead to the overwritting
 		
 		lastDocId = addedDoc.docId;
 		dc.inc();
