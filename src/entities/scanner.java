@@ -8,7 +8,7 @@ import entities.scanner_plugins.scanner_plugin_interface;
 import inverted_index.*;
 import utils.name_generator;
 import utils.task_spliter;
-import entities.keeper.callback;
+import utils.callback;
 import entities.information_manager_plugins.*;
 import data_structures.*;
 
@@ -346,6 +346,7 @@ public class scanner {
 				String threadName = "" + name_generator.thread_name_gen();
 				
 				// in order to pause the deactivtor during scanning the doc term chain, use the add_note on all terms
+				// soft pause: here only pause deactivation functionality of deactivator, not the persisting functionality
 				for(String term : idx.lexicon.keySet()) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
 					if(eliminate_name != null) {    // here indeed does not need to check the condition, as all terms from lexicon should existing in the lock maps

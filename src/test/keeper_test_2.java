@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import entities.keeper;
-import entities.keeper.callback;
+import utils.callback;
 import entities.keeper_plugins.lexicon_locker;
 import utils.counter;
 import utils.name_generator;

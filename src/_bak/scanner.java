@@ -8,7 +8,7 @@ import entities.scanner_plugins.delete_doc;
 import inverted_index.*;
 import utils.name_generator;
 import utils.task_spliter;
-import entities.keeper.callback;
+import utils.callback;
 import entities.information_manager_plugins.*;
 import data_structures.*;
 import entities.*;

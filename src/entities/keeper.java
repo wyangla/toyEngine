@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import configs.keeper_config;
 import entities.keeper_plugins.*;
+import inverted_index.index;
 import utils.counter;
+import utils.name_generator;
+import utils.callback;
 
 import java.lang.reflect.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -176,13 +179,7 @@ public class keeper {
 	 * */
 	
 	
-	
-	// must be conducted
-	public interface callback{
-		public double conduct();
-	}
-	
-	// for recording the visiting thread names, {name:1}
+	// for recording the visiting thread names, {name:1.0}
 	// use the counter here, so that thread safe
 	public static ConcurrentHashMap<String, counter> notebooks = new ConcurrentHashMap<String, counter> ();
 	
@@ -209,7 +206,7 @@ public class keeper {
 	
 	
 	
-	public callback add_note(Class<?> lockerClass, String targetName, String threadNum) throws NoSuchMethodException, SecurityException {
+	public callback add_note(Class<?> lockerClass, String targetName, String threadNum) {
 		
 		eliminate_name_callback eliminate_name = null;
 		
@@ -348,7 +345,5 @@ public class keeper {
 		
 		return release_lock;    // could return null now, when no target term found in lock maps
 	}
-	
-	
 	
 }

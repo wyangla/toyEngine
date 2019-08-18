@@ -6,7 +6,7 @@ import data_structures.posting_unit;
 import entities.keeper_plugins.lexicon_locker;
 import utils.*;
 import inverted_index.index;
-import entities.keeper.callback;
+import utils.callback;
 import entities.keeper_plugins.*;
 
 
