@@ -441,7 +441,10 @@ public class index_io_operations {
 	// status among [load_doc_related_postings -> scan_doc_thread finished] needs to be consistent
 	public void load_doc_related_postings(long docId) {
 		doc docIns = idx.docIdMap.get(docId);
-		String docPath = general_config.cachedDocPath + '/' + docIns.docName;
+		int appendixStartIdx = docIns.docName.lastIndexOf("__");
+		String cleanedDocName = docIns.docName.substring(0, appendixStartIdx);    // eliminate the __docId suffix
+		
+		String docPath = general_config.cachedDocPath + '/' + cleanedDocName;
 		String processedDoc = "";
 		
 		try {
