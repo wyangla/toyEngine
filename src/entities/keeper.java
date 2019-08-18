@@ -102,18 +102,21 @@ public class keeper {
 			required = -1;
 			
 		}else {
-			// System.out.println(term + "!");    // TODO: test
-			if (infoMap.get("lockStatus") == 0) { // if one target is not being modifying, e.g. term with adding / deleting units
-				
-				targetLock.lock(); // add the lock, here not using try.. as there will be a try.. logic in the application
-				infoMap.put("lockStatus", System.currentTimeMillis()); // change lock status, record locking time
-				infoMap.put("threadNum", Long.parseLong(threadNum)); // record the thread that required the lock, for update and automatically release
-				required = 1;
+			
+			synchronized(targetLock) {    // atomic transaction in terms of one lock, prevent the race condition on lockStatus
+				if (infoMap.get("lockStatus") == 0) { // if one target is not being modifying, e.g. term with adding / deleting units
+					
+					targetLock.lock(); // add the lock, here not using try.. as there will be a try.. logic in the application
+					infoMap.put("lockStatus", System.currentTimeMillis()); // change lock status, record locking time
+					infoMap.put("threadNum", Long.parseLong(threadNum)); // record the thread that required the lock, for update and automatically release
+					required = 1;
 
-			}else {
-				// does not consider the lock expiration here, the infoMap is used by the operation methods which will use finally{release...}
-				required = 0;
+				}else {
+					// does not consider the lock expiration here, the infoMap is used by the operation methods which will use finally{release...}
+					required = 0;
+				}	
 			}
+			
 		}
 		
 		return required;		
@@ -135,13 +138,15 @@ public class keeper {
 			// as the lock and unlock are paired,
 			// so that the lock will always be the one hold by the current thread
 			try {
-				targetLock.unlock();    // here may raise exception when try to unlock the unacquired lock, TODO: add try catch?
-				infoMap.put("lockStatus", 0L);
-				infoMap.put("threadNum", -1L);
-				released = 1;
+				synchronized(targetLock){
+					targetLock.unlock();    // here may raise exception when try to unlock the unacquired lock, TODO: add try catch?
+					infoMap.put("lockStatus", 0L);
+					infoMap.put("threadNum", -1L);
+					released = 1;
+				}
 				
 			}catch(IllegalMonitorStateException e) {
-				e.printStackTrace();    // if the lock is not successfully acquired by the thread in the first place
+				e.printStackTrace();    // if the lock is not successfully acquired by the thread in the first place; there should be no such problem under the current mechanism, as if not successfully acquired the lock, there should be no release lock callback returned
 			}
 		}
 		

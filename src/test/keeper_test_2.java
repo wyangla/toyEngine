@@ -76,7 +76,7 @@ class keeper_test_2{
 				while(true) {
 					System.out.println("---t1---\n\n\n");
 					
-					callback eliminate_name = kpr.add_note(lexicon_locker.class, "e", "001");
+					callback eliminate_name = kpr.add_note(lexicon_locker.class, "b", "001");
 					if(eliminate_name != null) {
 						System.out.print("__t1__>>>");
 						t2.print_notebook();
@@ -138,25 +138,27 @@ class keeper_test_2{
 	// thread 3, use the require_lock_check_notebook_wait
 	public static class thread_3 extends Thread {
 		keeper_test_2 t2 = new keeper_test_2();
+		String thName;
 		
-		public thread_3() {
+		public thread_3(String threadName) {
+			thName = threadName;
 		}
 		
 		public void run() {
 			try {
 				while(true) {
-					System.out.print("---t3---\n\n\n");
+					System.out.print(String.format("---t3---%s---\n\n\n", thName));
 					
-					callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, "b", "003");
+					callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, "b", thName);
 					
 					if(release_lock != null) {
-						System.out.print("__t3__>>>");
+						System.out.print(String.format("__t3__%s__>>>", thName));
 						
 						t2.print_notebook();
 						t2.print_lockMaps();    // the lock map can only hold 3 or 2 or 1, 3 should be more frequent than 2, as wait
 						Thread.sleep(6000);
 						
-						System.out.print("<<<__t3__\n\n\n");
+						System.out.print(String.format("<<<__t3__%s__\n\n\n", thName));
 						
 						release_lock.conduct();
 					}
@@ -178,11 +180,15 @@ class keeper_test_2{
 		
 		thread_1 th1 = new thread_1();
 		thread_2 th2 = new thread_2();
-		thread_3 th3 = new thread_3();
+		thread_3 th3 = new thread_3("3");
+		thread_3 th4 = new thread_3("4");
+		thread_3 th5 = new thread_3("5");
 		
-		th1.start();
-		th2.start();
+//		th1.start();
+//		th2.start();
 		th3.start();
+		th4.start();
+		th5.start();
 		
 		System.out.print("---------started----------\n\n\n");
 		

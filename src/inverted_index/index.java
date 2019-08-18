@@ -14,6 +14,7 @@ import entities.keeper_plugins.*;
 import entities.information_manager_plugins.*;
 import utils.name_generator;
 import exceptions.*;
+import probes.*;
 
 
 
@@ -204,6 +205,9 @@ public class index {
 					
 			} catch(Exception e) {
 				e.printStackTrace();
+				// TODO: test the illegalMonitor exception
+				System.out.println("--curThName-- " + threadNum);
+				lockMaps_probe.print_lockMaps();
 			} 
 			finally {
 				release_lock.conduct();
