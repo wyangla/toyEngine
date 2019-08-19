@@ -5,6 +5,7 @@ import java.util.HashMap;
 import configs.keeper_config;
 import entities.keeper_plugins.*;
 import inverted_index.index;
+import probes.lockMaps_probe;
 import utils.counter;
 import utils.name_generator;
 import utils.callback;
@@ -150,6 +151,10 @@ public class keeper {
 				
 			}catch(IllegalMonitorStateException e) {
 				e.printStackTrace();    // if the lock is not successfully acquired by the thread in the first place; there should be no such problem under the current mechanism, as if not successfully acquired the lock, there should be no release lock callback returned
+				
+				// TODO: test the illegalMonitor exception
+				System.out.println("--curThName-- " + threadNum);
+				lockMaps_probe.print_lockMaps();
 			}
 		}
 		

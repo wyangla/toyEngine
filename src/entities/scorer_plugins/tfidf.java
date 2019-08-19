@@ -16,12 +16,6 @@ public class tfidf {
 		String term = postUnit.term;
 		Object tfTemp = postUnit.uProp.get("tf");
 		
-		// only start the term idf calculation when no term idf are calculated
-		Double termIdfCalTime = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
-		if(termIdfCalTime == null) {
-			idx.cal_termIdf();
-		}
-		
 		Double idf = infoManager.get_info(term_idf.class, term);
 		
 		if(tfTemp != null && idf != null) {

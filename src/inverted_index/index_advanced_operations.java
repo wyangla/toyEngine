@@ -92,77 +92,79 @@ public class index_advanced_operations {
 		ArrayList<counter> counterList = new ArrayList<counter>();
 		counter docLenCounter = new counter();
 		
-		// term_idf_cal should be calculated before the doc len is calcualted
-		Double term_idf_cal_time = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
-		if(term_idf_cal_time == null) {
-			idx.cal_termIdf();
-		}
+		// term_idf_cal should be calculated before the doc len is calcualted, but should not be put in the sub-thread
+		// TODO: change to term_score_cal_time, so that will be still compatible when BM25, etc. merged into the cal_termIdf
+		Double term_score_cal_time = infoManager.get_info(term_idf_cal_time.class, "term_idf_cal_time");
 		
-		// calculate the document length 
-		for(String docIdStr : docScoreCounter.keySet()) {
-			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
+		if(term_score_cal_time != null) {
 			
-			if(docIns != null) {				
-								
-				Double doc_len_cal_time = docIns.docProp.get("doc_len_cal_time");
+			// calculate the document length 
+			for(String docIdStr : docScoreCounter.keySet()) {
+				doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
 				
-				// check if the doc_len is not calculated or expired
-				if (doc_len_cal_time == null || doc_len_cal_time < term_idf_cal_time) {  
-//					System.out.println("doc_len_cal_time -> " + doc_len_cal_time);    // TODO: test
-//					System.out.println("term_idf_cal_time -> " + term_idf_cal_time);    // TODO: test
-//					System.out.println();    // TODO: test
+				if(docIns != null) {				
+									
+					Double doc_len_cal_time = docIns.docProp.get("doc_len_cal_time");
 					
-					counter subDocLenCounter = new counter();
-					scanner.scan_doc_thread st = new scanner.scan_doc_thread(
-							snr, 
-							new get_doc_length(), 
-							subDocLenCounter, 
-							new String[] {docIdStr});
-					
-					st.start();
-					threadList.add(st); 
-					counterList.add(subDocLenCounter);
-				}
-			}	
-		}
-		
-		for(scanner.scan_doc_thread st : threadList) {
-			try {
-				st.join();
-			} catch (Exception e) {
-				e.printStackTrace();
+					// check if the doc_len is not calculated or expired
+					if (doc_len_cal_time == null || doc_len_cal_time < term_score_cal_time) {  
+//						System.out.println("doc_len_cal_time -> " + doc_len_cal_time);    // TODO: test
+//						System.out.println("term_idf_cal_time -> " + term_idf_cal_time);    // TODO: test
+//						System.out.println();    // TODO: test
+						
+						counter subDocLenCounter = new counter();
+						scanner.scan_doc_thread st = new scanner.scan_doc_thread(
+								snr, 
+								new get_doc_length(), 
+								subDocLenCounter, 
+								new String[] {docIdStr});
+						
+						st.start();
+						threadList.add(st); 
+						counterList.add(subDocLenCounter);
+					}
+				}	
 			}
-		}
-		
-		
-		for(counter subDocLenCounter : counterList) {
-			System.out.println(subDocLenCounter);    // TODO: test
-			docLenCounter = docLenCounter.update(subDocLenCounter);
-		}
-		System.out.println();    // TODO: test
-		
-		
-		// update the docIns.docProp.doc_len
-		for(String docIdStr : docLenCounter.keySet()) {
-			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
 			
-			// not using the info manager here, as its directly set info to object
-			docIns.docProp.put("doc_len", Math.sqrt(docLenCounter.get(docIdStr)));
-			docIns.docProp.put("doc_len_cal_time", (double)System.currentTimeMillis());
-		}
-		
-		// normalisation
-		for(String docIdStr : docScoreCounter.keySet()) {
-			doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));			
-			if (docIns != null) {
-				Double docLen = docIns.docProp.get("doc_len");
-				Double docNormScore = docScoreCounter.get(docIdStr) / docLen;
-				docNormScoreCounter.put(docIdStr, docNormScore);
-				docNameNormScoreCounter.put(docIns.docName, docNormScore);
+			for(scanner.scan_doc_thread st : threadList) {
+				try {
+					st.join();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
+			
+			
+			for(counter subDocLenCounter : counterList) {
+				System.out.println(subDocLenCounter);    // TODO: test
+				docLenCounter = docLenCounter.update(subDocLenCounter);
+			}
+			System.out.println();    // TODO: test
+			
+			
+			// update the docIns.docProp.doc_len
+			for(String docIdStr : docLenCounter.keySet()) {
+				doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));
+				
+				// not using the info manager here, as its directly set info to object
+				docIns.docProp.put("doc_len", Math.sqrt(docLenCounter.get(docIdStr)));
+				docIns.docProp.put("doc_len_cal_time", (double)System.currentTimeMillis());
+			}
+			
+			// normalisation
+			for(String docIdStr : docScoreCounter.keySet()) {
+				doc docIns = idx.docIdMap.get(Long.parseLong(docIdStr));			
+				if (docIns != null) {
+					Double docLen = docIns.docProp.get("doc_len");
+					Double docNormScore = docScoreCounter.get(docIdStr) / docLen;
+					docNormScoreCounter.put(docIdStr, docNormScore);
+					docNameNormScoreCounter.put(docIns.docName, docNormScore);
+				}
+			}
+			
+			docNameNormScoreCounter.sort();
 		}
-		
-		docNameNormScoreCounter.sort();
+
 		return docNameNormScoreCounter;
 	}
 	
@@ -232,6 +234,9 @@ public class index_advanced_operations {
 			termMaxScores.put(term, score);
 
 		}
+		
+		// TODO: record the term upper bound to termIns
+		
 		return termMaxScores;
 	}
 	
@@ -266,6 +271,9 @@ public class index_advanced_operations {
 		for(counter c : counterList) {
 			totalDocumentUpperBoundScores = totalDocumentUpperBoundScores.update(c);
 		}
+		
+		// TODO: record the doc upper bound to docIns
+		
 		return totalDocumentUpperBoundScores;	
 	}
 	
@@ -297,6 +305,14 @@ public class index_advanced_operations {
 		totalDocumentScoreCounter.sort();	// sort the searching result big -> small, topK are ensured to be good result
 		return totalDocumentScoreCounter;
 	}
+	
+	
+	public counter search_maxScore_normalized(String[] targetTerms, int topK) {
+		counter docNormScoreCounter = normalise_doc_scores(search_maxScore(targetTerms, topK));
+		return docNormScoreCounter;
+	}
+	
+	
 	
 	
 	/*

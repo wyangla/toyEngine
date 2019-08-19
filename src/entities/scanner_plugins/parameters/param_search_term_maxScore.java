@@ -24,16 +24,13 @@ public class param_search_term_maxScore {
 		Double topKthScore = null;
 
 		// not using clipping here, as could loose sub score contributions from terms 
-		Double docUpperBound = docUB.get(pUnit.docId);
+		Double docUpperBound = docUB.get("" + pUnit.docId);
 		
-		// atomic
-		// when there are not enough scores in the docSC for getting the threshold
-		synchronized(param_search_term_maxScore.class) {
-			try {
-				topKthScore = docSC.get(docSC.get_topKth_key(tpK));
-			}catch(Exception e) {
-				topKthScore = 0.0;
-			}
+		// get_topKth_key is synchronised internally
+		try {
+			topKthScore = docSC.get(docSC.get_topKth_key(tpK));
+		}catch(Exception e) {
+			topKthScore = 0.0;
 		}
 
 		// != null prevent new docs added during the ranking after the upper bound calculation
