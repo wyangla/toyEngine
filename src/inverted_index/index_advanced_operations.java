@@ -53,7 +53,7 @@ public class index_advanced_operations {
 		doc docIns = idx.docMap.get(targetDocName);
 		if(docIns != null) {
 			Long docId = docIns.docId;
-			idxOps.load_doc_related_postings(docId);
+			// idxOps.load_doc_related_postings(docId);
 			scanner.scan_doc_thread sd = new scanner.scan_doc_thread(
 					snr, 
 					new delete_doc(), 

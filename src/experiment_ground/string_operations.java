@@ -8,5 +8,13 @@ public class string_operations {
 			System.out.println(t);
 		}
 		System.out.println("  aa  ".replaceAll("aa" + " ", "1"));
+		
+		System.out.println();
+		
+		String origString = " sdfs /tasds";
+		String newString = origString.replace("sdfs", "");
+		
+		System.out.println(origString);
+		System.out.println(newString);
 	}
 }
