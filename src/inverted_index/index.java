@@ -39,11 +39,13 @@ public class index {
 	// for generating the unique id s
 	public class counters {
 		long id = 0L;
-		public synchronized void inc() {
+		public void _inc() {    // invoked each time the val() is used, internal increment
 			id ++;
 		}
 		public synchronized long val() {
-			return id;
+			long retId = id;
+			_inc();
+			return retId;
 		}
 		public synchronized void set(long curId) {
 			id = curId;
@@ -72,7 +74,6 @@ public class index {
 		postUnit.currentId = pc.val();
 		postUnitMap.put(postUnit.currentId, postUnit);
 		lastPostUnitId = postUnit.currentId;
-		pc.inc();
 
 		// initialize the posting list for one term
 		ArrayList<Long> postingUnitIds = new ArrayList<Long>();
@@ -180,7 +181,6 @@ public class index {
 					postUnit.term = term;
 					postUnit.currentId = pc.val(); // even if the old unit has the id it will be reset
 					postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
-					pc.inc(); // TODO: here the id is being updated, should I use a different method to only load the persisted ids?
 					
 					ArrayList<Long> postingUnitIds = lexicon.get(term); // get the posting list
 					long previousUnitId = postingUnitIds.get(postingUnitIds.size() - 1);
@@ -354,21 +354,27 @@ public class index {
 //	
 	
 	public ArrayList<String> add_doc(String[] persistedUnits, String targetDocName) {
-		doc addedDoc = new doc();
-		addedDoc.docId = dc.val();
-		addedDoc.docName = targetDocName + String.format("__%s", addedDoc.docId);    // so that to ensure adding the safe document multiple times will not lead to the overwritting
+		ArrayList<String> failedPersistedUnits = null;
 		
-		lastDocId = addedDoc.docId;
-		dc.inc();
-		
-		docMap.put(addedDoc.docName, addedDoc);
-		docIdMap.put(addedDoc.docId, addedDoc);
-		
-		// return the failed units
-		int retryTime = 1;
-		ArrayList<String> persistedUnitList = new ArrayList<String>();
-		persistedUnitList.addAll(Arrays.asList(persistedUnits));
-		ArrayList<String> failedPersistedUnits = _add_doc(persistedUnitList, addedDoc, retryTime);
+		if(!docMap.containsKey(targetDocName)) {    // leave the version control to the operator, not allowing the doc with same name be added here directly
+			doc addedDoc = new doc();
+			addedDoc.docId = dc.val();
+			addedDoc.docName = targetDocName;
+			
+			lastDocId = addedDoc.docId;
+			
+			docMap.put(addedDoc.docName, addedDoc);
+			docIdMap.put(addedDoc.docId, addedDoc);
+			
+			// return the failed units
+			int retryTime = 1;
+			ArrayList<String> persistedUnitList = new ArrayList<String>();
+			persistedUnitList.addAll(Arrays.asList(persistedUnits));
+			failedPersistedUnits = _add_doc(persistedUnitList, addedDoc, retryTime);
+		}else {
+			System.out.println(String.format("doc <%s> already existing", targetDocName));
+			// not return the failed units here, as it is not the normal adding situation, does not require the retry
+		}
 		return failedPersistedUnits;
 	}
 	
