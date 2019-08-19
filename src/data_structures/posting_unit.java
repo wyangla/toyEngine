@@ -18,7 +18,7 @@ public class posting_unit {
 	
 	public ConcurrentHashMap<String, Double> uProp = new ConcurrentHashMap<String, Double>(); // for storing properties like tfidf, etc.
 	
-	public int status = 1; // 1 linked, 0 disconnected
+	public int status = 1; // 1 linked, 0 disconnected, TODO: -1 suspended
 	public long docId = -1L; // the unique id of doc in the file system, not using path here
 	public String term = "--";
 	

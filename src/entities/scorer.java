@@ -48,9 +48,11 @@ public class scorer {
 	// also used in max_score for calculating the upper bound score of each term
 	public double cal_score(posting_unit postUnit) {
 		double docScoreFromUnit = 0.;
-		String[] targetModels = scorer_config.modelsInUse;
-		double[] modelWeights = scorer_config.modelWeight;
-		docScoreFromUnit = cal_score(targetModels, modelWeights, postUnit);
+		if(postUnit.status == 1) {    // only calculate the score of linked units
+			String[] targetModels = scorer_config.modelsInUse;
+			double[] modelWeights = scorer_config.modelWeight;
+			docScoreFromUnit = cal_score(targetModels, modelWeights, postUnit);
+		}
 		return docScoreFromUnit;
 	}
 	
