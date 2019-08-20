@@ -51,6 +51,10 @@ public class engineEntryPoint {
 		return idx.lexicon;
 	}	
 	
+	public ConcurrentHashMap<String, term> _get_lexicon_2() {
+		return idx.lexicon_2;
+	}	
+	
 	public ConcurrentHashMap<Long, posting_unit> _get_postUnitMap() {
 		return idx.postUnitMap;
 	}
@@ -208,7 +212,7 @@ public class engineEntryPoint {
 	
 	// display the current post unit id counter value
 	public long get_pc() {
-		return idx.get_pc();
+		return idx.pc.view();
 	}
 	
 	
@@ -233,7 +237,7 @@ public class engineEntryPoint {
 	public ArrayList<Long> delete_doc(String targetDocName) {
 		ArrayList<Long> affectedUnits = new ArrayList<Long>();
 		try {
-			affectedUnits = advOps.delete_doc(targetDocName);
+			affectedUnits = idx.delete_doc(targetDocName);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
