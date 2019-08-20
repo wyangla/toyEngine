@@ -95,6 +95,8 @@ public class index {
 		// infoManager.set_info(term_max_tf.class, postUnit);
 		infoManager.set_info(posting_loaded_status.class, postUnit);
 		
+		kpr.add_target(lexicon_locker.class, term);
+		
 		return postUnit.currentId;
 	}
 	
@@ -109,31 +111,50 @@ public class index {
 	}
 	
 	
+//	// add a new term to the inverted index, include add a new term to the lexicon and add add new 
+//	// return -1 means the term is already existing in the inverted-index
+//	// can be used by multi-threads
+//	public long add_term(String term) {
+//		long firstUnitId = -1;
+//		String threadNum = "" + name_generator.thread_name_gen();
+//		
+//		// initialise the lock for each term in lexicon
+//		kpr.add_target(lexicon_locker.class, term);
+//		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadNum);
+//		if (release_lock != null) {
+//			try {
+//				
+//				int notExistanceFlag = check_term_existance(term);
+//				if(notExistanceFlag == 1) {
+//					firstUnitId = ini_posting_list(term); // when the term is not existing, initialise the posting list for it
+//				}
+//				
+//			}catch(Exception e) {
+//				e.printStackTrace();
+//			}finally {
+//				release_lock.conduct();
+//			}
+//		}
+//		return firstUnitId;
+//	}
+	
+	
 	// add a new term to the inverted index, include add a new term to the lexicon and add add new 
 	// return -1 means the term is already existing in the inverted-index
 	// can be used by multi-threads
-	public long add_term(String term) {
-		long firstUnitId = -1;
-		String threadNum = "" + name_generator.thread_name_gen();
+	public int add_term(String term) {
+		int termExisting = -1;
 		
-		// initialise the lock for each term in lexicon
-		kpr.add_target(lexicon_locker.class, term);
-		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadNum);
-		if (release_lock != null) {
-			try {
-				
-				int notExistanceFlag = check_term_existance(term);
-				if(notExistanceFlag == 1) {
-					firstUnitId = ini_posting_list(term); // when the term is not existing, initialise the posting list for it
-				}
-				
-			}catch(Exception e) {
-				e.printStackTrace();
-			}finally {
-				release_lock.conduct();
+		synchronized(this) {
+			int notExistanceFlag = check_term_existance(term);
+			if(notExistanceFlag == 1) {
+				ini_posting_list(term); // when the term is not existing, initialise the posting list for it
+			}else {
+				termExisting = 1;
 			}
 		}
-		return firstUnitId;
+		
+		return termExisting;
 	}
 	
 	
