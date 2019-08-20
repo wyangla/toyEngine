@@ -39,7 +39,7 @@ public class index {
 	private information_manager infoManager = information_manager.get_instance();	// only used when adding/removing new posting unit into/from index
 	
 	public ConcurrentHashMap<String, term> lexicon_2 = new ConcurrentHashMap<String, term>(); // {term : termIns}
-	private scanner snr = new scanner();
+//	private scanner snr = new scanner();
 
 	
 	// for generating the unique id s
@@ -560,7 +560,7 @@ public class index {
 				kpr.del_target(lexicon_locker.class, term);    // remove the lock's references in docMaps
 				
 				scanner.scan_term_thread sd = new scanner.scan_term_thread(
-						snr, 
+						new scanner(), 
 						new delete_posting(), 
 						null , 
 						new String[] {term});
@@ -595,7 +595,7 @@ public class index {
 			Long docId = docIns.docId;
 			// idxOps.load_doc_related_postings(docId);
 			scanner.scan_doc_thread sd = new scanner.scan_doc_thread(
-					snr, 
+					new scanner(), 
 					new delete_doc(), 
 					null , 
 					new String[] {"" + docId});
