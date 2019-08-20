@@ -20,7 +20,7 @@ public class posting_loaded_status {
 		int addedFlag = -1;
 		try {
 			infoMap.put(pUnit.term, (double)System.currentTimeMillis());	// last accessing time
-			idx.lexicon_2.get(pUnit.term).termProp.put("ld", (double)System.currentTimeMillis());    // TODO: test
+			idx.lexicon_2.get(pUnit.term).status = (double)System.currentTimeMillis();  // TODO: test
 			addedFlag = 1;
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -37,6 +37,7 @@ public class posting_loaded_status {
 	}
 	
 	public static int del_info(String targetName) {
+		idx.lexicon_2.get(targetName).status = -1;    // TODO: test
 		return information_common_methods.del_info(targetName, infoMap);
 	}
 	

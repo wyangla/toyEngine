@@ -8,12 +8,12 @@ import org.json.JSONObject;
 
 public class term{
 	public long termId = -1L;
-	public String termName = " ";
+	public String termName = "";
 	public ConcurrentHashMap<String, Double> termProp = new ConcurrentHashMap<String, Double>();    // termIdf, termDf, termMaxtf, termUpperBound, postingLoadedStatus; - termIdfCalTime, as all the same
 	
 	public long firstPostUnitId = -1;    // point to the posting unit of first term in the document
 	public long lastPostUnitId = -1;    // point to the last term unit
-	
+	public double status = -1;    // -1 not loaded, tiemStamp loaded; dynamic, not persisted
 	
 	public String flatten() {
 		JSONObject termPropJson = new JSONObject(termProp);

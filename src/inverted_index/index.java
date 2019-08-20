@@ -39,7 +39,6 @@ public class index {
 	private information_manager infoManager = information_manager.get_instance();	// only used when adding/removing new posting unit into/from index
 	
 	public ConcurrentHashMap<String, term> lexicon_2 = new ConcurrentHashMap<String, term>(); // {term : termIns}
-//	private scanner snr = new scanner();
 
 	
 	// for generating the unique id s
@@ -89,8 +88,7 @@ public class index {
 		// use head / tail pointers to view the posting list
 		term termIns = new term();
 		termIns.termId = tc.val();
-		termIns.firstPostUnitId = postUnit.currentId;
-		termIns.lastPostUnitId = postUnit.currentId;
+		termIns.termName = term;
 		lexicon_2.put(term, termIns);
 		
 		// record the current max tf and posting list loaded status

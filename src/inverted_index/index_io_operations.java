@@ -73,7 +73,7 @@ public class index_io_operations {
 				ArrayList<String> termStrings = new ArrayList<String>();
 				for(String term : idx.lexicon_2.keySet()) {
 					String termString = idx.lexicon_2.get(term).flatten();
-					termStrings.add(term + termString + "\r\n");
+					termStrings.add(termString + "\r\n");
 					}
 				for(String tS : termStrings) {
 					lf.write(tS); // write posting units into file, each line per unit
@@ -438,7 +438,7 @@ public class index_io_operations {
 				if (idString != null) {
 					idString = idString.trim();
 					idx.lastTermId = Long.parseLong(idString);
-					idx.dc.set(idx.lastTermId + 10);
+					idx.tc.set(idx.lastTermId + 10);
 				}
 				
 				System.out.println("lastTermId loaded");
@@ -620,6 +620,7 @@ public class index_io_operations {
 	
 	
 	public void reconstruct_docIdMap() {
+//		System.out.print(idx.lastDocId);  // TODO: test
 		for (String docName : idx.docMap.keySet()) {
 			doc docIns = idx.docMap.get(docName);
 			idx.docIdMap.put(docIns.docId, docIns);
