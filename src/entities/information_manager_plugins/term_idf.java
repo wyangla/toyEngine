@@ -17,6 +17,7 @@ import configs.information_manager_config;
 public class term_idf{
 	public static ConcurrentHashMap<String, Double> infoMap = new ConcurrentHashMap<String, Double>();
 	public static String persistingPath = information_manager_config.persistingDir + "/term_idf";
+	public static index idx = index.get_instance();
 	
 	public static class idf_cal_thread extends Thread{
 		private String[] tTerms;
@@ -31,6 +32,7 @@ public class term_idf{
 				double totalDocNum = (double) index.get_instance().docMap.size();
 				double idf = Math.log(totalDocNum / df); 
 				infoMap.put(targetTerm, idf);
+				idx.lexicon_2.get(targetTerm).termProp.put("idf", idf);
 			}
 			
 		}
@@ -41,6 +43,8 @@ public class term_idf{
 	public static int set_info(posting_unit fakePostUnit) {
 		int calDoneFlag = -1;
 		try {
+			
+			// TODO: extract targetTerms from lexicon
 			String[] targetTerms = term_df.infoMap.keySet().toArray(new String[0]);
 			ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, targetTerms);
 			

@@ -5,13 +5,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import configs.information_manager_config;
 import data_structures.posting_unit;
+import inverted_index.index;
 
 
 
 public class posting_loaded_status {
 	public static ConcurrentHashMap<String, Double> infoMap = new ConcurrentHashMap<String, Double>();
 	public static String persistingPath = information_manager_config.persistingDir + "/posting_loaded_status";
-	
+	public static index idx = index.get_instance();
 	
 	// if the infoMap of posting_loaded_status contains the (term:timestamp) means loaded
 	// when the k:v does not existing, means not loaded
@@ -19,6 +20,7 @@ public class posting_loaded_status {
 		int addedFlag = -1;
 		try {
 			infoMap.put(pUnit.term, (double)System.currentTimeMillis());	// last accessing time
+			idx.lexicon_2.get(pUnit.term).termProp.put("ld", (double)System.currentTimeMillis());    // TODO: test
 			addedFlag = 1;
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -30,6 +32,7 @@ public class posting_loaded_status {
 	
 	// the following are fixed
 	public static Double get_info(String targetName) {
+		// TODO: extract information from the lexicon_2
 		return information_common_methods.get_info(targetName, infoMap);
 	}
 	
