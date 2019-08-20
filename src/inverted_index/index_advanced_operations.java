@@ -10,6 +10,7 @@ import entities.*;
 import entities.scanner_plugins.*;
 import entities.scanner_plugins.parameters.*;
 import entities.information_manager_plugins.*;
+import entities.keeper_plugins.lexicon_locker;
 import data_structures.*;
 
 
@@ -20,64 +21,9 @@ public class index_advanced_operations {
 	private index idx = index.get_instance();
 	private index_io_operations idxOps = index_io_operations.get_instance();
 	private information_manager infoManager = information_manager.get_instance();
-	
-	
-//	// delete a specific document from the inverted-index -- using scanner
-//	public ArrayList<Long> delete_doc(String[] containedTerms, String targetDocName) throws Exception { // the containedTerms are generated and provided by the engine operator
-//		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
-//		ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
-//		
-//		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(general_config.cpuNum, containedTerms);
-//		
-//		for(String[] workLoad : workLoads ) {
-//			scanner.scan_term_thread st = new scanner.scan_term_thread(snr, new delete_doc(), targetDocName, workLoad);
-//			st.start();
-//			threadList.add(st);
-//		}
-//		
-//		for(scanner.scan_term_thread st : threadList) {
-//			st.join();
-//			totalAffectedUnitIds.addAll(st.get_affectedUnitIds());
-//		}
-//		
-//		idx.docMap.remove(targetDocName); // remove from the doc map
-//		
-//		return totalAffectedUnitIds;
-//	}
+	private keeper kpr = keeper.get_instance();
 	
 
-	// delete a specific document using term chain
-	public ArrayList<Long> delete_doc(String targetDocName) throws Exception {
-		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
-		
-		doc docIns = idx.docMap.get(targetDocName);
-		if(docIns != null) {
-			Long docId = docIns.docId;
-			// idxOps.load_doc_related_postings(docId);
-			scanner.scan_doc_thread sd = new scanner.scan_doc_thread(
-					snr, 
-					new delete_doc(), 
-					null , 
-					new String[] {"" + docId});
-			
-			sd.start();
-			
-			try {
-				sd.join();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			totalAffectedUnitIds.addAll(sd.get_affectedUnitIds());
-			
-			idx.docMap.remove(targetDocName);
-			idx.docIdMap.remove(docId);
-		}
-		
-		return totalAffectedUnitIds;
-	}
-	
-	
 	
 	// this is a common methods, as the score calculating method is set by config.scorer_config
 	// all fast scoring method are try to calculating fewer documents
