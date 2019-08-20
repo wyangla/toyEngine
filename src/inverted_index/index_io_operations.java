@@ -64,6 +64,33 @@ public class index_io_operations {
 	}
 	
 	
+	// persist the new version of lexicon
+	private void persist_lexicon_2() {
+		try {
+			// persist lexicon2
+			FileWriter lf = new FileWriter(configs.index_config.lexicon2PersistancePath);
+			try {
+				ArrayList<String> termStrings = new ArrayList<String>();
+				for(String term : idx.lexicon_2.keySet()) {
+					String termString = idx.lexicon_2.get(term).flatten();
+					termStrings.add(term + termString + "\r\n");
+					}
+				for(String tS : termStrings) {
+					lf.write(tS); // write posting units into file, each line per unit
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				lf.flush();
+				lf.close();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	// TODO: change to using lexicon_2
 	private void persist_postings() {
 		try {
 			for(String term : idx.lexicon.keySet()) {
@@ -141,7 +168,7 @@ public class index_io_operations {
 		}
 	}
 	
-	
+		
 	private void persist_docMap() {    // the doc_len_cal_time is stored here
 		try {
 			// persist docMap
@@ -158,6 +185,23 @@ public class index_io_operations {
 				dm.close();
 			}
 		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	private void persist_lastTermId() {
+		try {
+			FileWriter idf = new FileWriter(configs.index_config.lastTermIdPath);
+			try {
+				idf.write("" + idx.lastTermId);
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally {
+				idf.flush();
+				idf.close();
+			}
+		}catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -182,10 +226,12 @@ public class index_io_operations {
 		// such that the generation process will consume the biggest amount of memory
 		
 		persist_lexicon();
+		persist_lexicon_2();    // TODO: test
 		persist_postings();
 		persist_lastPostUnitId();
 		persist_lastDocId();
 		persist_docMap();
+		persist_lastTermId();    // TODO: test
 		persist_info();
 	}
 	
@@ -208,6 +254,7 @@ public class index_io_operations {
 	public long load_posting_unit(posting_unit postUnit) {
 		long addedUnitId = -1L;
 		
+		// TODO: change t ousing lexicon_2
 		try {
 			// only one thread sequentially scanning the posting list, does not need the locks
 			idx.postUnitMap.put(postUnit.currentId, postUnit);
@@ -281,6 +328,40 @@ public class index_io_operations {
 			};
 		}
 	}
+	
+	public void load_lexicon_2() {
+		try {
+			FileReader lf = new FileReader(configs.index_config.lexicon2PersistancePath);
+			BufferedReader lb = new BufferedReader(lf);
+			try {			
+				String termString;
+				do {
+					termString = lb.readLine();
+					
+					if (termString != null) {
+						termString = termString.trim();
+						term termIns = term.deflatten(termString);
+						idx.lexicon_2.put(termIns.termName, termIns);  
+						kpr.add_target(lexicon_locker.class, termIns.termName);
+					}
+				} while (termString != null);
+				
+				System.out.println("lexicon2 loaded");
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				lb.close();
+				lf.close();
+			}
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+				file_creater.create_file(configs.index_config.lexicon2PersistancePath);
+			};
+		}
+	}
 		
 	
 	// each time the engine is restart, the lastId is added with 10, for safety
@@ -345,7 +426,36 @@ public class index_io_operations {
 		}
 	}
 	
-
+	// each time the engine is restart, the lastDocId is added with 10
+	public void load_lastTermId() {
+		try {
+			// load last post unit id
+			FileReader idf = new FileReader(configs.index_config.lastTermIdPath);
+			BufferedReader idfb = new BufferedReader(idf);
+			try {
+				String idString = idfb.readLine();
+					
+				if (idString != null) {
+					idString = idString.trim();
+					idx.lastTermId = Long.parseLong(idString);
+					idx.dc.set(idx.lastTermId + 10);
+				}
+				
+				System.out.println("lastTermId loaded");
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			} finally {
+				idf.close();
+				idfb.close();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+				file_creater.create_file(configs.index_config.lastTermIdPath);
+			};
+		}
+	}
 	
 	// check if the last posting unit is existing in the posting list of term, to check if the term is loaded
 	private boolean check_term_loaded(String term) {
@@ -400,7 +510,7 @@ public class index_io_operations {
 		long[] loaded_units = new long[] {};
 
 		for(String term : targetTerms) {
-			if(!check_term_loaded(term) && idx.lexicon.containsKey(term)) { // if not loaded and term existing in lexicon
+			if(!check_term_loaded(term) && idx.lexicon.containsKey(term)) { // if not loaded and term existing in lexicon, TODO: change to lexicon_2
 				
 				String postingPath = configs.index_config.postingsPersistancePath + "/" + term + "/posting";
 				try {
@@ -470,7 +580,7 @@ public class index_io_operations {
 	// load all the postings into memory, 
 	// used before the persistence, and reload
 	public void load_all_posting() {
-		String[] allTerms = idx.lexicon.keySet().toArray(new String[0]);
+		String[] allTerms = idx.lexicon.keySet().toArray(new String[0]);    // TODO: change to lexicon_2
 		load_posting(allTerms);
 	}
 	
@@ -520,20 +630,23 @@ public class index_io_operations {
 	
 	
 	public void load_info() {
+		// TODO: loading maxTf, df, idf can be eliminated here
 		infoManager.load_info(term_max_tf.class);
 		infoManager.load_info(term_df.class);
 		infoManager.load_info(term_idf.class);
-		infoManager.load_info(term_idf_cal_time.class);
 		
+		infoManager.load_info(term_idf_cal_time.class);    // the invoking of cal_term_idf needs to be invoked after all adding finished
 		System.out.println("info loaded");
 	}
 	
 	
 	public void load_index() {
 		load_lexicon();
+		load_lexicon_2();    // TODO: test
 		load_lastPostUnitId();
 		load_lastDocId();
 		load_docMap();
+		load_lastTermId();  // TODO: test
 		reconstruct_docIdMap();
 		load_info();
 	}

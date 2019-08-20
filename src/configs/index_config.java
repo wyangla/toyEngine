@@ -8,6 +8,7 @@ public class index_config {
 	public static String lastPostUnitIdPath = "persistance/lastId";
 	public static String lastDocIdPath = "persistance/lastDocId";
 	public static String docsPath = "persistance/docs";
+	public static String lastTermIdPath = "persistance/lastTermId";
 	
 	public static String postingsPersistancePath = "persistance/postings";
 	public static int addingDocRetryTimes = 100;	// retry times of retrying adding units of a doc

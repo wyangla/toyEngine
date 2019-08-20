@@ -11,6 +11,8 @@ import data_structures.*;
 import entities.*;
 import utils.callback;
 import entities.keeper_plugins.*;
+import entities.scanner_plugins.delete_doc;
+import entities.scanner_plugins.delete_posting;
 import entities.information_manager_plugins.*;
 import utils.name_generator;
 import exceptions.*;
@@ -36,6 +38,10 @@ public class index {
 	public ConcurrentHashMap<Long, doc> docIdMap = new ConcurrentHashMap<Long, doc>();    // not persisted, generated from docMap when loading from local
 	private information_manager infoManager = information_manager.get_instance();	// only used when adding/removing new posting unit into/from index
 	
+	public ConcurrentHashMap<String, term> lexicon_2 = new ConcurrentHashMap<String, term>(); // {term : termIns}
+	private scanner snr = new scanner();
+
+	
 	// for generating the unique id s
 	public class counters {
 		long id = 0L;
@@ -50,19 +56,19 @@ public class index {
 		public synchronized void set(long curId) {
 			id = curId;
 		}
+		public synchronized long view() {
+			return id;
+		}
 	}
 	
 	public counters pc = new counters();
-	public long get_pc() {
-		return pc.val();
-	}
-	public long lastPostUnitId = 0; // static -> public
+	public long lastPostUnitId = 0;
 	
 	public counters dc = new counters();
-	public long get_dc() {
-		return dc.val();
-	}
-	public long lastDocId = 0; // static -> public
+	public long lastDocId = 0;
+	
+	public counters tc = new counters();
+	public long lastTermId = 0;
 	
 
 	// initialise the posting list for one term
@@ -75,10 +81,17 @@ public class index {
 		postUnitMap.put(postUnit.currentId, postUnit);
 		lastPostUnitId = postUnit.currentId;
 
-		// initialize the posting list for one term
+		// initialise the posting list for one term
 		ArrayList<Long> postingUnitIds = new ArrayList<Long>();
 		postingUnitIds.add(postUnit.currentId);
 		lexicon.put(term, postingUnitIds);  
+		
+		// use head / tail pointers to view the posting list
+		term termIns = new term();
+		termIns.termId = tc.val();
+		termIns.firstPostUnitId = postUnit.currentId;
+		termIns.lastPostUnitId = postUnit.currentId;
+		lexicon_2.put(term, termIns);
 		
 		// record the current max tf and posting list loaded status
 		// infoManager.set_info(term_max_tf.class, postUnit);
@@ -91,7 +104,7 @@ public class index {
 	// for checking if one term is already existing in the inverted index 
 	private int check_term_existance(String term) {
 		int notExistanceFlag = 1; // 1 term not existing, -1 term existing 
-		if(lexicon.containsKey(term) == true) {
+		if(lexicon.containsKey(term) == true) {    // TODO: -> lexicon_2
 			notExistanceFlag = -1;
 		}
 		return notExistanceFlag;
@@ -126,6 +139,7 @@ public class index {
 	}
 	
 	
+	// TODO: moved to adv_ops, to be depreciated
 	// delete a posting list
 	public void del_term(String term) {
 		String threadNum = "" + name_generator.thread_name_gen();
@@ -159,6 +173,7 @@ public class index {
 	
 	// invoked by operator, each time after the newly added files are scanned
 	// record the IDF calculated time
+	// TODO: modify the term_idf and ter_idf_cal_time to operate the term.termProp
 	public int cal_termIdf() {
 		int calDoneFlag = infoManager.set_info(term_idf.class, new posting_unit());
 		infoManager.set_info(term_idf_cal_time.class, new posting_unit());
@@ -187,6 +202,14 @@ public class index {
 					posting_unit prevUnit = postUnitMap.get(previousUnitId); // get the instance of previous unit
 					postingUnitIds.add(postUnit.currentId); // add to the lexicon, in fact is adding to the posting list
 					
+					
+					// TODO: adding to the lexicon_2
+					term termIns = lexicon_2.get(term);
+					long lastPostUnitId = termIns.lastPostUnitId;
+					posting_unit lastPostUnit = idx.postUnitMap.get(lastPostUnitId);
+					termIns.lastPostUnitId = postUnit.currentId; // move the tail pointer
+					
+					
 					// link units, for scanning
 					postUnit.link_to_previous(prevUnit);
 					if (prevUnit != null) {
@@ -205,9 +228,6 @@ public class index {
 					
 			} catch(Exception e) {
 				e.printStackTrace();
-				// TODO: test the illegalMonitor exception
-				System.out.println("--curThName-- " + threadNum);
-				lockMaps_probe.print_lockMaps();
 			} 
 			finally {
 				release_lock.conduct();
@@ -384,6 +404,7 @@ public class index {
 	public void clear_index() {
 		postUnitMap = new ConcurrentHashMap<Long, posting_unit>();
 		lexicon = new ConcurrentHashMap<String, ArrayList<Long>>();
+		lexicon_2 = new ConcurrentHashMap<String, term>();
 		kpr.clear_maps(lexicon_locker.class);
 		pc = new counters();
 		
@@ -521,6 +542,82 @@ public class index {
 		// re-persist the inverted index
 		index_io_operations.get_instance().persist_index(); // the ids are corrected now
 	}
+	
+	
+	
+	// TODO: using lexicon_2
+	// delete a posting list
+	public void del_term_2(String term) {
+		String threadNum = "" + name_generator.thread_name_gen();
+		
+		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadNum);
+		if (release_lock != null) {
+			try {
+				// load related posting units into memory
+				index_io_operations.get_instance().load_posting(new String[] {term});
+				idx.lexicon_2.remove(term); // delete from lexicon
+				
+				kpr.del_target(lexicon_locker.class, term);    // remove the lock's references in docMaps
+				
+				scanner.scan_term_thread sd = new scanner.scan_term_thread(
+						snr, 
+						new delete_posting(), 
+						null , 
+						new String[] {term});
+				
+				sd.start();
+				
+				try {
+					sd.join();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				// TODO: does not need to operate the information here, as maxTf, postingLoadedStatus are both recorded in lexicon
+//				infoManager.del_info(term_max_tf.class, term);
+//				infoManager.del_info(posting_loaded_status.class, term);
+				
+			}catch(Exception e) {
+				e.printStackTrace();
+			}finally {
+				release_lock.conduct();
+			}
+		}
+	}
+	
+
+	// delete a specific document using term chain
+	public ArrayList<Long> delete_doc(String targetDocName) throws Exception {
+		ArrayList<Long> totalAffectedUnitIds = new ArrayList<Long>();
+		
+		doc docIns = idx.docMap.get(targetDocName);
+		if(docIns != null) {
+			Long docId = docIns.docId;
+			// idxOps.load_doc_related_postings(docId);
+			scanner.scan_doc_thread sd = new scanner.scan_doc_thread(
+					snr, 
+					new delete_doc(), 
+					null , 
+					new String[] {"" + docId});
+			
+			sd.start();
+			
+			try {
+				sd.join();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			totalAffectedUnitIds.addAll(sd.get_affectedUnitIds());
+			
+			idx.docMap.remove(targetDocName);
+			idx.docIdMap.remove(docId);
+		}
+		
+		return totalAffectedUnitIds;
+	}
+	
+	
 }
 
 
