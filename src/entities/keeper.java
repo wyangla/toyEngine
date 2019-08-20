@@ -73,20 +73,12 @@ public class keeper {
 		infoMap.put("lockStatus", 0L); // 0 not locked; timeStampe locked
 		infoMap.put("threadNum", -1L); // the default thread name
 		
+		get_lockInfoMap(lockerClass).put(targetName, infoMap);
 		// create lock for each target object, 
 		// the lock is not differed by the target object (essentially by the lock object it self) 
 		// so that here we could just use the name to get the lock, 
 		// as long as we invoke lock around the operations about target object
-		
-		ConcurrentHashMap<String, ConcurrentHashMap<String, Long>> lockInfoMap = get_lockInfoMap(lockerClass);
-		ConcurrentHashMap<String, ReentrantLock> lockMap = get_lockMap(lockerClass); 
-		
-		synchronized(lockInfoMap) {    // prevent the lock is overwritten, when add_term processes is racing
-			if(!lockInfoMap.contains(targetName)) {
-				lockInfoMap.put(targetName, infoMap);
-				lockMap.put(targetName, new ReentrantLock()); 
-			}	
-		}
+		get_lockMap(lockerClass).put(targetName, new ReentrantLock()); 
 	}
 	
 	
