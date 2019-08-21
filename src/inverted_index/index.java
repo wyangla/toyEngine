@@ -32,7 +32,7 @@ public class index {
 	}
 	
 	public ConcurrentHashMap<Long, posting_unit> postUnitMap = new ConcurrentHashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
-	public ConcurrentHashMap<String, ArrayList<Long>> lexicon = new ConcurrentHashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
+	// public ConcurrentHashMap<String, ArrayList<Long>> lexicon = new ConcurrentHashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
 	public ConcurrentHashMap<String, doc> docMap = new ConcurrentHashMap<String, doc>();
 	public ConcurrentHashMap<Long, doc> docIdMap = new ConcurrentHashMap<Long, doc>();    // not persisted, generated from docMap when loading from local
@@ -217,7 +217,6 @@ public class index {
 		}
 
 		// should not fail at all, as the wait lock will wait until successfully get one.
-		// TODO: the lock in adding term will replace each other?
 		if (addedPostUnit == null) { // if all retries are all failed, print the customised exception
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
 		}
@@ -240,9 +239,6 @@ public class index {
 		posting_unit addedPostUnit = _add_posting_unit(term, postUnit);
 		return addedPostUnit;
 	}
-	
-	
-	//TODO: the following are not worked yet
 	
 	
 	// not for productive usage
@@ -386,7 +382,7 @@ public class index {
 	// TODO: when use this method need to be very careful, as it will lead to the pc -> 0
 	public void clear_index() {
 		postUnitMap = new ConcurrentHashMap<Long, posting_unit>();
-		lexicon = new ConcurrentHashMap<String, ArrayList<Long>>();
+		// lexicon = new ConcurrentHashMap<String, ArrayList<Long>>();
 		lexicon_2 = new ConcurrentHashMap<String, term>();
 		kpr.clear_maps(lexicon_locker.class);
 		pc = new counters();
@@ -433,20 +429,18 @@ public class index {
 								String term = pUnitString.split(" ")[0];
 								
 								// check loading status and adding the term into lexicon for the first time it was seen
-								if (i == 0 && lexicon.containsKey(term) == false) { 
+								if (i == 0 && lexicon_2.containsKey(term) == false) { 
 									add_term(term);
 								}
 								
+								// not skipping the starter now, as using lexicon_2 and no fake starter used
 								posting_unit pUnit = posting_unit.deflatten(pUnitString);
+								_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated					
 								
-								if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
-									_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated					
-									
-									// reset the term chain
-									pUnit.previousTermId = -1;
-									pUnit.nextTermId = -1;
-									add_term_unit(pUnit);
-								}
+								// reset the term chain
+								pUnit.previousTermId = -1;
+								pUnit.nextTermId = -1;
+								add_term_unit(pUnit);
 								
 							}
 							

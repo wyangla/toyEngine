@@ -34,34 +34,34 @@ public class index_io_operations {
 	
 	
 	
-	private void persist_lexicon() {
-		try {
-			// persist lexicon
-			FileWriter lf = new FileWriter(configs.index_config.lexiconPersistancePath);
-			try {
-				ArrayList<String> termStrings = new ArrayList<String>();
-				for(String term : idx.lexicon.keySet()) {
-					Long[] termPosting = idx.lexicon.get(term).toArray(new Long[0]); // ArrayList -> String
-					String termString = ""; 
-					// concatenate all the posting unit ids of one term together
-					for(long pUId : termPosting) {
-						termString += " " + pUId;
-					}
-					termStrings.add(term + termString + "\r\n");
-					}
-				for(String tS : termStrings) {
-					lf.write(tS); // write posting units into file, each line per unit
-				}
-			} catch(Exception e) {
-				e.printStackTrace();
-			} finally {
-				lf.flush();
-				lf.close();
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	private void persist_lexicon() {
+//		try {
+//			// persist lexicon
+//			FileWriter lf = new FileWriter(configs.index_config.lexiconPersistancePath);
+//			try {
+//				ArrayList<String> termStrings = new ArrayList<String>();
+//				for(String term : idx.lexicon.keySet()) {
+//					Long[] termPosting = idx.lexicon.get(term).toArray(new Long[0]); // ArrayList -> String
+//					String termString = ""; 
+//					// concatenate all the posting unit ids of one term together
+//					for(long pUId : termPosting) {
+//						termString += " " + pUId;
+//					}
+//					termStrings.add(term + termString + "\r\n");
+//					}
+//				for(String tS : termStrings) {
+//					lf.write(tS); // write posting units into file, each line per unit
+//				}
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				lf.flush();
+//				lf.close();
+//			}
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 	
 	// persist the new version of lexicon
@@ -225,14 +225,14 @@ public class index_io_operations {
 		// 1. generate, 2. persist, 3. lazily load and serve
 		// such that the generation process will consume the biggest amount of memory
 		
-		persist_lexicon();
+		// persist_lexicon();
 		persist_lexicon_2();    // TODO: test
-		persist_postings();
+		// persist_postings();    // TODO: uncomment
 		persist_lastPostUnitId();
 		persist_lastDocId();
 		persist_docMap();
 		persist_lastTermId();    // TODO: test
-		persist_info();
+		// persist_info();    // TODO: uncomment
 	}
 	
 	
@@ -283,51 +283,51 @@ public class index_io_operations {
 	}
 		
 	
-	public void load_lexicon() {
-		try {
-			// load the whole lexicon firstly, for the early stop of loading posting units
-			FileReader lf = new FileReader(configs.index_config.lexiconPersistancePath);
-			BufferedReader lb = new BufferedReader(lf);
-			try {			
-				String termString;
-				do {
-					termString = lb.readLine();
-					
-					if (termString != null) {
-						termString = termString.trim();
-						String[] tempList = termString.split(" "); // term p1 p2 p3 ...
-						String term = tempList[0];
-						String[] pUnitIds = Arrays.asList(tempList).subList(1, tempList.length).toArray(new String[0]); // loading from the file, due to not using json, its strings
-						
-						// prepare the arrayList of posting Ids for each term
-						// not initialising the starter units for term
-						ArrayList<Long> postingUnitIds = new ArrayList<Long>();
-						idx.lexicon.put(term, postingUnitIds);  
-						
-						for (String pUnitId : pUnitIds) {
-							idx.lexicon.get(term).add(Long.parseLong(pUnitId)); // String -> Long
-						}
-						// create lock in keeper
-						kpr.add_target(lexicon_locker.class, term);
-					}
-				} while (termString != null);
-				
-				System.out.println("lexicon loaded");
-				
-			} catch(Exception e) {
-				e.printStackTrace();
-			} finally {
-				lb.close();
-				lf.close();
-			}
-			
-		} catch(Exception e) {
-			e.printStackTrace();
-			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
-				file_creater.create_file(configs.index_config.lexiconPersistancePath);
-			};
-		}
-	}
+//	public void load_lexicon() {
+//		try {
+//			// load the whole lexicon firstly, for the early stop of loading posting units
+//			FileReader lf = new FileReader(configs.index_config.lexiconPersistancePath);
+//			BufferedReader lb = new BufferedReader(lf);
+//			try {			
+//				String termString;
+//				do {
+//					termString = lb.readLine();
+//					
+//					if (termString != null) {
+//						termString = termString.trim();
+//						String[] tempList = termString.split(" "); // term p1 p2 p3 ...
+//						String term = tempList[0];
+//						String[] pUnitIds = Arrays.asList(tempList).subList(1, tempList.length).toArray(new String[0]); // loading from the file, due to not using json, its strings
+//						
+//						// prepare the arrayList of posting Ids for each term
+//						// not initialising the starter units for term
+//						ArrayList<Long> postingUnitIds = new ArrayList<Long>();
+//						idx.lexicon.put(term, postingUnitIds);  
+//						
+//						for (String pUnitId : pUnitIds) {
+//							idx.lexicon.get(term).add(Long.parseLong(pUnitId)); // String -> Long
+//						}
+//						// create lock in keeper
+//						kpr.add_target(lexicon_locker.class, term);
+//					}
+//				} while (termString != null);
+//				
+//				System.out.println("lexicon loaded");
+//				
+//			} catch(Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				lb.close();
+//				lf.close();
+//			}
+//			
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//			if(e.getClass().equals(java.io.FileNotFoundException.class)) {
+//				file_creater.create_file(configs.index_config.lexiconPersistancePath);
+//			};
+//		}
+//	}
 	
 	public void load_lexicon_2() {
 		try {
@@ -510,7 +510,7 @@ public class index_io_operations {
 		long[] loaded_units = new long[] {};
 
 		for(String term : targetTerms) {
-			if(!check_term_loaded(term) && idx.lexicon.containsKey(term)) { // if not loaded and term existing in lexicon, TODO: change to lexicon_2
+			if(!check_term_loaded(term) && idx.lexicon_2.containsKey(term)) { // if not loaded and term existing in lexicon, TODO: change to lexicon_2
 				
 				String postingPath = configs.index_config.postingsPersistancePath + "/" + term + "/posting";
 				try {
@@ -580,7 +580,7 @@ public class index_io_operations {
 	// load all the postings into memory, 
 	// used before the persistence, and reload
 	public void load_all_posting() {
-		String[] allTerms = idx.lexicon.keySet().toArray(new String[0]);    // TODO: change to lexicon_2
+		String[] allTerms = idx.lexicon_2.keySet().toArray(new String[0]);    // TODO: change to lexicon_2
 		load_posting(allTerms);
 	}
 	
@@ -642,7 +642,7 @@ public class index_io_operations {
 	
 	
 	public void load_index() {
-		load_lexicon();
+		// load_lexicon();
 		load_lexicon_2();    // TODO: test
 		load_lastPostUnitId();
 		load_lastDocId();
