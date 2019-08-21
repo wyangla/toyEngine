@@ -41,15 +41,15 @@ public class scanner {
 		String processedTerm = term;
 		
 		// get the starter post unit id
-		ArrayList<Long> postUnitIds = idx.lexicon.get(term);
+		term termIns = idx.lexicon_2.get(term);
 		
-		if(postUnitIds != null) {
-			posting_unit pUnitStarter = idx.postUnitMap.get(postUnitIds.get(0));
-			infoManager.set_info(posting_loaded_status.class, pUnitStarter);	// update the visiting time in posting_load_status, TODO: move to position after visit_next_unit?
+		if(termIns != null) {
+			posting_unit firstTermUnit = idx.postUnitMap.get(termIns.firstPostUnitId);
+			infoManager.set_info(posting_loaded_status.class, firstTermUnit);	// update the visiting time in posting_load_status
 			
 			// load the unit operations
 			try {
-				visit_next_unit(pUnitStarter, operationOnPostingList, affectedUnits);
+				visit_next_unit(firstTermUnit, operationOnPostingList, affectedUnits);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -111,18 +111,19 @@ public class scanner {
 		public void run() {
 			try {
 				String threadName = "" + name_generator.thread_name_gen();
+				ArrayList<String> targetTerms = new ArrayList<String>();
 				
 				for(String term : tTerms) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
 					if(eliminate_name != null) {    // when target term is not existing in the lock map, eliminate_name will be null
 						callbacks.add(eliminate_name);
+						targetTerms.add(term);
 					}
 				}
 				
 				try {
-					
 					opOnList.set_parameters(opOnListParam);
-					affectedUnitIds = snr.scan(tTerms, opOnList); // pass the instance to scanner
+					affectedUnitIds = snr.scan(targetTerms.toArray(new String[0]), opOnList); // pass the instance to scanner
 				}catch(Exception e) {
 					System.out.println(e);
 				}finally {
@@ -347,20 +348,25 @@ public class scanner {
 				
 				// in order to pause the deactivtor during scanning the doc term chain, use the add_note on all terms
 				// soft pause: here only pause deactivation functionality of deactivator, not the persisting functionality
-				for(String term : idx.lexicon.keySet()) {
+				for(String term : idx.lexicon_2.keySet()) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
 					if(eliminate_name != null) {    // here indeed does not need to check the condition, as all terms from lexicon should existing in the lock maps
 						callbacks.add(eliminate_name);
 					}
 				}
 				
-				opOnList.set_parameters(opOnListParam);
-				affectedUnitIds = snr.scan_doc(tDocIdStrs, opOnList);
-				
-				for(callback eliminate_name : callbacks) {
-					eliminate_name.conduct();
-				}
-				
+				try {
+					opOnList.set_parameters(opOnListParam);
+					affectedUnitIds = snr.scan_doc(tDocIdStrs, opOnList);
+					
+				}catch(Exception e) {
+					e.printStackTrace();
+				}finally {
+					for(callback eliminate_name : callbacks) {
+						eliminate_name.conduct();
+					}
+				}	
+
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
