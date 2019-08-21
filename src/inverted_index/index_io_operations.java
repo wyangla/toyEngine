@@ -208,9 +208,9 @@ public class index_io_operations {
 	
 	
 	public void persist_info() {
-		infoManager.persist_info(term_max_tf.class);
-		infoManager.persist_info(term_df.class);
-		infoManager.persist_info(term_idf.class);
+//		infoManager.persist_info(term_max_tf.class);
+//		infoManager.persist_info(term_df.class);
+//		infoManager.persist_info(term_idf.class);
 		infoManager.persist_info(term_idf_cal_time.class);
 	}
 	

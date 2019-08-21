@@ -1,6 +1,6 @@
 package entities.information_manager_plugins;
 
-import data_structures.posting_unit;
+import data_structures.*;
 import inverted_index.index;
 
 import java.util.*;
@@ -11,25 +11,22 @@ import configs.information_manager_config;
 
 
 public class term_df{
-	public static ConcurrentHashMap<String, Double> infoMap = new ConcurrentHashMap<String, Double>();
-	public static String persistingPath = information_manager_config.persistingDir + "/term_df";
+	public static ConcurrentHashMap<String, Double> infoMap = null;    // new ConcurrentHashMap<String, Double>();
+	public static String persistingPath = "";    // information_manager_config.persistingDir + "/term_df";
 	public static index idx = index.get_instance();
 	
 	
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			Double origDf = infoMap.get(pUnit.term);
+			term termIns = idx.lexicon_2.get(pUnit.term);
+			Double origDf = termIns.termProp.get("df");
 			Double curDf = 1.0;
 			
-			// TODO: extract the origDf curDf from lexicon instead
-			
 			if(origDf != null) {
-				infoMap.put(pUnit.term, origDf + curDf);
-				idx.lexicon_2.get(pUnit.term).termProp.put("df", origDf + curDf);
+				termIns.termProp.put("df", origDf + curDf);
 			}else {
-				infoMap.put(pUnit.term, curDf);
-				idx.lexicon_2.get(pUnit.term).termProp.put("df", curDf);
+				termIns.termProp.put("df", curDf);
 			}
 			
 			addedFlag = 1;
@@ -40,18 +37,22 @@ public class term_df{
 	}
 	
 	
-	
-	// the following are fixed
+	// modified
 	public static Double get_info(String targetName) {
-		return information_common_methods.get_info(targetName, infoMap);
-	}
-	
-	public static int del_info(String targetName) {
-		return information_common_methods.del_info(targetName, infoMap);
+		return idx.lexicon_2.get(targetName).termProp.get("df");
 	}
 	
 	public static int clear_info() {
-		return information_common_methods.clear_info(infoMap);
+		for (String term: idx.lexicon_2.keySet()) {
+			term termIns = idx.lexicon_2.get(term);
+			termIns.termProp.remove("df");
+		}
+		return 1;
+	}
+	
+	
+	public static int del_info(String targetName) {
+		return information_common_methods.del_info(targetName, infoMap);
 	}
 	
 	public static int load_info() {
