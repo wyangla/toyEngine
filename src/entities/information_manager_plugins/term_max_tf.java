@@ -20,8 +20,8 @@ public class term_max_tf{
 		int addedFlag = -1;
 		try {
 			term termIns = idx.lexicon_2.get(pUnit.term);
-			Double origTf = termIns.termProp.get("mtf");
-			Double curTf = pUnit.uProp.get("mtf");
+			Double origTf = termIns.termProp.get("tf");
+			Double curTf = pUnit.uProp.get("tf");
 			
 			if(origTf != null) {
 				if(curTf != null && curTf > origTf) {	// only update when the new tf is larger than the original one
