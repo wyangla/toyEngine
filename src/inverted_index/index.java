@@ -42,7 +42,7 @@ public class index {
 
 	
 	// for generating the unique id s
-	public class counters {
+	public class idCounter {
 		long id = 0L;
 		public void _inc() {    // invoked each time the val() is used, internal increment
 			id ++;
@@ -60,14 +60,14 @@ public class index {
 		}
 	}
 	
-	public counters pc = new counters();
-	public long lastPostUnitId = 0;
+	public idCounter pc = new idCounter();
+//	public long lastPostUnitId = 0;
 	
-	public counters dc = new counters();
-	public long lastDocId = 0;
+	public idCounter dc = new idCounter();
+//	public long lastDocId = 0;
 	
-	public counters tc = new counters();
-	public long lastTermId = 0;
+	public idCounter tc = new idCounter();
+//	public long lastTermId = 0;
 	
 
 	// create the termIns for one posting list
@@ -199,7 +199,7 @@ public class index {
 						
 					}
 					
-					lastPostUnitId = postUnit.currentId; // for setting the pc in load lexicon, making sure the old units are not overwritten when new units added
+					// lastPostUnitId = postUnit.currentId; // for setting the pc in load lexicon, making sure the old units are not overwritten when new units added
 					addedPostUnit = postUnit;
 					
 					// _add_posting_unit is always occur with add_term
@@ -360,7 +360,7 @@ public class index {
 			addedDoc.docId = dc.val();
 			addedDoc.docName = targetDocName;
 			
-			lastDocId = addedDoc.docId;
+			// lastDocId = addedDoc.docId;
 			
 			docMap.put(addedDoc.docName, addedDoc);
 			docIdMap.put(addedDoc.docId, addedDoc);
@@ -385,7 +385,10 @@ public class index {
 		// lexicon = new ConcurrentHashMap<String, ArrayList<Long>>();
 		lexicon_2 = new ConcurrentHashMap<String, term>();
 		kpr.clear_maps(lexicon_locker.class);
-		pc = new counters();
+		
+		// dc is not cleared here, as documents are not re-added
+		pc = new idCounter();
+		tc = new idCounter();
 		
 		// clear doc term chain points
 		for(Long docId: docIdMap.keySet()) {

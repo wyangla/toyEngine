@@ -138,7 +138,7 @@ public class index_io_operations {
 			// persist last post unit id
 			FileWriter idf = new FileWriter(configs.index_config.lastPostUnitIdPath);
 			try {
-				idf.write("" + idx.lastPostUnitId);
+				idf.write("" + idx.pc.view());
 			} catch(Exception e) {
 				e.printStackTrace();
 			} finally {
@@ -156,7 +156,7 @@ public class index_io_operations {
 			// persist last doc id
 			FileWriter idf = new FileWriter(configs.index_config.lastDocIdPath);
 			try {
-				idf.write("" + idx.lastDocId);
+				idf.write("" + idx.dc.view());
 			} catch(Exception e) {
 				e.printStackTrace();
 			} finally {
@@ -194,7 +194,7 @@ public class index_io_operations {
 		try {
 			FileWriter idf = new FileWriter(configs.index_config.lastTermIdPath);
 			try {
-				idf.write("" + idx.lastTermId);
+				idf.write("" + idx.tc.view());
 			}catch(Exception e) {
 				e.printStackTrace();
 			}finally {
@@ -208,9 +208,7 @@ public class index_io_operations {
 	
 	
 	public void persist_info() {
-//		infoManager.persist_info(term_max_tf.class);
-//		infoManager.persist_info(term_df.class);
-//		infoManager.persist_info(term_idf.class);
+		// record mtf, df, idf information into the lexicon_2
 		infoManager.persist_info(term_idf_cal_time.class);
 	}
 	
@@ -225,14 +223,13 @@ public class index_io_operations {
 		// 1. generate, 2. persist, 3. lazily load and serve
 		// such that the generation process will consume the biggest amount of memory
 		
-		// persist_lexicon();
 		persist_lexicon_2();    // TODO: test
 		// persist_postings();    // TODO: uncomment
 		persist_lastPostUnitId();
 		persist_lastDocId();
 		persist_docMap();
 		persist_lastTermId();    // TODO: test
-		// persist_info();    // TODO: uncomment
+		persist_info();    // TODO: uncomment
 	}
 	
 	
@@ -375,8 +372,7 @@ public class index_io_operations {
 					
 				if (idString != null) {
 					idString = idString.trim();
-					idx.lastPostUnitId = Long.parseLong(idString);
-					idx.pc.set(idx.lastPostUnitId + 10); // set the pc so that will not overwrite the old units
+					idx.pc.set(Long.parseLong(idString) + 10); // set the pc so that will not overwrite the old units
 				}
 				
 				System.out.println("lastId loaded");
@@ -406,8 +402,7 @@ public class index_io_operations {
 					
 				if (idString != null) {
 					idString = idString.trim();
-					idx.lastDocId = Long.parseLong(idString);
-					idx.dc.set(idx.lastDocId + 10);
+					idx.dc.set(Long.parseLong(idString) + 10);
 				}
 				
 				System.out.println("lastDocId loaded");
@@ -437,8 +432,7 @@ public class index_io_operations {
 					
 				if (idString != null) {
 					idString = idString.trim();
-					idx.lastTermId = Long.parseLong(idString);
-					idx.tc.set(idx.lastTermId + 10);
+					idx.tc.set(Long.parseLong(idString) + 10);
 				}
 				
 				System.out.println("lastTermId loaded");
