@@ -19,17 +19,20 @@ public class term_df{
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			term termIns = idx.lexicon_2.get(pUnit.term);
-			Double origDf = termIns.termProp.get("df");
-			Double curDf = 1.0;
 			
-			if(origDf != null) {
-				termIns.termProp.put("df", origDf + curDf);
-			}else {
-				termIns.termProp.put("df", curDf);
+			term termIns = idx.lexicon_2.get(pUnit.term);
+			synchronized(termIns) {
+				Double origDf = termIns.termProp.get("df");
+				Double curDf = 1.0;
+				
+				if(origDf != null) {
+					termIns.termProp.put("df", origDf + curDf);
+				}else {
+					termIns.termProp.put("df", curDf);
+				}
+				addedFlag = 1;
 			}
 			
-			addedFlag = 1;
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -37,7 +40,6 @@ public class term_df{
 	}
 	
 	
-	// modified
 	public static Double get_info(String targetName) {
 		return idx.lexicon_2.get(targetName).termProp.get("df");
 	}

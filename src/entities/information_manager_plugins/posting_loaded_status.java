@@ -28,21 +28,14 @@ public class posting_loaded_status {
 		return addedFlag;
 	}
 	
-	
-	// manually synchronise on the class
-	public synchronized static Double _get_tatus(String targetName) {
+	public static Double get_info(String targetName) {
 		return idx.lexicon_2.get(targetName).status;
 	}
 	
 	
-	// modified
-	public static Double get_info(String targetName) {
-		return _get_tatus(targetName);
-	}
-	
 	public static int del_info(String targetName) {
 		idx.lexicon_2.get(targetName).status = -1;
-		return information_common_methods.del_info(targetName, infoMap);
+		return 1;
 	}
 	
 	public static int clear_info() {

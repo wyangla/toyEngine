@@ -19,19 +19,22 @@ public class term_max_tf{
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			term termIns = idx.lexicon_2.get(pUnit.term);
-			Double origTf = termIns.termProp.get("tf");
-			Double curTf = pUnit.uProp.get("tf");
 			
-			if(origTf != null) {
-				if(curTf != null && curTf > origTf) {	// only update when the new tf is larger than the original one
+			term termIns = idx.lexicon_2.get(pUnit.term);
+			synchronized(termIns) {
+				Double origTf = termIns.termProp.get("tf");
+				Double curTf = pUnit.uProp.get("tf");
+				
+				if(origTf != null) {
+					if(curTf != null && curTf > origTf) {	// only update when the new tf is larger than the original one
+						termIns.termProp.put("mtf", curTf);
+					}
+				}else {
 					termIns.termProp.put("mtf", curTf);
 				}
-			}else {
-				termIns.termProp.put("mtf", curTf);
+				addedFlag = 1;	
 			}
 
-			addedFlag = 1;
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -39,7 +42,6 @@ public class term_max_tf{
 	}
 	
 	
-	// modified
 	public static Double get_info(String targetName) {
 		return idx.lexicon_2.get(targetName).termProp.get("mtf");
 	}
@@ -53,7 +55,7 @@ public class term_max_tf{
 	}
 	
 	
-	public static int del_info(String targetName) {
+	public synchronized static int del_info(String targetName) {
 		return information_common_methods.del_info(targetName, infoMap);
 	}
 	

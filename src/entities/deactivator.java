@@ -52,7 +52,7 @@ public class deactivator {
 		ArrayList<scanner.scan_term_thread_deactivator> threadList = new ArrayList<scanner.scan_term_thread_deactivator>();
 		
 		// get the expired terms firstly
-		for (String term : idx.lexicon.keySet()) {
+		for (String term : idx.lexicon_2.keySet()) {
 			if(check_expired(term)) {
 				expiredTerms.add(term);
 			}
