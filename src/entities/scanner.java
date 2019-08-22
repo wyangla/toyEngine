@@ -37,7 +37,7 @@ public class scanner {
 	}
 	
 	
-	public String scan_posting_list(String term, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) {
+	public String scan_posting_list(String term, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits, Boolean updateStatus) {
 		String processedTerm = term;
 		
 		// get the starter post unit id
@@ -45,7 +45,9 @@ public class scanner {
 		
 		if(termIns != null) {
 			posting_unit firstTermUnit = idx.postUnitMap.get(termIns.firstPostUnitId);
-			infoManager.set_info(posting_loaded_status.class, firstTermUnit);	// update the visiting time in posting_load_status
+			if(updateStatus) {
+				infoManager.set_info(posting_loaded_status.class, firstTermUnit);	// update the visiting time in posting_load_status
+			}
 			
 			// load the unit operations
 			try {
@@ -54,8 +56,13 @@ public class scanner {
 				e.printStackTrace();
 			}
 		}
-
-		
+		return processedTerm;
+	}
+	
+	
+	public String scan_posting_list(String term, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) {
+		String processedTerm = term;
+		processedTerm = scan_posting_list(term, operationOnPostingList, affectedUnits, true);    // default too be true
 		return processedTerm;
 	}
 	
@@ -196,20 +203,31 @@ public class scanner {
 //	}
 	
 	
-	// used in deactivator
-	public static class scan_term_thread_deactivator extends Thread {
+	// used in deactivator and persisting postings
+	public static class scan_term_thread_no_loading extends Thread {
 		private scanner_plugin_interface opOnList;
 		private Object opOnListParam;
 		private String[] tTerms;
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
 		private ArrayList<String> scannedTerms = new ArrayList<String>();
 		private scanner snr;
+		private Boolean updStatus;
 		
-		public scan_term_thread_deactivator(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
+		public scan_term_thread_no_loading(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms, Boolean updateStatus) {
 			opOnList = operationOnPostingList;
 			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
 			tTerms = targetTerms;
 			snr = scannerIns;
+			updStatus = updateStatus;
+		}
+		
+		// update status default to be true
+		public scan_term_thread_no_loading(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
+			opOnList = operationOnPostingList;
+			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
+			tTerms = targetTerms;
+			snr = scannerIns;
+			updStatus = true;
 		}
 		
 		public void run() {
@@ -223,7 +241,7 @@ public class scanner {
 						scannedTerms.add(term);		// even if the term is not not totally processed and scanning terminated, it will be regarded as being processed, aggressive
 						try {
 							opOnList.set_parameters(opOnListParam);
-							snr.scan_posting_list(term, opOnList, affectedUnitIds);    // will only pass in loaded terms, so does not need the loading step
+							snr.scan_posting_list(term, opOnList, affectedUnitIds, updStatus);    // will only pass in loaded terms, so does not need the loading step
 						}catch(Exception e) {
 							e.printStackTrace();
 						}finally {

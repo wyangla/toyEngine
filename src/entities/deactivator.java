@@ -49,7 +49,7 @@ public class deactivator {
 		ArrayList<String> deactivatedTerms = new ArrayList<String>();
 		
 		ArrayList<String> expiredTerms = new ArrayList<String>();
-		ArrayList<scanner.scan_term_thread_deactivator> threadList = new ArrayList<scanner.scan_term_thread_deactivator>();
+		ArrayList<scanner.scan_term_thread_no_loading> threadList = new ArrayList<scanner.scan_term_thread_no_loading>();
 		
 		// get the expired terms firstly
 		for (String term : idx.lexicon_2.keySet()) {
@@ -62,12 +62,12 @@ public class deactivator {
 		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(deactivator_config.workerNum, expiredTerms.toArray(new String[0]));
 
 		for(String[] workLoad : workLoads ) {
-			scanner.scan_term_thread_deactivator st = new scanner.scan_term_thread_deactivator(snr, new delete_posting(), "", workLoad);
+			scanner.scan_term_thread_no_loading st = new scanner.scan_term_thread_no_loading(snr, new delete_posting(), "", workLoad);
 			st.start();
 			threadList.add(st);
 		}
 		
-		for(scanner.scan_term_thread_deactivator st : threadList) {
+		for(scanner.scan_term_thread_no_loading st : threadList) {
 			st.join();
 			affectedUnitIds.addAll(st.get_affectedUnitIds());
 			deactivatedTerms.addAll(st.get_scannedTerms());

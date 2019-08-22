@@ -137,7 +137,7 @@ public class index_io_operations {
 	private void persist_postings_2() {
 		try {
 			scanner snr = new scanner();
-			ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
+			ArrayList<scanner.scan_term_thread_no_loading> threadList = new ArrayList<scanner.scan_term_thread_no_loading>();
 			ArrayList<String> loadedTerms = new ArrayList<String>();
 			
 			for(String term: idx.lexicon_2.keySet()) {
@@ -149,16 +149,17 @@ public class index_io_operations {
 			ArrayList<String[]> workloads = task_spliter.get_workLoads_terms(index_config.persistWorkNum, loadedTerms.toArray(new String[0]));
 			
 			for(String[] workload: workloads) {
-				scanner.scan_term_thread st = new scanner.scan_term_thread(
+				scanner.scan_term_thread_no_loading st = new scanner.scan_term_thread_no_loading(
 						snr, 
 						new persist_postings(), 
 						null, 
-						workload);
+						workload,
+						false);    // not updating the term visiting status, as this method is also used in deactivator
 				
 				threadList.add(st);
 			}
 
-			for(scanner.scan_term_thread st: threadList) {
+			for(scanner.scan_term_thread_no_loading st: threadList) {
 				st.start();
 				st.join();
 			}
@@ -491,6 +492,8 @@ public class index_io_operations {
 	private boolean check_term_loaded(String term) {
 		boolean loadedFlag = false;
 		Double lf = infoManager.get_info(posting_loaded_status.class, term);
+		// TODO: test
+		System.out.println("-->" + lf);
 		if(lf != -1) {	// as using the termIns to record the loaded status now
 			loadedFlag = true;
 		}
