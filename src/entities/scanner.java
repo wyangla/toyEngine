@@ -222,6 +222,7 @@ public class scanner {
 		}
 		
 		// update status default to be true
+		// cannot make use of other ini method?
 		public scan_term_thread_no_loading(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
 			opOnList = operationOnPostingList;
 			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
