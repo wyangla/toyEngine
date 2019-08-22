@@ -43,7 +43,7 @@ public class scanner {
 		// get the starter post unit id
 		term termIns = idx.lexicon_2.get(term);
 		
-		if(termIns != null) {
+		if(termIns != null && termIns.firstPostUnitId != -1) {
 			posting_unit firstTermUnit = idx.postUnitMap.get(termIns.firstPostUnitId);
 			if(updateStatus) {
 				infoManager.set_info(posting_loaded_status.class, firstTermUnit);	// update the visiting time in posting_load_status
