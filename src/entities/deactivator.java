@@ -36,7 +36,7 @@ public class deactivator {
 		Double curTimeStamp = (double)System.currentTimeMillis();
 		
 		// only the loaded can be expired
-		if(vistTimeStamp != null && curTimeStamp > vistTimeStamp + (double)deactivator_config.loadExpireTime) {
+		if(vistTimeStamp != -1 && curTimeStamp > vistTimeStamp + (double)deactivator_config.loadExpireTime) {
 			expiredFlag = true;
 		}
 		return expiredFlag;
@@ -91,12 +91,11 @@ public class deactivator {
 		public void run() {
 			try {
 				while(true) {
-					// TODO: testing
 					pauseLock.lock();
 					
 					System.out.println("-- monitoring --");
 					idxIOOp.persist_index();	// persist before deactivating, otherwise the newly added units will be lost
-					deactivate();
+					deactivate();    // TODO: testing
 					
 					pauseLock.unlock();
 					Thread.sleep(deactivator_config.monitoringInterval);
