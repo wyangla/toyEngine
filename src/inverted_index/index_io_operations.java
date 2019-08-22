@@ -138,7 +138,15 @@ public class index_io_operations {
 		try {
 			scanner snr = new scanner();
 			ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
-			ArrayList<String[]> workloads = task_spliter.get_workLoads_terms(index_config.persistWorkNum, idx.lexicon_2.keySet().toArray(new String[0]));
+			ArrayList<String> loadedTerms = new ArrayList<String>();
+			
+			for(String term: idx.lexicon_2.keySet()) {
+				if(check_term_loaded(term)) {
+					loadedTerms.add(term);
+				}
+			}
+			
+			ArrayList<String[]> workloads = task_spliter.get_workLoads_terms(index_config.persistWorkNum, loadedTerms.toArray(new String[0]));
 			
 			for(String[] workload: workloads) {
 				scanner.scan_term_thread st = new scanner.scan_term_thread(
@@ -483,7 +491,7 @@ public class index_io_operations {
 	private boolean check_term_loaded(String term) {
 		boolean loadedFlag = false;
 		Double lf = infoManager.get_info(posting_loaded_status.class, term);
-		if(lf != null) {	// as long as the info is existing means is loaded
+		if(lf != -1) {	// as using the termIns to record the loaded status now
 			loadedFlag = true;
 		}
 		return loadedFlag;

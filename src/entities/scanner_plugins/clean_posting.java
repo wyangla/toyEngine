@@ -63,7 +63,9 @@ public class clean_posting implements scanner_plugin_interface{
 				// if first term unit is removed, and there are other term units left
 				if(nextTermUnit != null) {
 					doc docIns = idx.docIdMap.get(pUnit.docId);
-					docIns.firstTermUnitId = nextTermUnit.currentId;	
+					if(docIns != null) {    // if the doc is not deleted yet, currently the cleaner is always used to clean up the deleted docs, so that docIns is always null
+						docIns.firstTermUnitId = nextTermUnit.currentId;	
+					}	
 				}
 			}
 			
@@ -74,7 +76,9 @@ public class clean_posting implements scanner_plugin_interface{
 				// if the last term unit is removed, and there are still preceding term units
 				if(prevTermUnit != null) {
 					doc docIns = idx.docIdMap.get(pUnit.docId);
-					docIns.lastTermUnitId = prevTermUnit.currentId;	
+					if(docIns != null) {
+						docIns.lastTermUnitId = prevTermUnit.currentId;	
+					}
 				}
 			}
 			
