@@ -473,6 +473,7 @@ public class index {
 	// single threading one, as only processing the persisted posting instead of the docs
 	// TODO: use multi-threading and add lock to pc?
 	public void reload_index() {
+		deactivator.get_instance().pause_deactivator();
 		
 		// if not cleaned by cleaner, this reload will not work as expected,
 		// as the deleted unit are still in the postUnitMap
@@ -483,6 +484,8 @@ public class index {
 		// without this step, due to the lazy loading of posting list, 
 		// delete_doc will only load small part of units into memory, 
 		// the reload_index will erase the unloaded units from local file
+		// also due to cleaner is operating the term chain,  without all posting units loaded
+		// could encounter the breaking of term chain
 		index_io_operations.get_instance().load_all_posting();
 		clr.clean();
 		
@@ -521,6 +524,9 @@ public class index {
 		
 		// re-persist the inverted index
 		index_io_operations.get_instance().persist_index(); // the ids are corrected now
+		
+		
+		deactivator.get_instance().resume_deactivator();
 	}
 	
 	

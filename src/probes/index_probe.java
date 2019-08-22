@@ -20,7 +20,7 @@ public class index_probe {
 		System.out.println(areYouSureAboutPrintTheWholeIndex);
 		if(areYouSureAboutPrintTheWholeIndex.matches("Sure")) {
 			System.out.println("postUnitMap: " + idx.postUnitMap.entrySet()); // only display 10 items for illustration
-			System.out.println("lexicon: " + idx.lexicon.entrySet());
+			System.out.println("lexicon: " + idx.lexicon_2.entrySet());
 			System.out.println("lexiconLockInfoMap: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
 			System.out.println("lexiconLockMap: " + kpr.get_lockMap(lexicon_locker.class));
 			System.out.println("docMap: " + idx.docMap);
@@ -30,7 +30,7 @@ public class index_probe {
 			System.out.println("");
 			
 			infoMap.put("postUnitMap: ", idx.postUnitMap.entrySet().toString());
-			infoMap.put("lexicon: ", idx.lexicon.entrySet().toString());
+			infoMap.put("lexicon: ", idx.lexicon_2.entrySet().toString());
 			infoMap.put("lexiconLockInfoMap: ", kpr.get_lockInfoMap(lexicon_locker.class).entrySet().toString());
 			infoMap.put("lexiconLockMap: ", kpr.get_lockMap(lexicon_locker.class).toString());
 			infoMap.put("docMap: ", idx.docMap.entrySet().toString());
@@ -47,12 +47,12 @@ public class index_probe {
 	// show the statistics of the inverted-index
 	public HashMap<String, String> show() {
 		System.out.println("postUnitMap size: " + idx.postUnitMap.size()); // only display 10 items for illustration
-		System.out.println("lexicon size: " + idx.lexicon.size());
+		System.out.println("lexicon size: " + idx.lexicon_2.size());
 		System.out.println("");
 		
 		HashMap<String, String> infoMap = new HashMap<String, String>();
 		infoMap.put("postUnitMap size: ", "" + idx.postUnitMap.size());
-		infoMap.put("lexicon size: ", "" + idx.lexicon.size());
+		infoMap.put("lexicon size: ", "" + idx.lexicon_2.size());
 		infoMap.put("docMap size: ", "" + idx.docMap.size());
 		infoMap.put("loadedStatus size: ", "" + posting_loaded_status.infoMap.size());
 		infoMap.put("maxTf size: ", "" + term_max_tf.infoMap.size());

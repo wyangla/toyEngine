@@ -2,12 +2,13 @@ package entities;
 
 import java.util.*;
 import configs.*;
-import data_structures.posting_unit;
+import data_structures.*;
 import entities.keeper_plugins.lexicon_locker;
+import entities.scanner_plugins.*;
 import utils.*;
 import inverted_index.index;
-import utils.callback;
 import entities.keeper_plugins.*;
+import java.util.concurrent.*;
 
 
 // cleaner should only be used on the off-line inverted-index
@@ -25,171 +26,106 @@ public class cleaner {
 	}
 	
 	
-	// TODO: change to the web reference in future?
-	private index idx = index.get_instance();
-	private keeper kpr = keeper.get_instance();
+	// TODO: change to the web reference in future
+	private static index idx = index.get_instance();
+	private static keeper kpr = keeper.get_instance();
+	private static scanner snr = new scanner();
 	
-	
-	// independent threads scanning and cleaning the postUnitMap & lexicon
-	public ArrayList<Long> clean_unit(String[] targetTerms) {
 
-		ArrayList<Long> delPostUnitList = new ArrayList<Long>();
+	public static class scan_term_thread_cleaner extends Thread {
+		private scanner_plugin_interface opOnList;
+		private Object opOnListParam;
+		private String[] tTerms;
+		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
+		private scanner snr;
 		
-		// scanning through the assigned terms
-		for (String term : targetTerms) {
-			ArrayList<Long> postingUnitIds = idx.lexicon.get(term);    // TODO: change to term object with pointer
-			
-			if(postingUnitIds != null) {
+		private ArrayList<callback> callbacks = new ArrayList<callback>();
+		
+		public scan_term_thread_cleaner(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
+			opOnList = operationOnPostingList;
+			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
+			tTerms = targetTerms;
+			snr = scannerIns;
+		}
+		
+		public void run() {
+			try {
+				String threadName = "" + name_generator.thread_name_gen();
+				ArrayList<String> targetTerms = new ArrayList<String>();
 				
-				// scanning through the posting units list of corresponding term
-				for (long pUnitId : postingUnitIds) {
-					int pUnitIndex = postingUnitIds.indexOf(pUnitId);
-					
-					posting_unit curUnit = idx.postUnitMap.get(pUnitId);
-					int pStatus = curUnit.status;
-					if(pStatus == 0) {
-						
-						// relink the posting chain
-						posting_unit prevUnit = (pUnitIndex != 0) ? idx.postUnitMap.get(postingUnitIds.get(pUnitIndex - 1)) : null; // skip the first unit of posting list
-						posting_unit nextUnit = (pUnitIndex != postingUnitIds.size() - 1) ? idx.postUnitMap.get(postingUnitIds.get(pUnitIndex + 1)) : null; // skip the last unit of posting list
-						
-						if (prevUnit != null) { // when current unit is not the starter
-							prevUnit.link_to_next(nextUnit);	
-						}
-						if (nextUnit != null) { // when current unit is not the ender
-							nextUnit.link_to_previous(prevUnit);	
-						}
-						
-						// relink the term posting chain
-						posting_unit prevTermUnit = (curUnit.previousTermId != -1) ? idx.postUnitMap.get(curUnit.previousTermId) : null; // skip the first unit of term posting chain
-						posting_unit nextTermUnit = (curUnit.nextTermId != -1) ? idx.postUnitMap.get(curUnit.nextTermId) : null; // skip the last unit of term posting chain
-
-						if (prevTermUnit != null) { // when current unit is not the first term unit
-							prevTermUnit.link_to_next_term(nextTermUnit);	
-						}
-						if (nextTermUnit != null) { // when current unit is not the last term unit
-							nextTermUnit.link_to_previous_term(prevTermUnit);	
-						}
-						
-						delPostUnitList.add(pUnitId);
+				for(String term : tTerms) {
+					callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadName);
+					if(release_lock != null) {    // when target term is not existing in the lock map, release_lock will be null
+						callbacks.add(release_lock);
+						targetTerms.add(term);
 					}
 				}
 				
-				// avoid the ArrayList is changing when iterating it
-				for (Long pUnitId : delPostUnitList) {
-					// delete from lexicon and postUnitMap
-					postingUnitIds.remove(pUnitId);
-					idx.postUnitMap.remove(pUnitId);
+				try {
+					opOnList.set_parameters(opOnListParam);
+					affectedUnitIds = snr.scan(targetTerms.toArray(new String[0]), opOnList);
+					
+				}catch(Exception e) {
+					System.out.println(e);
+				}finally {
+					for(callback release_lock: callbacks) {
+						release_lock.conduct();
+					}
 				}
-			}
 
-		}
-		return delPostUnitList;
-	}
-	
-	// define the thread object, ref: https://www.runoob.com/java/java-multithreading.html
-	class thread_clean extends Thread {
-		private Thread t;
-		private String[] targetTerms;
-		private ArrayList<String> availableTargetTerms_temp = new ArrayList<String>();
-		private String[] availableTargetTerms; // which are not being accessing
-		
-		private ArrayList<callback> callbacks = new ArrayList<callback> ();    // for holding the release lock callbacks from keeper
-		
-		public thread_clean(String[] targetTerms4Clean, String threadNum) { // parameters for assign tasks
-			targetTerms = targetTerms4Clean;
-			this.setName(threadNum);
-			// System.out.println(String.format("--> thread %s started", thNum));
-		}
-		
-		public void run() {		
-			// require locks firstly
-			for (String term : targetTerms) {
-				
-				callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, this.getName());
-				
-				if(release_lock != null) {    // if null, means the target term is not existing, indeed not needed here, as the target terms come from lexicon, should always exists in lock maps
-					availableTargetTerms_temp.add(term);
-					callbacks.add(release_lock);
-				}
-			}
-			
-			try {	
-				// TODO: testing
-				// System.out.println("--> lexiconLockMap: " + kpr.lexiconLockMap.entrySet());
-				availableTargetTerms = availableTargetTerms_temp.toArray(new String[0]); // ArrayList<String> -> String[]
-				ArrayList<Long> delPostUnitList = clean_unit( availableTargetTerms );
-				System.out.println("deleted units: " + delPostUnitList);
 				
 			} catch(Exception e) {
 				e.printStackTrace();
-				
-			} finally {
-				for (callback release_lock : callbacks) { // release the locks that successfully required
-					release_lock.conduct();	
-				}
 			}
+		}
+		
+		// invoke after the threads ends to collect the affected posting units' ids
+		public ArrayList<Long> get_affectedUnitIds(){
+			return affectedUnitIds;
 		}
 	}
 	
-	// multiprocessing
-	public void clean() {
-		int workerNum = cleaner_config.cleanerWorkerNum;
-		
-		// split the lexicon into workload for each clean worker
-		ArrayList<String> terms = new ArrayList<String>();
-		terms.addAll(idx.lexicon.keySet()); // get the terms
-		
-		int lexiconLength = terms.size();
-		int loadPerWorker = (int) Math.ceil((double)lexiconLength / (double)workerNum); // workload for each worker
-		int noMoreTerms = 0; // flag for indicating no more terms for clean, 0 still have rest, 1 no more rest
-		
-		// TODO: testing
-		System.out.println("<loadPerWorker> "+ loadPerWorker);
-		
-		Iterator<String> termsIter = terms.iterator();
-		List<String> load_temp = new ArrayList<String>(); // for containing the workload of per worker
-		
-		
-		ArrayList<thread_clean> allThreads = new ArrayList<thread_clean>(); // for control the threads all together
-		for (int i = 0; i < lexiconLength + 1; i++) { 
-			// +1 is for allowing the iterator.next to over the end, 
-			// when there are workload == n * loadPerWorker, there will be one more extra thread created and do nothing
-			// this extra thread will be cheaper than the load_temp.isempty() check every loop?
-			
-			try {
-				load_temp.add( termsIter.next() );
-			} catch(Exception e) {
-				// System.out.println(e);
-				noMoreTerms = 1; // when get to the end of the lexicon, no more terms
-			}
-			
-			if(load_temp.size() >= loadPerWorker || noMoreTerms == 1) { // one workload is ready or no more terms
-				// TODO: testing
-				System.out.println(">" + load_temp);
-				try {
-					thread_clean ct = new thread_clean( load_temp.toArray(new String[0]), "" + name_generator.thread_name_gen() );
-					allThreads.add(ct);
-					ct.start();
-					load_temp.clear();
-					
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	
-		// block until all threads are finished
-		for(thread_clean ct : allThreads) {
+	// need to load all postings into memory firstly, otherwise, the linking of term_chain will lead to problem
+	public void clean() {
+		// split the lexicon into workload for each clean worker
+		ArrayList<String[]> workloads = task_spliter.get_workLoads_terms(cleaner_config.cleanerWorkerNum, idx.lexicon_2.keySet().toArray(new String[0]));
+		ArrayList<scan_term_thread_cleaner> threadList = new ArrayList<scan_term_thread_cleaner>();
+		
+		ArrayList<ConcurrentHashMap<Long, Double>> subElPUnitLists = new ArrayList<ConcurrentHashMap<Long, Double>>();
+		ConcurrentHashMap<Long, Double> totalEliminatPostUnit = new ConcurrentHashMap<Long, Double>();
+		
+		for(String[] workload : workloads) {
+			ConcurrentHashMap<Long, Double> eliminatePostUnitIdList = new ConcurrentHashMap<Long, Double>();    // use as a list
+			scan_term_thread_cleaner ct = new scan_term_thread_cleaner(
+					snr, 
+					new clean_posting(), 
+					eliminatePostUnitIdList, 
+					workload);
+			
+			threadList.add(ct);
+			subElPUnitLists.add(eliminatePostUnitIdList);
+		}
+		
+		for(scan_term_thread_cleaner ct : threadList) {
 			try {
+				ct.start();
 				ct.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+		
+		for(ConcurrentHashMap<Long, Double> elPUnitList: subElPUnitLists) {
+			totalEliminatPostUnit.putAll(elPUnitList);
+		}
+		
+		// eliminate the pUnit all in once, instead of during the scanning, otherwise will effect the integrity of the posting list
+		for(Long pUnitId: totalEliminatPostUnit.keySet()) {
+			idx.postUnitMap.remove(pUnitId);
+		}
+		
 	}
-	
-	
 	
 	public void main(String[] args) {}
 }

@@ -13,4 +13,6 @@ public class index_config {
 	public static String postingsPersistancePath = "persistance/postings";
 	public static int addingDocRetryTimes = 100;	// retry times of retrying adding units of a doc
 	public static int reloadWorkNum = 4;
+	
+	public static int persistWorkNum = 4;
 }

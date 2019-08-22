@@ -37,10 +37,8 @@ public class try_HashMap {
 		
 		System.out.println(updatedCounter);
 		
-		
-		
-//		a.putAll(b);
-//		System.out.println(a);
+		a.putAll(b);
+		System.out.println(a);
 	}
 	
 }
