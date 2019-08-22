@@ -18,10 +18,10 @@ public class tf_idf_test {
 		idx.docMap.put("dd", new doc());
 		idx.docMap.put("ee", new doc()); // n = 5
 		
-		idx.lexicon.put("your", new ArrayList<Long>());
-		idx.lexicon.get("your").add(1L);
-		idx.lexicon.get("your").add(1L);
-		idx.lexicon.get("your").add(1L); // df = 3
+//		idx.lexicon.put("your", new ArrayList<Long>());
+//		idx.lexicon.get("your").add(1L);
+//		idx.lexicon.get("your").add(1L);
+//		idx.lexicon.get("your").add(1L); // df = 3
 		
 		// tfidf = 3 * log(5 / 3) 
 		// score = 0.6 tfidf + 0.2 = 1.4259814970383777

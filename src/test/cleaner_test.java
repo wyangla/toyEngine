@@ -39,7 +39,7 @@ public class cleaner_test {
 		idx.del_posting_unit(7); // start of posting list
 		
 		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
+		System.out.println("lexicon: " + idx.lexicon_2.entrySet());
 		System.out.println("lexiconKeeper: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
 		System.out.println("lexiconKeeper: " + kpr.get_lockMap(lexicon_locker.class));
 		
@@ -56,17 +56,17 @@ public class cleaner_test {
 	
 	// clean_unit
 	public void test_5() {
-		ArrayList<Long> delPostUnitList = clr.clean_unit(new String[]{"a", "b", "c"});
-		
-		System.out.println("delPostUnitList: " + delPostUnitList);
-		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
-		System.out.println("lexiconKeeper: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
-		System.out.println("lexiconKeeper: " + kpr.get_lockMap(lexicon_locker.class));
-		
-		System.out.println("postUnitMap.get(0L): " + idx.postUnitMap.get(0L).previousId + " " + idx.postUnitMap.get(0L).nextId);
-		System.out.println("postUnitMap.get(2L): " + idx.postUnitMap.get(2L).previousId + " " + idx.postUnitMap.get(2L).nextId);
-		System.out.println("");
+//		ArrayList<Long> delPostUnitList = clr.clean_unit(new String[]{"a", "b", "c"});
+//		
+//		System.out.println("delPostUnitList: " + delPostUnitList);
+//		System.out.println("postUnitMap: " + idx.postUnitMap.entrySet());
+//		System.out.println("lexicon: " + idx.lexicon_2.entrySet());
+//		System.out.println("lexiconKeeper: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
+//		System.out.println("lexiconKeeper: " + kpr.get_lockMap(lexicon_locker.class));
+//		
+//		System.out.println("postUnitMap.get(0L): " + idx.postUnitMap.get(0L).previousId + " " + idx.postUnitMap.get(0L).nextId);
+//		System.out.println("postUnitMap.get(2L): " + idx.postUnitMap.get(2L).previousId + " " + idx.postUnitMap.get(2L).nextId);
+//		System.out.println("");
 	}
 	
 	// multiprocess
@@ -78,7 +78,7 @@ public class cleaner_test {
 		} catch(Exception e) {}
 		
 		System.out.println("\npostUnitMap: " + idx.postUnitMap.entrySet());
-		System.out.println("lexicon: " + idx.lexicon.entrySet());
+		System.out.println("lexicon: " + idx.lexicon_2.entrySet());
 		System.out.println("lexiconKeeper: " + kpr.get_lockInfoMap(lexicon_locker.class).entrySet());
 		System.out.println("lexiconKeeper: " + kpr.get_lockMap(lexicon_locker.class));
 	}
