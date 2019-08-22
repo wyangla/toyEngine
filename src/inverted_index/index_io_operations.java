@@ -3,11 +3,12 @@ package inverted_index;
 import java.io.*;
 import java.util.*;
 
-import configs.general_config;
+import configs.*;
 import data_structures.*;
 import entities.*;
 import entities.information_manager_plugins.*;
 import entities.keeper_plugins.*;
+import entities.scanner_plugins.*;
 import exceptions.*;
 import probes.*;
 import utils.*;
@@ -90,43 +91,70 @@ public class index_io_operations {
 	}
 	
 	
-	// TODO: change to using lexicon_2
-	private void persist_postings() {
+//	// TODO: change to using lexicon_2
+//	private void persist_postings() {
+//		try {
+//			for(String term : idx.lexicon.keySet()) {
+//				
+//				if(check_term_loaded(term)) { // only try to persist the posting of loaded terms, so that does not need to load all postings before persistance 
+//					
+//					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
+//					ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
+//
+//					// check the directory of one term is existing or not
+//					File postingDir = new File(configs.index_config.postingsPersistancePath + '/' + term);
+//					if(!postingDir.exists()) {
+//						postingDir.mkdirs();
+//					}
+//					
+//					long curPUnitId = 0L;
+//					FileWriter pf = new FileWriter(postingDir.getPath() + "/posting");
+//					try {
+//						for(Long pUnitId : postingUnitIds) {
+//							String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
+//							pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
+//							curPUnitId = pUnitId;
+//						}
+//						for(String uS : pUnitStrings) {
+//							pf.write(uS); // write posting units into file, each line per unit
+//						}	
+//
+//					} catch(Exception e) {
+//						e.printStackTrace();
+//						System.out.println("--> error pUnitId: " + curPUnitId);
+//					} finally {
+//						pf.flush();
+//						pf.close();
+//					}
+//				} 
+//			}
+//		} catch(Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
+	
+	private void persist_postings_2() {
 		try {
-			for(String term : idx.lexicon.keySet()) {
+			scanner snr = new scanner();
+			ArrayList<scanner.scan_term_thread> threadList = new ArrayList<scanner.scan_term_thread>();
+			ArrayList<String[]> workloads = task_spliter.get_workLoads_terms(index_config.persistWorkNum, idx.lexicon_2.keySet().toArray(new String[0]));
+			
+			for(String[] workload: workloads) {
+				scanner.scan_term_thread st = new scanner.scan_term_thread(
+						snr, 
+						new persist_postings(), 
+						null, 
+						workload);
 				
-				if(check_term_loaded(term)) { // only try to persist the posting of loaded terms, so that does not need to load all postings before persistance 
-					
-					ArrayList<String> pUnitStrings = new ArrayList<String>(); // the flattened posting units of one term in lexicon
-					ArrayList<Long> postingUnitIds = idx.lexicon.get(term);
-
-					// check the directory of one term is existing or not
-					File postingDir = new File(configs.index_config.postingsPersistancePath + '/' + term);
-					if(!postingDir.exists()) {
-						postingDir.mkdirs();
-					}
-					
-					long curPUnitId = 0L;
-					FileWriter pf = new FileWriter(postingDir.getPath() + "/posting");
-					try {
-						for(Long pUnitId : postingUnitIds) {
-							String pUnitString = idx.postUnitMap.get(pUnitId).flatten();
-							pUnitStrings.add(pUnitString + "\r\n"); // [term] currentId nextId previousId {uProp}
-							curPUnitId = pUnitId;
-						}
-						for(String uS : pUnitStrings) {
-							pf.write(uS); // write posting units into file, each line per unit
-						}	
-
-					} catch(Exception e) {
-						e.printStackTrace();
-						System.out.println("--> error pUnitId: " + curPUnitId);
-					} finally {
-						pf.flush();
-						pf.close();
-					}
-				} 
+				threadList.add(st);
 			}
+
+			for(scanner.scan_term_thread st: threadList) {
+				st.start();
+				st.join();
+			}
+					
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -224,12 +252,12 @@ public class index_io_operations {
 		// such that the generation process will consume the biggest amount of memory
 		
 		persist_lexicon_2();    // TODO: test
-		// persist_postings();    // TODO: uncomment
+		persist_postings_2();    // TODO: uncomment
 		persist_lastPostUnitId();
 		persist_lastDocId();
 		persist_docMap();
-		persist_lastTermId();    // TODO: test
-		persist_info();    // TODO: uncomment
+		persist_lastTermId();
+		persist_info();
 	}
 	
 	
@@ -489,8 +517,6 @@ public class index_io_operations {
 						System.out.println( previousTermId + " : " + prevTermUnit.term + "--> " + postUnit.term);
 					}else {
 						System.out.println( previousTermId + " : null --> " + postUnit.term);
-						System.out.println(posting_loaded_status.infoMap.keySet());
-						System.out.println(idx.postUnitMap.toString());
 					}
 				}
 			}
@@ -625,19 +651,14 @@ public class index_io_operations {
 	
 	
 	public void load_info() {
-		// TODO: loading maxTf, df, idf can be eliminated here
-		infoManager.load_info(term_max_tf.class);
-		infoManager.load_info(term_df.class);
-		infoManager.load_info(term_idf.class);
-		
+		// loading maxTf, df, idf can be eliminated here, as they are recorded in lexicon_2
 		infoManager.load_info(term_idf_cal_time.class);    // the invoking of cal_term_idf needs to be invoked after all adding finished
 		System.out.println("info loaded");
 	}
 	
 	
 	public void load_index() {
-		// load_lexicon();
-		load_lexicon_2();    // TODO: test
+		load_lexicon_2();
 		load_lastPostUnitId();
 		load_lastDocId();
 		load_docMap();
