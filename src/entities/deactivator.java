@@ -62,7 +62,13 @@ public class deactivator {
 		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(deactivator_config.workerNum, expiredTerms.toArray(new String[0]));
 
 		for(String[] workLoad : workLoads ) {
-			scanner.scan_term_thread_no_loading st = new scanner.scan_term_thread_no_loading(snr, new delete_posting(), "", workLoad);
+			scanner.scan_term_thread_no_loading st = new scanner.scan_term_thread_no_loading(
+					snr, 
+					new delete_posting(), 
+					"", 
+					workLoad, 
+					false);
+			
 			st.start();
 			threadList.add(st);
 		}

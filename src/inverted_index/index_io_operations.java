@@ -139,15 +139,21 @@ public class index_io_operations {
 			scanner snr = new scanner();
 			ArrayList<scanner.scan_term_thread_no_loading> threadList = new ArrayList<scanner.scan_term_thread_no_loading>();
 			ArrayList<String> loadedTerms = new ArrayList<String>();
+			ArrayList<String> emptyTerms = new ArrayList<String>();
 			
 			for(String term: idx.lexicon_2.keySet()) {
+				term termIns = idx.lexicon_2.get(term);
 				if(check_term_loaded(term)) {
-					loadedTerms.add(term);
+					if(termIns.firstPostUnitId != -1) {
+						loadedTerms.add(term);
+					}else {
+						emptyTerms.add(term);    // if the posting list of one term is empty
+					}
 				}
 			}
 			
+			// persisting existing posting lists
 			ArrayList<String[]> workloads = task_spliter.get_workLoads_terms(index_config.persistWorkNum, loadedTerms.toArray(new String[0]));
-			
 			for(String[] workload: workloads) {
 				scanner.scan_term_thread_no_loading st = new scanner.scan_term_thread_no_loading(
 						snr, 
@@ -162,6 +168,14 @@ public class index_io_operations {
 			for(scanner.scan_term_thread_no_loading st: threadList) {
 				st.start();
 				st.join();
+			}
+			
+			// empty the content of file of empty posting lists
+			for(String term: emptyTerms) {
+				FileWriter eliminatePostingPath = new FileWriter(String.format(configs.index_config.postingsPersistancePath + "/%s/posting", term));
+				eliminatePostingPath.write("");
+				eliminatePostingPath.flush();
+				eliminatePostingPath.close();
 			}
 					
 		} catch(Exception e) {
@@ -493,7 +507,7 @@ public class index_io_operations {
 		boolean loadedFlag = false;
 		Double lf = infoManager.get_info(posting_loaded_status.class, term);
 		// TODO: test
-		System.out.println("-->" + lf);
+		// System.out.println("-->" + lf);
 		if(lf != -1) {	// as using the termIns to record the loaded status now
 			loadedFlag = true;
 		}

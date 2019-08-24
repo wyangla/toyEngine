@@ -54,10 +54,13 @@ public class cleaner {
 				ArrayList<String> targetTerms = new ArrayList<String>();
 				
 				for(String term : tTerms) {
-					callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadName);
-					if(release_lock != null) {    // when target term is not existing in the lock map, release_lock will be null
-						callbacks.add(release_lock);
-						targetTerms.add(term);
+					if(idx.lexicon_2.get(term).firstPostUnitId != -1) {    // exclude the empty posting list
+						
+						callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadName);
+						if(release_lock != null) {    // when target term is not existing in the lock map, release_lock will be null
+							callbacks.add(release_lock);
+							targetTerms.add(term);
+						}	
 					}
 				}
 				
@@ -117,6 +120,7 @@ public class cleaner {
 		}
 		
 		for(ConcurrentHashMap<Long, Double> elPUnitList: subElPUnitLists) {
+			System.out.println(elPUnitList);    // TODO: tests
 			totalEliminatPostUnit.putAll(elPUnitList);
 		}
 		

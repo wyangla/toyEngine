@@ -280,6 +280,7 @@ public class index {
 			addedPostUnit = postUnit;
 		}catch(Exception e) {
 			e.printStackTrace();
+			System.out.println(postUnit.docId);
 		}
 		
 		return addedPostUnit;
