@@ -106,7 +106,7 @@ public class index_test {
 	
 	// test load lexicon
 	public void test_8() {
-		index_io_operations.get_instance().load_lexicon();
+		index_io_operations.get_instance().load_lexicon_2();
 		idxProb.display_content("Sure");
 	}
 	

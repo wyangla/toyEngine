@@ -36,7 +36,7 @@ public class deactivator {
 		Double curTimeStamp = (double)System.currentTimeMillis();
 		
 		// only the loaded can be expired
-		if(vistTimeStamp != null && curTimeStamp > vistTimeStamp + (double)deactivator_config.loadExpireTime) {
+		if(vistTimeStamp != -1 && curTimeStamp > vistTimeStamp + (double)deactivator_config.loadExpireTime) {
 			expiredFlag = true;
 		}
 		return expiredFlag;
@@ -49,10 +49,10 @@ public class deactivator {
 		ArrayList<String> deactivatedTerms = new ArrayList<String>();
 		
 		ArrayList<String> expiredTerms = new ArrayList<String>();
-		ArrayList<scanner.scan_term_thread_deactivator> threadList = new ArrayList<scanner.scan_term_thread_deactivator>();
+		ArrayList<scanner.scan_term_thread_no_loading> threadList = new ArrayList<scanner.scan_term_thread_no_loading>();
 		
 		// get the expired terms firstly
-		for (String term : idx.lexicon.keySet()) {
+		for (String term : idx.lexicon_2.keySet()) {
 			if(check_expired(term)) {
 				expiredTerms.add(term);
 			}
@@ -62,12 +62,18 @@ public class deactivator {
 		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(deactivator_config.workerNum, expiredTerms.toArray(new String[0]));
 
 		for(String[] workLoad : workLoads ) {
-			scanner.scan_term_thread_deactivator st = new scanner.scan_term_thread_deactivator(snr, new delete_posting(), "", workLoad);
+			scanner.scan_term_thread_no_loading st = new scanner.scan_term_thread_no_loading(
+					snr, 
+					new delete_posting(), 
+					"", 
+					workLoad, 
+					false);
+			
 			st.start();
 			threadList.add(st);
 		}
 		
-		for(scanner.scan_term_thread_deactivator st : threadList) {
+		for(scanner.scan_term_thread_no_loading st : threadList) {
 			st.join();
 			affectedUnitIds.addAll(st.get_affectedUnitIds());
 			deactivatedTerms.addAll(st.get_scannedTerms());
@@ -91,12 +97,11 @@ public class deactivator {
 		public void run() {
 			try {
 				while(true) {
-					// TODO: testing
 					pauseLock.lock();
 					
 					System.out.println("-- monitoring --");
 					idxIOOp.persist_index();	// persist before deactivating, otherwise the newly added units will be lost
-					deactivate();
+					deactivate();    // TODO: testing
 					
 					pauseLock.unlock();
 					Thread.sleep(deactivator_config.monitoringInterval);

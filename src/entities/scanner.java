@@ -37,25 +37,32 @@ public class scanner {
 	}
 	
 	
-	public String scan_posting_list(String term, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) {
+	public String scan_posting_list(String term, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits, Boolean updateStatus) {
 		String processedTerm = term;
 		
 		// get the starter post unit id
-		ArrayList<Long> postUnitIds = idx.lexicon.get(term);
+		term termIns = idx.lexicon_2.get(term);
 		
-		if(postUnitIds != null) {
-			posting_unit pUnitStarter = idx.postUnitMap.get(postUnitIds.get(0));
-			infoManager.set_info(posting_loaded_status.class, pUnitStarter);	// update the visiting time in posting_load_status, TODO: move to position after visit_next_unit?
+		if(termIns != null && termIns.firstPostUnitId != -1) {
+			posting_unit firstTermUnit = idx.postUnitMap.get(termIns.firstPostUnitId);
+			if(updateStatus) {
+				infoManager.set_info(posting_loaded_status.class, firstTermUnit);	// update the visiting time in posting_load_status
+			}
 			
 			// load the unit operations
 			try {
-				visit_next_unit(pUnitStarter, operationOnPostingList, affectedUnits);
+				visit_next_unit(firstTermUnit, operationOnPostingList, affectedUnits);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-
-		
+		return processedTerm;
+	}
+	
+	
+	public String scan_posting_list(String term, scanner_plugin_interface operationOnPostingList, ArrayList<Long> affectedUnits) {
+		String processedTerm = term;
+		processedTerm = scan_posting_list(term, operationOnPostingList, affectedUnits, true);    // default too be true
 		return processedTerm;
 	}
 	
@@ -111,18 +118,19 @@ public class scanner {
 		public void run() {
 			try {
 				String threadName = "" + name_generator.thread_name_gen();
+				ArrayList<String> targetTerms = new ArrayList<String>();
 				
 				for(String term : tTerms) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
 					if(eliminate_name != null) {    // when target term is not existing in the lock map, eliminate_name will be null
 						callbacks.add(eliminate_name);
+						targetTerms.add(term);
 					}
 				}
 				
 				try {
-					
 					opOnList.set_parameters(opOnListParam);
-					affectedUnitIds = snr.scan(tTerms, opOnList); // pass the instance to scanner
+					affectedUnitIds = snr.scan(targetTerms.toArray(new String[0]), opOnList); // pass the instance to scanner
 				}catch(Exception e) {
 					System.out.println(e);
 				}finally {
@@ -195,20 +203,32 @@ public class scanner {
 //	}
 	
 	
-	// used in deactivator
-	public static class scan_term_thread_deactivator extends Thread {
+	// used in deactivator and persisting postings
+	public static class scan_term_thread_no_loading extends Thread {
 		private scanner_plugin_interface opOnList;
 		private Object opOnListParam;
 		private String[] tTerms;
 		private ArrayList<Long> affectedUnitIds = new ArrayList<Long>();
 		private ArrayList<String> scannedTerms = new ArrayList<String>();
 		private scanner snr;
+		private Boolean updStatus;
 		
-		public scan_term_thread_deactivator(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
+		public scan_term_thread_no_loading(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms, Boolean updateStatus) {
 			opOnList = operationOnPostingList;
 			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
 			tTerms = targetTerms;
 			snr = scannerIns;
+			updStatus = updateStatus;
+		}
+		
+		// update status default to be true
+		// cannot make use of other ini method?
+		public scan_term_thread_no_loading(scanner scannerIns, scanner_plugin_interface operationOnPostingList, Object operationOnPostingListParameter, String[] targetTerms) {
+			opOnList = operationOnPostingList;
+			opOnListParam = operationOnPostingListParameter; // in order to collect all the 
+			tTerms = targetTerms;
+			snr = scannerIns;
+			updStatus = true;
 		}
 		
 		public void run() {
@@ -222,7 +242,7 @@ public class scanner {
 						scannedTerms.add(term);		// even if the term is not not totally processed and scanning terminated, it will be regarded as being processed, aggressive
 						try {
 							opOnList.set_parameters(opOnListParam);
-							snr.scan_posting_list(term, opOnList, affectedUnitIds);    // will only pass in loaded terms, so does not need the loading step
+							snr.scan_posting_list(term, opOnList, affectedUnitIds, updStatus);    // will only pass in loaded terms, so does not need the loading step
 						}catch(Exception e) {
 							e.printStackTrace();
 						}finally {
@@ -347,20 +367,25 @@ public class scanner {
 				
 				// in order to pause the deactivtor during scanning the doc term chain, use the add_note on all terms
 				// soft pause: here only pause deactivation functionality of deactivator, not the persisting functionality
-				for(String term : idx.lexicon.keySet()) {
+				for(String term : idx.lexicon_2.keySet()) {
 					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
 					if(eliminate_name != null) {    // here indeed does not need to check the condition, as all terms from lexicon should existing in the lock maps
 						callbacks.add(eliminate_name);
 					}
 				}
 				
-				opOnList.set_parameters(opOnListParam);
-				affectedUnitIds = snr.scan_doc(tDocIdStrs, opOnList);
-				
-				for(callback eliminate_name : callbacks) {
-					eliminate_name.conduct();
-				}
-				
+				try {
+					opOnList.set_parameters(opOnListParam);
+					affectedUnitIds = snr.scan_doc(tDocIdStrs, opOnList);
+					
+				}catch(Exception e) {
+					e.printStackTrace();
+				}finally {
+					for(callback eliminate_name : callbacks) {
+						eliminate_name.conduct();
+					}
+				}	
+
 			} catch(Exception e) {
 				e.printStackTrace();
 			}

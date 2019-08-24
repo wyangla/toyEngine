@@ -42,20 +42,20 @@ public class scanner {
 	public String scan_posting_list(String term, Class<?> operationOnPostingList, ArrayList<Long> affectedUnits) {
 		String processedTerm = term;
 		
-		// get the starter post unit id
-		ArrayList<Long> postUnitIds = idx.lexicon.get(term);
-		
-		if(postUnitIds != null) {
-			posting_unit pUnitStarter = idx.postUnitMap.get(postUnitIds.get(0));
-			infoManager.set_info(posting_loaded_status.class, pUnitStarter);	// update the visiting time in posting_load_status, TODO: move to position after visit_next_unit?
-			
-			// load the unit operations
-			try {
-				visit_next_unit(pUnitStarter, operationOnPostingList, affectedUnits);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+//		// get the starter post unit id
+//		ArrayList<Long> postUnitIds = idx.lexicon.get(term);
+//		
+//		if(postUnitIds != null) {
+//			posting_unit pUnitStarter = idx.postUnitMap.get(postUnitIds.get(0));
+//			infoManager.set_info(posting_loaded_status.class, pUnitStarter);	// update the visiting time in posting_load_status, TODO: move to position after visit_next_unit?
+//			
+//			// load the unit operations
+//			try {
+//				visit_next_unit(pUnitStarter, operationOnPostingList, affectedUnits);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
 
 		
 		return processedTerm;
@@ -347,20 +347,20 @@ public class scanner {
 			try {
 				String threadName = "" + name_generator.thread_name_gen();
 				
-				// in order to pause the deactivtor during scanning the doc term chain, use the add_note on all terms
-				for(String term : idx.lexicon.keySet()) {
-					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
-					if(eliminate_name != null) {    // here indeed does not need to check the condition, as all terms from lexicon should existing in the lock maps
-						callbacks.add(eliminate_name);
-					}
-				}
-				
-				opCls = set_param(opCls, opClsParam);
-				affectedUnitIds = snr.scan_doc(tDocIdStrs, opCls);
-				
-				for(callback eliminate_name : callbacks) {
-					eliminate_name.conduct();
-				}
+//				// in order to pause the deactivtor during scanning the doc term chain, use the add_note on all terms
+//				for(String term : idx.lexicon.keySet()) {
+//					callback eliminate_name = kpr.add_note(lexicon_locker.class, term, threadName);
+//					if(eliminate_name != null) {    // here indeed does not need to check the condition, as all terms from lexicon should existing in the lock maps
+//						callbacks.add(eliminate_name);
+//					}
+//				}
+//				
+//				opCls = set_param(opCls, opClsParam);
+//				affectedUnitIds = snr.scan_doc(tDocIdStrs, opCls);
+//				
+//				for(callback eliminate_name : callbacks) {
+//					eliminate_name.conduct();
+//				}
 				
 			} catch(Exception e) {
 				e.printStackTrace();

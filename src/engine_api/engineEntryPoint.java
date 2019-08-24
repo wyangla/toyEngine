@@ -47,9 +47,9 @@ public class engineEntryPoint {
 		return clr;
 	}
 	
-	public ConcurrentHashMap<String, ArrayList<Long>> _get_lexicon() {
-		return idx.lexicon;
-	}	
+//	public ConcurrentHashMap<String, ArrayList<Long>> _get_lexicon() {
+//		return idx.lexicon;
+//	}	
 	
 	public ConcurrentHashMap<String, term> _get_lexicon_2() {
 		return idx.lexicon_2;

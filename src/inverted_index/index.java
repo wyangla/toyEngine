@@ -32,7 +32,7 @@ public class index {
 	}
 	
 	public ConcurrentHashMap<Long, posting_unit> postUnitMap = new ConcurrentHashMap<Long, posting_unit>(); // {postingUnitId : postingUnitIns}, store all the posting units, for convenience of persistance
-	public ConcurrentHashMap<String, ArrayList<Long>> lexicon = new ConcurrentHashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
+	// public ConcurrentHashMap<String, ArrayList<Long>> lexicon = new ConcurrentHashMap<String, ArrayList<Long>>(); // {term : [postingUnitIds]}, the inside HashMap is for the convenience of adding more meta data
 	private keeper kpr = keeper.get_instance(); // get the keeper instance, so as to get the lexiconLockMap
 	public ConcurrentHashMap<String, doc> docMap = new ConcurrentHashMap<String, doc>();
 	public ConcurrentHashMap<Long, doc> docIdMap = new ConcurrentHashMap<Long, doc>();    // not persisted, generated from docMap when loading from local
@@ -42,7 +42,7 @@ public class index {
 
 	
 	// for generating the unique id s
-	public class counters {
+	public class idCounter {
 		long id = 0L;
 		public void _inc() {    // invoked each time the val() is used, internal increment
 			id ++;
@@ -60,51 +60,38 @@ public class index {
 		}
 	}
 	
-	public counters pc = new counters();
-	public long lastPostUnitId = 0;
+	public idCounter pc = new idCounter();
+//	public long lastPostUnitId = 0;
 	
-	public counters dc = new counters();
-	public long lastDocId = 0;
+	public idCounter dc = new idCounter();
+//	public long lastDocId = 0;
 	
-	public counters tc = new counters();
-	public long lastTermId = 0;
+	public idCounter tc = new idCounter();
+//	public long lastTermId = 0;
 	
 
-	// initialise the posting list for one term
-	private long ini_posting_list(String term) {
-		posting_unit postUnit = new posting_unit();
+	// create the termIns for one posting list
+	private void ini_posting_list(String term) {
 		
-		// TODO: need a global id generator?
-		postUnit.term = term;
-		postUnit.currentId = pc.val();
-		postUnitMap.put(postUnit.currentId, postUnit);
-		lastPostUnitId = postUnit.currentId;
-
-		// initialise the posting list for one term
-		ArrayList<Long> postingUnitIds = new ArrayList<Long>();
-		postingUnitIds.add(postUnit.currentId);
-		lexicon.put(term, postingUnitIds);  
-		
-		// use head / tail pointers to view the posting list
+		// the head / tail pointers are set when adding real posting unit
 		term termIns = new term();
 		termIns.termId = tc.val();
 		termIns.termName = term;
 		lexicon_2.put(term, termIns);
 		
-		// record the current max tf and posting list loaded status
-		// infoManager.set_info(term_max_tf.class, postUnit);
+		// backward compatible way to set the status
+		posting_unit postUnit = new posting_unit();
+		postUnit.term = term;
 		infoManager.set_info(posting_loaded_status.class, postUnit);
 		
-		kpr.add_target(lexicon_locker.class, term);
-		
-		return postUnit.currentId;
+		kpr.add_target(lexicon_locker.class, term);    // does not handle the racing condition internally, so the lock could be overwritten if there are racing condition here
 	}
 	
 	
 	// for checking if one term is already existing in the inverted index 
 	private int check_term_existance(String term) {
 		int notExistanceFlag = 1; // 1 term not existing, -1 term existing 
-		if(lexicon.containsKey(term) == true) {    // TODO: -> lexicon_2
+		if(lexicon_2.containsKey(term) == true) {
 			notExistanceFlag = -1;
 		}
 		return notExistanceFlag;
@@ -158,7 +145,6 @@ public class index {
 	}
 	
 	
-	// TODO: moved to adv_ops, to be depreciated
 	// delete a posting list
 	public void del_term(String term) {
 		String threadNum = "" + name_generator.thread_name_gen();
@@ -168,19 +154,26 @@ public class index {
 			try {
 				// load related posting units into memory
 				index_io_operations.get_instance().load_posting(new String[] {term});
-				
-				ArrayList<Long> postUnitList = lexicon.get(term);
-				lexicon.remove(term); // delete from lexicon
+				idx.lexicon_2.remove(term); // delete from lexicon
 				
 				kpr.del_target(lexicon_locker.class, term);    // remove the lock's references in docMaps
 				
-				for(long postUnitId : postUnitList) {
-					postUnitMap.remove(postUnitId); // delete specific posting unites
+				scanner.scan_term_thread sd = new scanner.scan_term_thread(
+						new scanner(), 
+						new delete_posting(), 
+						null , 
+						new String[] {term});
+				
+				sd.start();
+				
+				try {
+					sd.join();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 				
-				infoManager.del_info(term_max_tf.class, term);
-				infoManager.del_info(posting_loaded_status.class, term);
-				
+				// does not need to operate the information here, as maxTf, postingLoadedStatus are both recorded in lexicon
+
 			}catch(Exception e) {
 				e.printStackTrace();
 			}finally {
@@ -215,30 +208,28 @@ public class index {
 					postUnit.term = term;
 					postUnit.currentId = pc.val(); // even if the old unit has the id it will be reset
 					postUnitMap.put(postUnit.currentId, postUnit); // add to the overall posting units table
-					
-					ArrayList<Long> postingUnitIds = lexicon.get(term); // get the posting list
-					long previousUnitId = postingUnitIds.get(postingUnitIds.size() - 1);
-					posting_unit prevUnit = postUnitMap.get(previousUnitId); // get the instance of previous unit
-					postingUnitIds.add(postUnit.currentId); // add to the lexicon, in fact is adding to the posting list
-					
-					
-					// TODO: adding to the lexicon_2
+										
+					// adding to the lexicon_2, directly link to the first posting unit, not linking to a fake starter
 					term termIns = lexicon_2.get(term);
-					long lastPostUnitId = termIns.lastPostUnitId;
-					posting_unit lastPostUnit = idx.postUnitMap.get(lastPostUnitId);
-					termIns.lastPostUnitId = postUnit.currentId; // move the tail pointer
-					
-					
-					// link units, for scanning
-					postUnit.link_to_previous(prevUnit);
-					if (prevUnit != null) {
-						prevUnit.link_to_next(postUnit);
+					long termLastPostUnitId = termIns.lastPostUnitId;
+					if(termLastPostUnitId == -1) {
+						termIns.firstPostUnitId = postUnit.currentId;
+						termIns.lastPostUnitId = postUnit.currentId; // move the tail pointer
+					}else {
+						posting_unit termLastPostUnit = idx.postUnitMap.get(termLastPostUnitId);
+						termIns.lastPostUnitId = postUnit.currentId; // move the tail pointer
+
+						// link units, for scanning
+						postUnit.link_to_previous(termLastPostUnit);
+						if (termLastPostUnit != null) {
+							termLastPostUnit.link_to_next(postUnit);
+						}
+						
 					}
 					
-					lastPostUnitId = postUnit.currentId; // for setting the pc in load lexicon, making sure the old units are not overwritten when new units added
+					// lastPostUnitId = postUnit.currentId; // for setting the pc in load lexicon, making sure the old units are not overwritten when new units added
 					addedPostUnit = postUnit;
 					
-					// here does not need to set the posting_loaded_status is because
 					// _add_posting_unit is always occur with add_term
 					// but for the potential single usage, here still use the status setting
 					infoManager.set_info(term_max_tf.class, postUnit);
@@ -253,9 +244,7 @@ public class index {
 			}
 		}
 
-		// TODO: add retry for muti-threading situation
-		// as some locking attempts will be blocked by the lock status,
-		// so use a recursive adding? -- retry in add_doc
+		// should not fail at all, as the wait lock will wait until successfully get one.
 		if (addedPostUnit == null) { // if all retries are all failed, print the customised exception
 			new unit_add_fail_exception(String.format("Unit %s added failed", "" + postUnit.currentId)).printStackTrace(); 
 		}
@@ -267,12 +256,11 @@ public class index {
 	// provided in APIs
 	// [term] currentId nextId previousId {uProp} docId status
 	// e.g. place 2 -1 -1 {} -- 1
-	// TODO: add a ArrayList<posting_unit> to collect adding failed units and retry, until success
 	public posting_unit add_posting_unit(String persistedUnit) {
 		String[] tempList = persistedUnit.split(" ");
 		String term = tempList[0];
-		long starterPUnitId = add_term(term); // no matter what try to add the term firstly
-		if(starterPUnitId == -1) { // means the term is already existing
+		int termExisting = add_term(term);
+		if(termExisting == 1) { // term is already existing
 			index_io_operations.get_instance().load_posting(new String[] {term}); // load the whole posting list before add new things in
 		}
 		posting_unit postUnit = posting_unit.deflatten(persistedUnit);
@@ -320,6 +308,7 @@ public class index {
 			addedPostUnit = postUnit;
 		}catch(Exception e) {
 			e.printStackTrace();
+			System.out.println(postUnit.docId);
 		}
 		
 		return addedPostUnit;
@@ -400,7 +389,7 @@ public class index {
 			addedDoc.docId = dc.val();
 			addedDoc.docName = targetDocName;
 			
-			lastDocId = addedDoc.docId;
+			// lastDocId = addedDoc.docId;
 			
 			docMap.put(addedDoc.docName, addedDoc);
 			docIdMap.put(addedDoc.docId, addedDoc);
@@ -422,10 +411,13 @@ public class index {
 	// TODO: when use this method need to be very careful, as it will lead to the pc -> 0
 	public void clear_index() {
 		postUnitMap = new ConcurrentHashMap<Long, posting_unit>();
-		lexicon = new ConcurrentHashMap<String, ArrayList<Long>>();
+		// lexicon = new ConcurrentHashMap<String, ArrayList<Long>>();
 		lexicon_2 = new ConcurrentHashMap<String, term>();
 		kpr.clear_maps(lexicon_locker.class);
-		pc = new counters();
+		
+		// dc is not cleared here, as documents are not re-added
+		pc = new idCounter();
+		tc = new idCounter();
 		
 		// clear doc term chain points
 		for(Long docId: docIdMap.keySet()) {
@@ -469,20 +461,18 @@ public class index {
 								String term = pUnitString.split(" ")[0];
 								
 								// check loading status and adding the term into lexicon for the first time it was seen
-								if (i == 0 && lexicon.containsKey(term) == false) { 
+								if (i == 0 && lexicon_2.containsKey(term) == false) { 
 									add_term(term);
 								}
 								
+								// not skipping the starter now, as using lexicon_2 and no fake starter used
 								posting_unit pUnit = posting_unit.deflatten(pUnitString);
+								_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated					
 								
-								if(pUnit.previousId != -1) { // skip the starter unit, as they are regenerated when add term
-									_add_posting_unit(term, pUnit); // re assign the ids, and link the units; when the idx is empty, only starters left, they are not going to be loaded into memory, so that the lastUnitId will not be updated					
-									
-									// reset the term chain
-									pUnit.previousTermId = -1;
-									pUnit.nextTermId = -1;
-									add_term_unit(pUnit);
-								}
+								// reset the term chain
+								pUnit.previousTermId = -1;
+								pUnit.nextTermId = -1;
+								add_term_unit(pUnit);
 								
 							}
 							
@@ -512,6 +502,7 @@ public class index {
 	// single threading one, as only processing the persisted posting instead of the docs
 	// TODO: use multi-threading and add lock to pc?
 	public void reload_index() {
+		deactivator.get_instance().pause_deactivator();
 		
 		// if not cleaned by cleaner, this reload will not work as expected,
 		// as the deleted unit are still in the postUnitMap
@@ -522,6 +513,8 @@ public class index {
 		// without this step, due to the lazy loading of posting list, 
 		// delete_doc will only load small part of units into memory, 
 		// the reload_index will erase the unloaded units from local file
+		// also due to cleaner is operating the term chain,  without all posting units loaded
+		// could encounter the breaking of term chain
 		index_io_operations.get_instance().load_all_posting();
 		clr.clean();
 		
@@ -560,49 +553,14 @@ public class index {
 		
 		// re-persist the inverted index
 		index_io_operations.get_instance().persist_index(); // the ids are corrected now
-	}
-	
-	
-	
-	// TODO: using lexicon_2
-	// delete a posting list
-	public void del_term_2(String term) {
-		String threadNum = "" + name_generator.thread_name_gen();
 		
-		callback release_lock = kpr.require_lock_check_notebook_wait(lexicon_locker.class, term, threadNum);
-		if (release_lock != null) {
-			try {
-				// load related posting units into memory
-				index_io_operations.get_instance().load_posting(new String[] {term});
-				idx.lexicon_2.remove(term); // delete from lexicon
-				
-				kpr.del_target(lexicon_locker.class, term);    // remove the lock's references in docMaps
-				
-				scanner.scan_term_thread sd = new scanner.scan_term_thread(
-						new scanner(), 
-						new delete_posting(), 
-						null , 
-						new String[] {term});
-				
-				sd.start();
-				
-				try {
-					sd.join();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				
-				// TODO: does not need to operate the information here, as maxTf, postingLoadedStatus are both recorded in lexicon
-//				infoManager.del_info(term_max_tf.class, term);
-//				infoManager.del_info(posting_loaded_status.class, term);
-				
-			}catch(Exception e) {
-				e.printStackTrace();
-			}finally {
-				release_lock.conduct();
-			}
-		}
+		
+		deactivator.get_instance().resume_deactivator();
 	}
+	
+	
+	
+
 	
 
 	// delete a specific document using term chain

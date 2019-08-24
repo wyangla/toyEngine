@@ -5,22 +5,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import configs.information_manager_config;
 import data_structures.posting_unit;
+import data_structures.term;
 import inverted_index.index;
 
 
 
 public class posting_loaded_status {
-	public static ConcurrentHashMap<String, Double> infoMap = new ConcurrentHashMap<String, Double>();
-	public static String persistingPath = information_manager_config.persistingDir + "/posting_loaded_status";
+	public static ConcurrentHashMap<String, Double> infoMap = null;    // new ConcurrentHashMap<String, Double>();
+	public static String persistingPath = "";    // information_manager_config.persistingDir + "/posting_loaded_status";
 	public static index idx = index.get_instance();
-	
-	// if the infoMap of posting_loaded_status contains the (term:timestamp) means loaded
-	// when the k:v does not existing, means not loaded
+
+	// depricate the infoMap
+	// status == -1, means not loaded
 	public static int set_info(posting_unit pUnit) {
 		int addedFlag = -1;
 		try {
-			infoMap.put(pUnit.term, (double)System.currentTimeMillis());	// last accessing time
-			idx.lexicon_2.get(pUnit.term).status = (double)System.currentTimeMillis();  // TODO: test
+			// System.out.println(pUnit.term);    // TODO: testing
+			idx.lexicon_2.get(pUnit.term).status = (double)System.currentTimeMillis();
 			addedFlag = 1;
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -28,22 +29,25 @@ public class posting_loaded_status {
 		return addedFlag;
 	}
 	
-	
-	
-	// the following are fixed
 	public static Double get_info(String targetName) {
-		// TODO: extract information from the lexicon_2
-		return information_common_methods.get_info(targetName, infoMap);
+		return idx.lexicon_2.get(targetName).status;
 	}
 	
+	
 	public static int del_info(String targetName) {
-		idx.lexicon_2.get(targetName).status = -1;    // TODO: test
-		return information_common_methods.del_info(targetName, infoMap);
+		idx.lexicon_2.get(targetName).status = -1;
+		return 1;
 	}
 	
 	public static int clear_info() {
-		return information_common_methods.clear_info(infoMap);
+		for (String term: idx.lexicon_2.keySet()) {
+			term termIns = idx.lexicon_2.get(term);
+			termIns.status = -1;
+		}
+		return 1;
 	}
+	
+	
 	
 	public static int load_info() {
 		return information_common_methods.load_info(persistingPath, infoMap);

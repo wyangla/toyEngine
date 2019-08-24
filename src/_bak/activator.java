@@ -46,37 +46,37 @@ public class activator {
 		ArrayList<String> expiredTerms = new ArrayList<String>();
 		ArrayList<scanner.scan_term_thread_deactivator> threadList = new ArrayList<scanner.scan_term_thread_deactivator>();
 		
-		// get the expired terms firstly
-		for (String term : idx.lexicon.keySet()) {
-			if(check_expired(term)) {
-				expiredTerms.add(term);
-			}
-		}
-		
-		// delete the posting units of one term
-		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(deactivator_config.workerNum, expiredTerms.toArray(new String[0]));
-
-		for(String[] workLoad : workLoads ) {
-			scanner.scan_term_thread_deactivator st = new scanner.scan_term_thread_deactivator(snr, delete_posting.class, "", workLoad);
-			st.run();
-			threadList.add(st);
-		}
-		
-		for(scanner.scan_term_thread_deactivator st : threadList) {
-			st.join();
-			affectedUnitIds.addAll(st.get_affectedUnitIds());
-			deactivatedTerms.addAll(st.get_scannedTerms());
-		}
-
-		// delete posting_loaded_status of handled terms
-		// not touching the term_max_tf here, as it is not removing the term from index
-		for(String term : deactivatedTerms) {
-			infoManager.del_info(posting_loaded_status.class, term);
-		}
-		
-		// TODO: for testing
-		System.out.println("-- deactivation");
-		System.out.println(deactivatedTerms);
+//		// get the expired terms firstly
+//		for (String term : idx.lexicon.keySet()) {
+//			if(check_expired(term)) {
+//				expiredTerms.add(term);
+//			}
+//		}
+//		
+//		// delete the posting units of one term
+//		ArrayList<String[]> workLoads = task_spliter.get_workLoads_terms(deactivator_config.workerNum, expiredTerms.toArray(new String[0]));
+//
+//		for(String[] workLoad : workLoads ) {
+//			scanner.scan_term_thread_deactivator st = new scanner.scan_term_thread_deactivator(snr, delete_posting.class, "", workLoad);
+//			st.run();
+//			threadList.add(st);
+//		}
+//		
+//		for(scanner.scan_term_thread_deactivator st : threadList) {
+//			st.join();
+//			affectedUnitIds.addAll(st.get_affectedUnitIds());
+//			deactivatedTerms.addAll(st.get_scannedTerms());
+//		}
+//
+//		// delete posting_loaded_status of handled terms
+//		// not touching the term_max_tf here, as it is not removing the term from index
+//		for(String term : deactivatedTerms) {
+//			infoManager.del_info(posting_loaded_status.class, term);
+//		}
+//		
+//		// TODO: for testing
+//		System.out.println("-- deactivation");
+//		System.out.println(deactivatedTerms);
 		
 		return affectedUnitIds;
 	}

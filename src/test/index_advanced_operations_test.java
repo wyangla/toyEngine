@@ -42,7 +42,7 @@ public class index_advanced_operations_test {
 	// test get_term_upper_bounds
 	// need the lexicon generated
 	public void test_3() {
-		System.out.println(idx.lexicon.get("wanted"));
+		System.out.println(idx.lexicon_2.get("wanted"));
 		System.out.println(infoManager.get_info(term_max_tf.class, "wanted")); // 4.701457146816058
 		System.out.println(idxAdOp.get_term_upper_bounds(new String[] {"wanted", "want", "a"})); // 2.0481418383862344
 	}
@@ -90,7 +90,7 @@ public class index_advanced_operations_test {
 		index_advanced_operations_test idxAdOpTest = new index_advanced_operations_test();
 		
 		// prepare the inverted-index
-		index_io_operations.get_instance().load_lexicon();
+		index_io_operations.get_instance().load_lexicon_2();
 		index_io_operations.get_instance().load_posting(new String[] {"wanted", "tasty"});
 		index_io_operations.get_instance().load_info();
 		index_io_operations.get_instance().load_docMap();

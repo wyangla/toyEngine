@@ -9,7 +9,7 @@ import org.json.JSONObject;
 public class term{
 	public long termId = -1L;
 	public String termName = "";
-	public ConcurrentHashMap<String, Double> termProp = new ConcurrentHashMap<String, Double>();    // termIdf, termDf, termMaxtf, termUpperBound, postingLoadedStatus; - termIdfCalTime, as all the same
+	public ConcurrentHashMap<String, Double> termProp = new ConcurrentHashMap<String, Double>();    // termIdf idf, termDf df, termMaxtf mtf, termUpperBound ub; - termIdfCalTime, as all the same
 	
 	public long firstPostUnitId = -1;    // point to the posting unit of first term in the document
 	public long lastPostUnitId = -1;    // point to the last term unit
